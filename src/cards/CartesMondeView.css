@@ -350,6 +350,14 @@
     padding: 8mm;
     overflow: hidden;
     background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Évite une page blanche à la fin */
+  .print-deck > .print-pair:last-child .print-sheet.print-back {
+    page-break-after: auto;
+    break-after: auto;
   }
 
   .print-card {

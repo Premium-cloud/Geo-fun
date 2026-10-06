@@ -155,15 +155,17 @@ function PrintDeck({ cards }: { cards: Country[] }) {
     pages.push(cards.slice(i, i + 9))
   }
 
+  // Miroir horizontal par rangée : coincide en duplex portrait, retournement bord long.
+  const backOrder = [2, 1, 0, 5, 4, 3, 8, 7, 6]
+
   return (
     <div className="print-deck" aria-hidden>
       {pages.map((page, pageIndex) => {
         const slots: (Country | null)[] = [...page]
         while (slots.length < 9) slots.push(null)
-        const backOrder = [2, 1, 0, 5, 4, 3, 8, 7, 6]
 
         return (
-          <div key={`sheet-${pageIndex}`}>
+          <div className="print-pair" key={`sheet-${pageIndex}`}>
             <section className="print-sheet print-front">
               {slots.map((card, i) => (
                 <div className="print-card" key={`f-${pageIndex}-${i}`}>

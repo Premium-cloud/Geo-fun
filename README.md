@@ -11,17 +11,26 @@ npm run dev
 
 L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
-## Impression
+## Impression recto-verso
 
-- Boutons **Feuille test** (1 recto + 1 verso) et **PDF complet** dans l’app
-- Ou régénérer les PDF :
+1. Bouton **Imprimer recto-verso** (imprimante ou « Enregistrer en PDF »)
+2. Ou téléchargez **PDF test** / **PDF complet**
+3. Dans les options d’impression : **recto-verso / duplex**, retournement sur le **bord long**
+
+Chaque paire de pages = 1 feuille physique :
+- page impaire = faces (9 cartes)
+- page paire = dos (miroir pour que ça coincide une fois retourné)
+
+Résultat : **22 feuilles** pour 198 cartes (au lieu de 44 en simple face).
+
+Régénérer les PDF :
 
 ```bash
-npm run pdf:test   # feuille-test.pdf (pour valider bleed / découpe)
-npm run pdf        # drapeaux-du-monde.pdf (deck entier)
+npm run pdf:test
+npm run pdf
 ```
 
-Les PDF sont dans `public/` (A4). **9 cartes par feuille** sur fond blanc : le bord crème de chaque carte = ligne de découpe. Imprimez en « 100 % » / taille réelle.
+Imprimez en **100 % / taille réelle**, pas « ajuster à la page ».
 
 ## Contenu
 

@@ -13,13 +13,19 @@ export default function App() {
           </div>
         </div>
         <div className="topbar-actions">
+          <button type="button" className="btn-pdf btn-pdf-primary" onClick={() => window.print()}>
+            Imprimer recto-verso
+          </button>
           <a className="btn-pdf" href="/feuille-test.pdf" download>
-            Feuille test
+            PDF test (1 feuille)
           </a>
-          <a className="btn-pdf btn-pdf-primary" href="/drapeaux-du-monde.pdf" download>
+          <a className="btn-pdf" href="/drapeaux-du-monde.pdf" download>
             PDF complet
           </a>
-          <p className="topbar-hint">Cliquez une carte pour la retourner</p>
+          <p className="topbar-hint">
+            Recto-verso : activez le duplex, retournement sur le <strong>bord long</strong>.
+            Une feuille = 9 cartes complètes (face + dos).
+          </p>
         </div>
       </header>
       <main>
