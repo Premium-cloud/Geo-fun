@@ -240,12 +240,13 @@
 .meta {
   flex: 0 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0.15rem 0.2rem;
   padding: 0.18rem 0.3rem 0.32rem;
   font-size: 0.5rem;
-  line-height: 1.15;
+  line-height: 1.2;
   letter-spacing: 0.01em;
   color: #6a6358;
   text-align: center;
@@ -254,10 +255,9 @@
 }
 
 .meta-lang {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 0;
+  max-width: 100%;
+  text-wrap: balance;
 }
 
 .meta-sep {
@@ -309,6 +309,11 @@
     display: block;
   }
 
+  /*
+   * Format poker : 63.5 × 88.9 mm (coupe).
+   * Fond perdu : 3 mm de chaque côté → face 69.5 × 94.9 mm.
+   * Gap assez large pour bleed + traits de coupe hors carte.
+   */
   .print-sheet {
     width: 100%;
     min-height: 100vh;
@@ -317,45 +322,80 @@
     display: grid;
     grid-template-columns: repeat(3, 63.5mm);
     grid-template-rows: repeat(3, 88.9mm);
-    gap: 4mm;
+    column-gap: 10mm;
+    row-gap: 10mm;
     justify-content: center;
     align-content: center;
-    padding: 0;
+    padding: 6mm;
+    overflow: visible;
   }
 
   .print-card {
     position: relative;
     width: 63.5mm;
     height: 88.9mm;
+    overflow: visible;
   }
 
-  .print-card .face {
+  /* Contenu imprimé avec fond perdu (déborde du format de coupe) */
+  .print-card .face,
+  .print-card .face.static {
+    position: absolute;
+    top: -3mm;
+    left: -3mm;
+    width: 69.5mm;
+    height: 94.9mm;
     box-shadow: none;
     border-radius: 0;
-    border: 0.2mm solid rgba(0, 0, 0, 0.18);
+    border: 0;
+    overflow: hidden;
   }
 
-  /* Traits de coupe aux 4 coins */
+  /* Zone de sécurité : texte hors du bandeau de bleed */
+  .print-card .identity {
+    padding: 0.45rem 5mm 0.15rem;
+  }
+
+  .print-card .emblem {
+    padding: 0.3rem 5mm 0.25rem;
+  }
+
+  .print-card .meta {
+    padding: 0.2rem 5mm 4.5mm;
+  }
+
+  .print-card .ribbon {
+    padding-top: calc(0.26rem + 3mm);
+    padding-bottom: 0.28rem;
+    font-size: 6.5pt;
+  }
+
+  .print-card .back-face {
+    padding: 5mm;
+  }
+
+  /* Traits de coupe au format final, hors du fond perdu */
   .cut-marks {
     position: absolute;
-    inset: -3mm;
+    inset: 0;
     pointer-events: none;
-    z-index: 2;
+    z-index: 3;
+    overflow: visible;
   }
 
   .cut-marks::before {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -5.5mm;
     background:
-      linear-gradient(#222, #222) top left / 2.2mm 0.2mm no-repeat,
-      linear-gradient(#222, #222) top left / 0.2mm 2.2mm no-repeat,
-      linear-gradient(#222, #222) top right / 2.2mm 0.2mm no-repeat,
-      linear-gradient(#222, #222) top right / 0.2mm 2.2mm no-repeat,
-      linear-gradient(#222, #222) bottom left / 2.2mm 0.2mm no-repeat,
-      linear-gradient(#222, #222) bottom left / 0.2mm 2.2mm no-repeat,
-      linear-gradient(#222, #222) bottom right / 2.2mm 0.2mm no-repeat,
-      linear-gradient(#222, #222) bottom right / 0.2mm 2.2mm no-repeat;
+      linear-gradient(#111, #111) top 5.5mm left 0 / 2mm 0.15mm no-repeat,
+      linear-gradient(#111, #111) top 0 left 5.5mm / 0.15mm 2mm no-repeat,
+      linear-gradient(#111, #111) top 5.5mm right 0 / 2mm 0.15mm no-repeat,
+      linear-gradient(#111, #111) top 0 right 5.5mm / 0.15mm 2mm no-repeat,
+      linear-gradient(#111, #111) bottom 5.5mm left 0 / 2mm 0.15mm no-repeat,
+      linear-gradient(#111, #111) bottom 0 left 5.5mm / 0.15mm 2mm no-repeat,
+      linear-gradient(#111, #111) bottom 5.5mm right 0 / 2mm 0.15mm no-repeat,
+      linear-gradient(#111, #111) bottom 0 right 5.5mm / 0.15mm 2mm no-repeat;
   }
 
   .print-card .code {
@@ -374,10 +414,6 @@
     font-size: 6.5pt;
   }
 
-  .print-card .ribbon {
-    font-size: 6.5pt;
-  }
-
   .print-card .meta {
     font-size: 6pt;
   }
@@ -388,7 +424,7 @@
 
   @page {
     size: A4 portrait;
-    margin: 8mm;
+    margin: 6mm;
   }
 }
 

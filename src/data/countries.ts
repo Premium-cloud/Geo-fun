@@ -223,7 +223,7 @@ export const COUNTRIES: Country[] = [
   { code: 'CZ', name: 'Tchéquie', capital: 'Prague', continent: 'Europe', population: '10.5 M', language: 'tchèque' },
   { code: 'TH', name: 'Thaïlande', capital: 'Bangkok', continent: 'Asie', population: '72 M', language: 'thaï' },
   { code: 'TL', name: 'Timor oriental', capital: 'Dili', continent: 'Asie', population: '1.3 M', language: 'tétoum, portugais' },
-  { code: 'TG', name: 'Togo', capital: 'Lomé', continent: 'Afrique', population: '9 M', language: 'français, ewe' },
+  { code: 'TG', name: 'Togo', capital: 'Lomé', continent: 'Afrique', population: '9 M', language: 'français, ewe, kabiyé' },
   { code: 'TO', name: 'Tonga', capital: 'Nuku\'alofa', continent: 'Océanie', population: '100 k', language: 'tongien, anglais', flagRatio: '2 / 1' },
   { code: 'TT', name: 'Trinité-et-Tobago', capital: 'Port-d\'Espagne', continent: 'Amérique centrale', population: '1.5 M', language: 'anglais' },
   { code: 'TN', name: 'Tunisie', capital: 'Tunis', continent: 'Afrique', population: '12.3 M', language: 'arabe' },
