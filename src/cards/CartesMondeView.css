@@ -208,11 +208,11 @@
   max-height: 100%;
   aspect-ratio: 3 / 2;
   object-fit: contain;
-  border-radius: 0.2rem;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.08),
-    0 6px 14px rgba(40, 28, 12, 0.12);
-  background: #f0ebe3;
+  border: 0;
+  border-radius: 0.15rem;
+  box-shadow: none;
+  outline: none;
+  background: transparent;
 }
 
 .back-face {
