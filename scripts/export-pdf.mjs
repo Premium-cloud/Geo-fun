@@ -1,5 +1,5 @@
 /**
- * Génère des PDF A4 prêts à imprimer (fond perdu + traits de coupe).
+ * Génère des PDF A4 prêts à imprimer (fond perdu, découpe à vue).
  * Usage:
  *   node scripts/export-pdf.mjs              → deck complet + feuille test
  *   node scripts/export-pdf.mjs --test-only  → feuille test seule
