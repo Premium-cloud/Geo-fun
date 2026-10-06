@@ -168,12 +168,9 @@ function PrintDeck({ cards }: { cards: Country[] }) {
               {slots.map((card, i) => (
                 <div className="print-card" key={`f-${pageIndex}-${i}`}>
                   {card ? (
-                    <>
-                      <span className="cut-marks" aria-hidden />
-                      <div className="face face-front static">
-                        <CardFront card={card} />
-                      </div>
-                    </>
+                    <div className="face face-front static">
+                      <CardFront card={card} />
+                    </div>
                   ) : null}
                 </div>
               ))}
@@ -184,12 +181,9 @@ function PrintDeck({ cards }: { cards: Country[] }) {
                 return (
                   <div className="print-card" key={`b-${pageIndex}-${i}`}>
                     {card ? (
-                      <>
-                        <span className="cut-marks" aria-hidden />
-                        <div className="face face-back static">
-                          <CardBack />
-                        </div>
-                      </>
+                      <div className="face face-back static">
+                        <CardBack />
+                      </div>
                     ) : null}
                   </div>
                 )

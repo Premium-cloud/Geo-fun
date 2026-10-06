@@ -21,7 +21,7 @@ npm run pdf:test   # feuille-test.pdf (pour valider bleed / découpe)
 npm run pdf        # drapeaux-du-monde.pdf (deck entier)
 ```
 
-Les PDF sont dans `public/` (A4, fond perdu 3 mm, traits de coupe). Imprimez sans mise à l’échelle (« 100 % » / « taille réelle »).
+Les PDF sont dans `public/` (A4, fond perdu 3 mm). Coupez à vue entre les cartes. Imprimez sans mise à l’échelle (« 100 % » / « taille réelle »).
 
 ## Contenu
 

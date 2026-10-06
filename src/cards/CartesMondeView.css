@@ -325,9 +325,8 @@
   }
 
   /*
-   * Format poker : 63.5 × 88.9 mm (coupe).
-   * Fond perdu : 3 mm de chaque côté → face 69.5 × 94.9 mm.
-   * Gap assez large pour bleed + traits de coupe hors carte.
+   * Format poker : 63.5 × 88.9 mm.
+   * Fond perdu 3 mm pour un bord net une fois découpé à vue.
    */
   .print-sheet {
     width: 100%;
@@ -337,8 +336,8 @@
     display: grid;
     grid-template-columns: repeat(3, 63.5mm);
     grid-template-rows: repeat(3, 88.9mm);
-    column-gap: 10mm;
-    row-gap: 10mm;
+    column-gap: 6mm;
+    row-gap: 6mm;
     justify-content: center;
     align-content: center;
     padding: 6mm;
@@ -352,7 +351,7 @@
     overflow: visible;
   }
 
-  /* Contenu imprimé avec fond perdu (déborde du format de coupe) */
+  /* Contenu avec fond perdu (déborde un peu du format de coupe) */
   .print-card .face,
   .print-card .face.static {
     position: absolute;
@@ -387,30 +386,6 @@
 
   .print-card .back-face {
     padding: 5mm;
-  }
-
-  /* Traits de coupe au format final, hors du fond perdu */
-  .cut-marks {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3;
-    overflow: visible;
-  }
-
-  .cut-marks::before {
-    content: '';
-    position: absolute;
-    inset: -5.5mm;
-    background:
-      linear-gradient(#111, #111) top 5.5mm left 0 / 2mm 0.15mm no-repeat,
-      linear-gradient(#111, #111) top 0 left 5.5mm / 0.15mm 2mm no-repeat,
-      linear-gradient(#111, #111) top 5.5mm right 0 / 2mm 0.15mm no-repeat,
-      linear-gradient(#111, #111) top 0 right 5.5mm / 0.15mm 2mm no-repeat,
-      linear-gradient(#111, #111) bottom 5.5mm left 0 / 2mm 0.15mm no-repeat,
-      linear-gradient(#111, #111) bottom 0 left 5.5mm / 0.15mm 2mm no-repeat,
-      linear-gradient(#111, #111) bottom 5.5mm right 0 / 2mm 0.15mm no-repeat,
-      linear-gradient(#111, #111) bottom 0 right 5.5mm / 0.15mm 2mm no-repeat;
   }
 
   .print-card .code {
