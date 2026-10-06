@@ -1,0 +1,57 @@
+.blason {
+  width: auto;
+  height: auto;
+  max-width: 78%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.blason-fallback {
+  display: grid;
+  place-items: center;
+  width: 4.2rem;
+  height: 4.2rem;
+  border-radius: 0.35rem;
+  background: #ebe4d8;
+  color: #6a6358;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.back-face-fr {
+  background: linear-gradient(160deg, #fffefb 0%, #f1ece3 100%);
+}
+
+.back-fr-mark {
+  position: absolute;
+  inset: 12% 18%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  opacity: 0.14;
+  border-radius: 0.35rem;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.back-fr-bar.is-blue {
+  background: #002395;
+}
+
+.back-fr-bar.is-white {
+  background: #fff;
+}
+
+.back-fr-bar.is-red {
+  background: #ed2939;
+}
+
+.cartes-france .chips-regions {
+  width: 100%;
+}
+
+@media print {
+  .print-card .blason {
+    max-width: 72%;
+  }
+}

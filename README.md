@@ -1,6 +1,9 @@
-# Drapeaux du monde
+# Cartes — France & monde
 
-Collection de cartes des pays du monde : drapeau, continent, capitale, population et langue. Verso unifié « DRAPEAU DU MONDE ».
+Collection de cartes à collectionner et mode jeu :
+- **France** — 108 départements / territoires (blason, chef-lieu, région)
+- **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
+- **Mode Jeu** — quiz (blason/drapeau, chef-lieu/capitale, ou nom)
 
 ## Lancer en local
 
@@ -13,32 +16,29 @@ L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
 ## Impression recto-verso
 
-1. Bouton **Imprimer recto-verso** (imprimante ou « Enregistrer en PDF »)
-2. Ou téléchargez **PDF test** / **PDF complet**
-3. Dans les options d’impression : **recto-verso / duplex**, retournement sur le **bord long**
+1. Onglet France ou Monde → **Imprimer recto-verso**
+2. (Monde) PDF test / PDF complet disponibles
+3. Options d’impression : **duplex**, retournement **bord long**
 
-Chaque paire de pages = 1 feuille physique :
-- page impaire = faces (9 cartes)
-- page paire = dos (miroir pour que ça coincide une fois retourné)
+Chaque paire de pages = 1 feuille (9 cartes face + dos miroir).
 
-Résultat : **22 feuilles** pour 198 cartes (au lieu de 44 en simple face).
-
-Régénérer les PDF :
+Régénérer les PDF monde :
 
 ```bash
 npm run pdf:test
 npm run pdf
 ```
 
-Imprimez en **100 % / taille réelle**, pas « ajuster à la page ».
+## Blasons départements
 
-## Contenu
+Les blasons sont dans `public/blasons/`. Pour (re)télécharger depuis Wikimedia Commons :
 
-- 198 pays, drapeaux SVG locaux (`public/flags`)
-- Continents dont Amérique du Nord / centrale / Sud
-- Ratios de drapeau corrects (Suisse, Vatican, Népal…)
-- Langues : principale / officielles + langues locales majeures
+```bash
+node scripts/download-blasons.mjs
+```
+
+Le script ignore les fichiers déjà présents et gère les 429 avec backoff.
 
 ## Stack
 
-Vite + React + TypeScript. Export PDF via Playwright.
+Vite + React + TypeScript.
