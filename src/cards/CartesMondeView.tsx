@@ -6,6 +6,7 @@ import {
   type Continent,
   type Country,
 } from '../data/countries'
+import { GLOBE_LAND_PATH } from './globeLandPath'
 import './CartesMondeView.css'
 
 function inkOn(bg: string): string {
@@ -66,43 +67,25 @@ function GlobeWatermark() {
         </clipPath>
       </defs>
 
-      {/* Grille */}
-      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <ellipse cx="100" cy="100" rx="28" ry="78" fill="none" stroke="currentColor" strokeWidth="0.85" />
-      <ellipse cx="100" cy="100" rx="52" ry="78" fill="none" stroke="currentColor" strokeWidth="0.85" />
-      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="0.9" />
+      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.35" />
+      <ellipse cx="100" cy="100" rx="28" ry="78" fill="none" stroke="currentColor" strokeWidth="0.75" />
+      <ellipse cx="100" cy="100" rx="52" ry="78" fill="none" stroke="currentColor" strokeWidth="0.75" />
+      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="0.8" />
       <path
         d="M34 66c22-5 46-7 66-7s44 2 66 7"
         fill="none"
         stroke="currentColor"
-        strokeWidth="0.8"
+        strokeWidth="0.7"
       />
       <path
         d="M34 134c22 5 46 7 66 7s44-2 66-7"
         fill="none"
         stroke="currentColor"
-        strokeWidth="0.8"
+        strokeWidth="0.7"
       />
 
-      <g clipPath={`url(#${clipId})`} fill="currentColor" opacity="0.58">
-        {/* Groenland */}
-        <path d="M78 42c4-3 9-4 13-2 3 2 4 6 3 9-2 4-6 6-10 5-4-1-7-5-6-9v-3z" />
-        {/* Amérique du Nord */}
-        <path d="M48 48c5-4 12-7 19-7 6 0 11 2 14 6 3 4 3 9 1 13l-3 6c-1 3 0 6 2 8l5 4c3 2 4 6 3 10-1 4-4 7-8 8-5 1-10-1-13-5-2-3-5-4-8-3-4 1-7-1-9-5-3-5-3-12-1-18 1-4 0-8-2-11v-6z" />
-        {/* Amérique centrale + Sud */}
-        <path d="M70 98c3 1 5 3 5 6 0 2-1 4-3 5-1 2 0 4 1 6l6 12c3 6 4 13 2 19-2 6-7 10-12 11-5 1-10-2-12-7-2-4-1-9 1-13l5-12c2-4 2-8 0-12-1-3 0-6 2-8 2-2 5-4 5-7z" />
-        {/* Europe */}
-        <path d="M108 58c5-3 11-3 16 0 4 2 6 7 5 11-1 3-4 5-7 5-2 0-4 2-4 4 0 2 2 3 3 5 2 2 1 5-1 7-3 2-7 1-10-1-4-3-6-8-5-13 1-6 2-12 3-18z" />
-        {/* Afrique */}
-        <path d="M112 88c6-1 12 1 16 5 4 4 5 10 4 15l-1 8c-1 5 1 10 4 13 2 2 2 6 0 8-3 4-8 6-13 5-6-1-11-5-13-11-2-5-2-11 0-16 1-4 0-8-2-11-1-3 0-6 2-8 2-3 5-6 3-8z" />
-        {/* Asie */}
-        <path d="M128 52c8-4 18-5 27-2 8 3 14 10 16 18 2 7 0 14-4 19-3 4-7 6-11 6 1 4 0 9-3 12-3 4-8 5-12 4-3 5-2 11 1 15 2 3 2 7 0 10-3 4-8 5-12 3-5-2-8-8-7-13 1-4 3-7 6-10-5-2-9-6-11-11-2-6-1-13 3-18 4-5 9-10 7-17v-16z" />
-        {/* Sous-continent / SE Asie */}
-        <path d="M148 98c4 0 7 3 8 7 1 3 0 6-2 8-2 2-5 2-7 0-3-2-4-6-3-9 1-3 2-6 4-6z" />
-        {/* Australie */}
-        <path d="M152 128c6-2 12 0 15 5 3 4 3 10 0 14-3 4-9 6-14 5-5-1-9-5-10-10-1-5 1-10 5-13 1-1 3-1 4-1z" />
-        {/* Antarctique (liseré bas) */}
-        <path d="M72 168c8 4 18 6 28 6s20-2 28-6c-8 2-18 3-28 3s-20-1-28-3z" opacity="0.7" />
+      <g clipPath={`url(#${clipId})`} fill="currentColor" fillRule="evenodd" opacity="0.62">
+        <path d={GLOBE_LAND_PATH} />
       </g>
     </svg>
   )
