@@ -337,9 +337,13 @@
    */
   .print-sheet {
     width: 100%;
-    min-height: 100vh;
+    height: 297mm;
+    max-height: 297mm;
+    box-sizing: border-box;
     page-break-after: always;
     break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
     display: grid;
     grid-template-columns: repeat(3, 63.5mm);
     grid-template-rows: repeat(3, 88.9mm);
