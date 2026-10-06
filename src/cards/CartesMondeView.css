@@ -1,0 +1,312 @@
+.cartes-view {
+  padding: 1rem 1.25rem 2.5rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.search input {
+  width: min(22rem, 100vw - 2.5rem);
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  outline: none;
+}
+
+.search input:focus {
+  border-color: #1f6f8b;
+  box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.15);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.chip em {
+  font-style: normal;
+  opacity: 0.7;
+  margin-left: 0.25rem;
+}
+
+.chip.is-active {
+  background: #1f6f8b;
+  border-color: transparent;
+  color: #fff;
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+}
+
+.count {
+  margin: 0 0 0 auto;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.empty {
+  margin: 3rem auto;
+  text-align: center;
+  color: var(--muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 148px));
+  justify-content: center;
+  gap: 1rem 0.85rem;
+  perspective: 1200px;
+}
+
+.card {
+  width: 148px;
+  aspect-ratio: 5 / 7;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  perspective: 1000px;
+}
+
+.card-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card.is-flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.7rem;
+  backface-visibility: hidden;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 10px 24px rgba(40, 28, 12, 0.12);
+  border: 1px solid rgba(40, 28, 12, 0.12);
+}
+
+.face-front {
+  background: linear-gradient(180deg, #fffefb 0%, #f7f2e8 100%);
+  color: #1a1a1a;
+}
+
+.face-back {
+  background: #fffefb;
+  transform: rotateY(180deg);
+}
+
+.face.static {
+  position: relative;
+  transform: none;
+  width: 100%;
+  height: 100%;
+}
+
+.ribbon {
+  display: block;
+  text-align: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.35rem;
+  line-height: 1.15;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08rem;
+  padding: 0.45rem 0.4rem 0.15rem;
+  text-align: center;
+}
+
+.code {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 800;
+  font-size: 1.55rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.dept {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  line-height: 1.15;
+  max-width: 100%;
+}
+
+.chef {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  color: #3f3a33;
+  line-height: 1.2;
+}
+
+.chef-k {
+  display: block;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a7368;
+  font-weight: 700;
+}
+
+.emblem {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.55rem 0.7rem;
+  min-height: 0;
+}
+
+.flag {
+  width: 100%;
+  max-width: 92%;
+  max-height: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 0.2rem;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 6px 14px rgba(40, 28, 12, 0.12);
+  background: #eee;
+}
+
+.back-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(31, 111, 139, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 85%, rgba(196, 92, 38, 0.08), transparent 42%),
+    linear-gradient(160deg, #fffefb 0%, #f4eee4 100%);
+}
+
+.back-title {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: #1a1a1a;
+}
+
+.print-deck {
+  display: none;
+}
+
+@media print {
+  .cartes-view {
+    padding: 0;
+  }
+
+  .print-deck {
+    display: block;
+  }
+
+  .print-sheet {
+    width: 100%;
+    min-height: 100vh;
+    page-break-after: always;
+    break-after: page;
+    display: grid;
+    grid-template-columns: repeat(3, 63.5mm);
+    grid-template-rows: repeat(3, 88.9mm);
+    gap: 4mm;
+    justify-content: center;
+    align-content: center;
+    padding: 0;
+  }
+
+  .print-card {
+    width: 63.5mm;
+    height: 88.9mm;
+  }
+
+  .print-card .face {
+    box-shadow: none;
+    border-radius: 2.5mm;
+  }
+
+  .print-card .code {
+    font-size: 18pt;
+  }
+
+  .print-card .dept {
+    font-size: 9.5pt;
+  }
+
+  .print-card .ribbon {
+    font-size: 7pt;
+  }
+
+  .print-card .back-title {
+    font-size: 14pt;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 132px));
+  }
+
+  .card {
+    width: 132px;
+  }
+
+  .count {
+    margin-left: 0;
+    width: 100%;
+  }
+}
