@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import {
   CONTINENT_COLOR,
   CONTINENT_ORDER,
@@ -51,6 +51,8 @@ function CardFront({ card }: { card: Country }) {
 }
 
 function GlobeWatermark() {
+  const clipId = useId().replace(/:/g, '')
+
   return (
     <svg
       className="back-globe"
@@ -58,31 +60,50 @@ function GlobeWatermark() {
       aria-hidden="true"
       focusable="false"
     >
-      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <ellipse cx="100" cy="100" rx="30" ry="78" fill="none" stroke="currentColor" strokeWidth="1" />
-      <ellipse cx="100" cy="100" rx="55" ry="78" fill="none" stroke="currentColor" strokeWidth="1" />
-      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="1" />
-      <path d="M36 64c20-4 44-6 64-6s44 2 64 6" fill="none" stroke="currentColor" strokeWidth="0.9" />
-      <path d="M36 136c20 4 44 6 64 6s44-2 64-6" fill="none" stroke="currentColor" strokeWidth="0.9" />
-      {/* Amériques */}
+      <defs>
+        <clipPath id={clipId}>
+          <circle cx="100" cy="100" r="78" />
+        </clipPath>
+      </defs>
+
+      {/* Grille */}
+      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <ellipse cx="100" cy="100" rx="28" ry="78" fill="none" stroke="currentColor" strokeWidth="0.85" />
+      <ellipse cx="100" cy="100" rx="52" ry="78" fill="none" stroke="currentColor" strokeWidth="0.85" />
+      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="0.9" />
       <path
-        d="M68 58c6-4 12-3 16 1 3 4 2 10-1 14-2 3-1 7 2 9 4 3 5 8 3 12-3 5-8 8-13 7-6-1-10-6-11-12-1-5 1-10 4-14 1-4 0-8 0-17z
-           M72 118c5-1 9 2 11 7 2 5 1 11-2 15-4 5-9 7-13 5-4-2-6-8-5-13 1-5 4-10 9-14z"
-        fill="currentColor"
-        opacity="0.5"
+        d="M34 66c22-5 46-7 66-7s44 2 66 7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.8"
       />
-      {/* Eurasie + Afrique */}
       <path
-        d="M108 52c10-3 22-2 30 4 7 5 10 13 9 21-2 6-7 10-13 11 2 5 1 11-2 15-4 5-10 7-15 5 1 7 4 13 9 18 4 4 5 10 2 15-4 6-12 8-18 5-7-3-11-11-10-19 1-6 4-11 8-15-6-2-11-7-13-13-2-7 0-15 5-20 6-6 12-12 18-27z"
-        fill="currentColor"
-        opacity="0.5"
+        d="M34 134c22 5 46 7 66 7s44-2 66-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.8"
       />
-      {/* Océanie */}
-      <path
-        d="M148 128c4-1 8 1 10 5 2 3 1 7-1 9-3 3-7 3-10 1-3-2-4-6-3-9 1-3 2-5 4-6z"
-        fill="currentColor"
-        opacity="0.45"
-      />
+
+      <g clipPath={`url(#${clipId})`} fill="currentColor" opacity="0.58">
+        {/* Groenland */}
+        <path d="M78 42c4-3 9-4 13-2 3 2 4 6 3 9-2 4-6 6-10 5-4-1-7-5-6-9v-3z" />
+        {/* Amérique du Nord */}
+        <path d="M48 48c5-4 12-7 19-7 6 0 11 2 14 6 3 4 3 9 1 13l-3 6c-1 3 0 6 2 8l5 4c3 2 4 6 3 10-1 4-4 7-8 8-5 1-10-1-13-5-2-3-5-4-8-3-4 1-7-1-9-5-3-5-3-12-1-18 1-4 0-8-2-11v-6z" />
+        {/* Amérique centrale + Sud */}
+        <path d="M70 98c3 1 5 3 5 6 0 2-1 4-3 5-1 2 0 4 1 6l6 12c3 6 4 13 2 19-2 6-7 10-12 11-5 1-10-2-12-7-2-4-1-9 1-13l5-12c2-4 2-8 0-12-1-3 0-6 2-8 2-2 5-4 5-7z" />
+        {/* Europe */}
+        <path d="M108 58c5-3 11-3 16 0 4 2 6 7 5 11-1 3-4 5-7 5-2 0-4 2-4 4 0 2 2 3 3 5 2 2 1 5-1 7-3 2-7 1-10-1-4-3-6-8-5-13 1-6 2-12 3-18z" />
+        {/* Afrique */}
+        <path d="M112 88c6-1 12 1 16 5 4 4 5 10 4 15l-1 8c-1 5 1 10 4 13 2 2 2 6 0 8-3 4-8 6-13 5-6-1-11-5-13-11-2-5-2-11 0-16 1-4 0-8-2-11-1-3 0-6 2-8 2-3 5-6 3-8z" />
+        {/* Asie */}
+        <path d="M128 52c8-4 18-5 27-2 8 3 14 10 16 18 2 7 0 14-4 19-3 4-7 6-11 6 1 4 0 9-3 12-3 4-8 5-12 4-3 5-2 11 1 15 2 3 2 7 0 10-3 4-8 5-12 3-5-2-8-8-7-13 1-4 3-7 6-10-5-2-9-6-11-11-2-6-1-13 3-18 4-5 9-10 7-17v-16z" />
+        {/* Sous-continent / SE Asie */}
+        <path d="M148 98c4 0 7 3 8 7 1 3 0 6-2 8-2 2-5 2-7 0-3-2-4-6-3-9 1-3 2-6 4-6z" />
+        {/* Australie */}
+        <path d="M152 128c6-2 12 0 15 5 3 4 3 10 0 14-3 4-9 6-14 5-5-1-9-5-10-10-1-5 1-10 5-13 1-1 3-1 4-1z" />
+        {/* Antarctique (liseré bas) */}
+        <path d="M72 168c8 4 18 6 28 6s20-2 28-6c-8 2-18 3-28 3s-20-1-28-3z" opacity="0.7" />
+      </g>
     </svg>
   )
 }
