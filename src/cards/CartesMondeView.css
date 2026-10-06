@@ -308,12 +308,19 @@
 }
 
 @media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
   .cartes-view {
     padding: 0;
+    background: #fff;
   }
 
   .print-deck {
     display: block;
+    background: #fff;
   }
 
   .back-globe .globe-grid {
@@ -326,8 +333,7 @@
 
   /*
    * Cartes à découper à la main :
-   * chaque case = une carte (63.5 × 88.9 mm) avec un trait tout autour.
-   * Espace blanc entre les cartes pour passer les ciseaux.
+   * feuille blanche + cartes crème = le bord de couleur = ligne de coupe.
    */
   .print-sheet {
     width: 100%;
@@ -343,6 +349,7 @@
     align-content: center;
     padding: 8mm;
     overflow: hidden;
+    background: #fff;
   }
 
   .print-card {
@@ -351,12 +358,6 @@
     height: 88.9mm;
     overflow: hidden;
     box-sizing: border-box;
-    /* Trait de découpe : le bord de la carte */
-    border: 0.35mm solid #1a1a1a;
-    background: #fffefb;
-  }
-
-  .print-card:empty {
     border: 0;
     background: transparent;
   }

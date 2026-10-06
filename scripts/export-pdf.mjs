@@ -1,5 +1,5 @@
 /**
- * Génère des PDF A4 de cartes à découper (cadre = ligne de coupe).
+ * Génère des PDF A4 de cartes à découper (fond blanc, bord carte = coupe).
  * Usage:
  *   node scripts/export-pdf.mjs              → deck complet + feuille test
  *   node scripts/export-pdf.mjs --test-only  → feuille test seule

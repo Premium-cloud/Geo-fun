@@ -21,7 +21,7 @@ npm run pdf:test   # feuille-test.pdf (pour valider bleed / découpe)
 npm run pdf        # drapeaux-du-monde.pdf (deck entier)
 ```
 
-Les PDF sont dans `public/` (A4). **9 cartes par feuille**, chacune dans un cadre noir = ligne de découpe. Coupez le long du cadre. Imprimez en « 100 % » / taille réelle.
+Les PDF sont dans `public/` (A4). **9 cartes par feuille** sur fond blanc : le bord crème de chaque carte = ligne de découpe. Imprimez en « 100 % » / taille réelle.
 
 ## Contenu
 
