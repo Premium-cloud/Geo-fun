@@ -50,9 +50,47 @@ function CardFront({ card }: { card: Country }) {
   )
 }
 
+function GlobeWatermark() {
+  return (
+    <svg
+      className="back-globe"
+      viewBox="0 0 200 200"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <ellipse cx="100" cy="100" rx="30" ry="78" fill="none" stroke="currentColor" strokeWidth="1" />
+      <ellipse cx="100" cy="100" rx="55" ry="78" fill="none" stroke="currentColor" strokeWidth="1" />
+      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="1" />
+      <path d="M36 64c20-4 44-6 64-6s44 2 64 6" fill="none" stroke="currentColor" strokeWidth="0.9" />
+      <path d="M36 136c20 4 44 6 64 6s44-2 64-6" fill="none" stroke="currentColor" strokeWidth="0.9" />
+      {/* Amériques */}
+      <path
+        d="M68 58c6-4 12-3 16 1 3 4 2 10-1 14-2 3-1 7 2 9 4 3 5 8 3 12-3 5-8 8-13 7-6-1-10-6-11-12-1-5 1-10 4-14 1-4 0-8 0-17z
+           M72 118c5-1 9 2 11 7 2 5 1 11-2 15-4 5-9 7-13 5-4-2-6-8-5-13 1-5 4-10 9-14z"
+        fill="currentColor"
+        opacity="0.5"
+      />
+      {/* Eurasie + Afrique */}
+      <path
+        d="M108 52c10-3 22-2 30 4 7 5 10 13 9 21-2 6-7 10-13 11 2 5 1 11-2 15-4 5-10 7-15 5 1 7 4 13 9 18 4 4 5 10 2 15-4 6-12 8-18 5-7-3-11-11-10-19 1-6 4-11 8-15-6-2-11-7-13-13-2-7 0-15 5-20 6-6 12-12 18-27z"
+        fill="currentColor"
+        opacity="0.5"
+      />
+      {/* Océanie */}
+      <path
+        d="M148 128c4-1 8 1 10 5 2 3 1 7-1 9-3 3-7 3-10 1-3-2-4-6-3-9 1-3 2-5 4-6z"
+        fill="currentColor"
+        opacity="0.45"
+      />
+    </svg>
+  )
+}
+
 function CardBack() {
   return (
     <span className="back-face">
+      <GlobeWatermark />
       <span className="back-title">
         DRAPEAU
         <br />

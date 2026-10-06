@@ -221,13 +221,22 @@
   display: grid;
   place-items: center;
   padding: 1rem;
-  background:
-    radial-gradient(circle at 20% 15%, rgba(31, 111, 139, 0.08), transparent 40%),
-    radial-gradient(circle at 80% 85%, rgba(196, 92, 38, 0.08), transparent 42%),
-    linear-gradient(160deg, #fffefb 0%, #f4eee4 100%);
+  background: linear-gradient(160deg, #fffefb 0%, #f7f2ea 100%);
+}
+
+.back-globe {
+  position: absolute;
+  width: 86%;
+  height: 86%;
+  color: #1f6f8b;
+  opacity: 0.09;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .back-title {
+  position: relative;
+  z-index: 1;
   font-family: Fraunces, Georgia, serif;
   font-weight: 800;
   font-size: 1.15rem;
