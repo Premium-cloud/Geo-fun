@@ -19,12 +19,12 @@ function inkOn(bg: string): string {
 }
 
 function flagUrl(code: string): string {
-  return `https://flagcdn.com/w320/${code.toLowerCase()}.png`
+  return `/flags/${code.toLowerCase()}.svg`
 }
 
 function nameSizeClass(name: string): string {
-  if (name.length > 26) return 'is-xl'
-  if (name.length > 18) return 'is-long'
+  if (name.length > 22) return 'is-xl'
+  if (name.length > 15) return 'is-long'
   return ''
 }
 
@@ -32,9 +32,9 @@ function CardFront({ card }: { card: Country }) {
   const color = CONTINENT_COLOR[card.continent]
   const ink = inkOn(color)
   const ratio = card.flagRatio ?? '3 / 2'
-  const showMeta =
-    card.population.length + card.language.length <= 34 &&
-    !card.population.includes('—')
+  const label = card.shortName ?? card.name
+  const chefClass = card.capital.length > 16 ? 'is-long' : ''
+  const showMeta = !card.population.includes('—') && card.language.length > 0
 
   return (
     <>
@@ -43,8 +43,10 @@ function CardFront({ card }: { card: Country }) {
       </span>
       <span className="identity">
         <span className="code">{card.code}</span>
-        <span className={`dept ${nameSizeClass(card.name)}`}>{card.name}</span>
-        <span className="chef">
+        <span className={`dept ${nameSizeClass(label)}`} title={card.name}>
+          {label}
+        </span>
+        <span className={`chef ${chefClass}`}>
           <span className="chef-k">Capitale</span> {card.capital}
         </span>
       </span>
@@ -59,10 +61,10 @@ function CardFront({ card }: { card: Country }) {
         />
       </span>
       {showMeta ? (
-        <span className="meta">
+        <span className="meta" title={`${card.population} · ${card.language}`}>
           <span>{card.population}</span>
           <span className="meta-sep">·</span>
-          <span>{card.language}</span>
+          <span className="meta-lang">{card.language}</span>
         </span>
       ) : null}
     </>
@@ -169,9 +171,12 @@ function PrintDeck({ cards }: { cards: Country[] }) {
               {slots.map((card, i) => (
                 <div className="print-card" key={`f-${pageIndex}-${i}`}>
                   {card ? (
-                    <div className="face face-front static">
-                      <CardFront card={card} />
-                    </div>
+                    <>
+                      <span className="cut-marks" aria-hidden />
+                      <div className="face face-front static">
+                        <CardFront card={card} />
+                      </div>
+                    </>
                   ) : null}
                 </div>
               ))}
@@ -182,9 +187,12 @@ function PrintDeck({ cards }: { cards: Country[] }) {
                 return (
                   <div className="print-card" key={`b-${pageIndex}-${i}`}>
                     {card ? (
-                      <div className="face face-back static">
-                        <CardBack />
-                      </div>
+                      <>
+                        <span className="cut-marks" aria-hidden />
+                        <div className="face face-back static">
+                          <CardBack />
+                        </div>
+                      </>
                     ) : null}
                   </div>
                 )
@@ -209,6 +217,7 @@ export function CartesMondeView() {
       if (!q) return true
       return (
         c.name.toLowerCase().includes(q) ||
+        (c.shortName?.toLowerCase().includes(q) ?? false) ||
         c.capital.toLowerCase().includes(q) ||
         c.code.toLowerCase().includes(q) ||
         c.continent.toLowerCase().includes(q) ||

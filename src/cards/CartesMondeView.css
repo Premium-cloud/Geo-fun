@@ -201,6 +201,10 @@
   overflow-wrap: anywhere;
 }
 
+.chef.is-long {
+  font-size: 0.56rem;
+}
+
 .chef-k {
   display: block;
   font-size: 0.52rem;
@@ -236,23 +240,29 @@
 .meta {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: 0.22rem;
-  padding: 0.2rem 0.35rem 0.35rem;
-  font-size: 0.52rem;
-  line-height: 1.1;
+  gap: 0.2rem;
+  padding: 0.18rem 0.3rem 0.32rem;
+  font-size: 0.5rem;
+  line-height: 1.15;
   letter-spacing: 0.01em;
   color: #6a6358;
   text-align: center;
-  white-space: nowrap;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.meta-lang {
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .meta-sep {
   opacity: 0.55;
+  flex: 0 0 auto;
 }
 
 .back-face {
@@ -269,7 +279,7 @@
   width: 118%;
   height: 118%;
   color: #1f6f8b;
-  opacity: 0.09;
+  opacity: 0.11;
   pointer-events: none;
   z-index: 0;
 }
@@ -314,13 +324,38 @@
   }
 
   .print-card {
+    position: relative;
     width: 63.5mm;
     height: 88.9mm;
   }
 
   .print-card .face {
     box-shadow: none;
-    border-radius: 2.5mm;
+    border-radius: 0;
+    border: 0.2mm solid rgba(0, 0, 0, 0.18);
+  }
+
+  /* Traits de coupe aux 4 coins */
+  .cut-marks {
+    position: absolute;
+    inset: -3mm;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .cut-marks::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(#222, #222) top left / 2.2mm 0.2mm no-repeat,
+      linear-gradient(#222, #222) top left / 0.2mm 2.2mm no-repeat,
+      linear-gradient(#222, #222) top right / 2.2mm 0.2mm no-repeat,
+      linear-gradient(#222, #222) top right / 0.2mm 2.2mm no-repeat,
+      linear-gradient(#222, #222) bottom left / 2.2mm 0.2mm no-repeat,
+      linear-gradient(#222, #222) bottom left / 0.2mm 2.2mm no-repeat,
+      linear-gradient(#222, #222) bottom right / 2.2mm 0.2mm no-repeat,
+      linear-gradient(#222, #222) bottom right / 0.2mm 2.2mm no-repeat;
   }
 
   .print-card .code {
