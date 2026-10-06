@@ -22,9 +22,19 @@ function flagUrl(code: string): string {
   return `https://flagcdn.com/w320/${code.toLowerCase()}.png`
 }
 
+function nameSizeClass(name: string): string {
+  if (name.length > 26) return 'is-xl'
+  if (name.length > 18) return 'is-long'
+  return ''
+}
+
 function CardFront({ card }: { card: Country }) {
   const color = CONTINENT_COLOR[card.continent]
   const ink = inkOn(color)
+  const ratio = card.flagRatio ?? '3 / 2'
+  const showMeta =
+    card.population.length + card.language.length <= 34 &&
+    !card.population.includes('—')
 
   return (
     <>
@@ -33,7 +43,7 @@ function CardFront({ card }: { card: Country }) {
       </span>
       <span className="identity">
         <span className="code">{card.code}</span>
-        <span className="dept">{card.name}</span>
+        <span className={`dept ${nameSizeClass(card.name)}`}>{card.name}</span>
         <span className="chef">
           <span className="chef-k">Capitale</span> {card.capital}
         </span>
@@ -41,12 +51,20 @@ function CardFront({ card }: { card: Country }) {
       <span className="emblem">
         <img
           className="flag"
+          style={{ aspectRatio: ratio }}
           src={flagUrl(card.code)}
           alt={`Drapeau de ${card.name}`}
           loading="lazy"
           decoding="async"
         />
       </span>
+      {showMeta ? (
+        <span className="meta">
+          <span>{card.population}</span>
+          <span className="meta-sep">·</span>
+          <span>{card.language}</span>
+        </span>
+      ) : null}
     </>
   )
 }
@@ -67,24 +85,24 @@ function GlobeWatermark() {
         </clipPath>
       </defs>
 
-      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.35" />
-      <ellipse cx="100" cy="100" rx="28" ry="78" fill="none" stroke="currentColor" strokeWidth="0.75" />
-      <ellipse cx="100" cy="100" rx="52" ry="78" fill="none" stroke="currentColor" strokeWidth="0.75" />
-      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="0.8" />
+      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.2" />
+      <ellipse cx="100" cy="100" rx="28" ry="78" fill="none" stroke="currentColor" strokeWidth="0.55" />
+      <ellipse cx="100" cy="100" rx="52" ry="78" fill="none" stroke="currentColor" strokeWidth="0.55" />
+      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="0.55" />
       <path
         d="M34 66c22-5 46-7 66-7s44 2 66 7"
         fill="none"
         stroke="currentColor"
-        strokeWidth="0.7"
+        strokeWidth="0.5"
       />
       <path
         d="M34 134c22 5 46 7 66 7s44-2 66-7"
         fill="none"
         stroke="currentColor"
-        strokeWidth="0.7"
+        strokeWidth="0.5"
       />
 
-      <g clipPath={`url(#${clipId})`} fill="currentColor" fillRule="evenodd" opacity="0.62">
+      <g clipPath={`url(#${clipId})`} fill="currentColor" fillRule="evenodd" opacity="0.72">
         <path d={GLOBE_LAND_PATH} />
       </g>
     </svg>
@@ -193,7 +211,8 @@ export function CartesMondeView() {
         c.name.toLowerCase().includes(q) ||
         c.capital.toLowerCase().includes(q) ||
         c.code.toLowerCase().includes(q) ||
-        c.continent.toLowerCase().includes(q)
+        c.continent.toLowerCase().includes(q) ||
+        c.language.toLowerCase().includes(q)
       )
     })
   }, [query, continent])

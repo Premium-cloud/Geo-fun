@@ -142,28 +142,31 @@
 
 .ribbon {
   display: block;
+  flex: 0 0 auto;
   text-align: center;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  padding: 0.28rem 0.35rem;
+  padding: 0.26rem 0.3rem;
   line-height: 1.15;
 }
 
 .identity {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
-  gap: 0.08rem;
-  padding: 0.45rem 0.4rem 0.15rem;
+  gap: 0.06rem;
+  padding: 0.38rem 0.35rem 0.1rem;
   text-align: center;
+  min-width: 0;
 }
 
 .code {
   font-family: Fraunces, Georgia, serif;
   font-weight: 800;
-  font-size: 1.55rem;
+  font-size: 1.4rem;
   line-height: 1;
   letter-spacing: 0.02em;
 }
@@ -171,22 +174,36 @@
 .dept {
   font-family: Fraunces, Georgia, serif;
   font-weight: 700;
-  font-size: 0.82rem;
-  line-height: 1.15;
+  font-size: 0.8rem;
+  line-height: 1.12;
   max-width: 100%;
+  padding: 0 0.1rem;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+.dept.is-long {
+  font-size: 0.68rem;
+}
+
+.dept.is-xl {
+  font-size: 0.6rem;
+  line-height: 1.1;
 }
 
 .chef {
   display: block;
-  margin-top: 0.15rem;
-  font-size: 0.68rem;
+  margin-top: 0.12rem;
+  font-size: 0.64rem;
   color: #3f3a33;
-  line-height: 1.2;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .chef-k {
   display: block;
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #7a7368;
@@ -198,21 +215,44 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.35rem 0.55rem 0.7rem;
+  padding: 0.25rem 0.5rem 0.2rem;
   min-height: 0;
 }
 
 .flag {
-  width: 100%;
-  max-width: 92%;
+  width: auto;
+  height: auto;
+  max-width: 90%;
   max-height: 100%;
   aspect-ratio: 3 / 2;
   object-fit: contain;
   border: 0;
-  border-radius: 0.15rem;
+  border-radius: 0.12rem;
   box-shadow: none;
   outline: none;
   background: transparent;
+}
+
+.meta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+  padding: 0.2rem 0.35rem 0.35rem;
+  font-size: 0.52rem;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: #6a6358;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.meta-sep {
+  opacity: 0.55;
 }
 
 .back-face {
@@ -284,15 +324,27 @@
   }
 
   .print-card .code {
-    font-size: 18pt;
+    font-size: 16pt;
   }
 
   .print-card .dept {
-    font-size: 9.5pt;
+    font-size: 9pt;
+  }
+
+  .print-card .dept.is-long {
+    font-size: 7.5pt;
+  }
+
+  .print-card .dept.is-xl {
+    font-size: 6.5pt;
   }
 
   .print-card .ribbon {
-    font-size: 7pt;
+    font-size: 6.5pt;
+  }
+
+  .print-card .meta {
+    font-size: 6pt;
   }
 
   .print-card .back-title {
