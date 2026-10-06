@@ -17,7 +17,6 @@ const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:43125'
 const testOnly = process.argv.includes('--test-only')
 
 const pdfOpts = {
-  format: 'A4',
   printBackground: true,
   preferCSSPageSize: true,
   margin: { top: '0', right: '0', bottom: '0', left: '0' },
