@@ -18,7 +18,7 @@ function inkOn(bg: string): string {
 }
 
 function flagUrl(code: string): string {
-  return `https://flagcdn.com/${code.toLowerCase()}.svg`
+  return `https://flagcdn.com/w320/${code.toLowerCase()}.png`
 }
 
 function CardFront({ card }: { card: Country }) {
