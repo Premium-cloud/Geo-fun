@@ -85,7 +85,7 @@
   border-radius: 1.1rem;
   padding: 1.5rem 1.25rem 1.35rem;
   text-align: center;
-  animation: board-in 0.4s ease;
+  animation: board-in 0.35s ease;
 }
 
 @keyframes board-in {
@@ -100,7 +100,7 @@
 }
 
 .game-prompt {
-  margin: 0 0 1.1rem;
+  margin: 0 0 0.75rem;
   font-family: Fraunces, Georgia, serif;
   font-size: clamp(1.25rem, 3vw, 1.65rem);
   font-weight: 700;
@@ -108,11 +108,51 @@
 }
 
 .game-hint {
-  margin: -0.4rem 0 1rem;
+  margin: 0 0 1rem;
   color: var(--muted);
   font-size: 0.9rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.game-big-code {
+  margin: 0.4rem auto 1.2rem;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(3.2rem, 10vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #1f6f8b;
+  animation: emblem-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.game-big-text {
+  margin: 0.35rem auto 1.2rem;
+  max-width: 28rem;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.55rem, 4vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  animation: emblem-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.game-dept-prompt {
+  margin: 0.2rem auto 1rem;
+}
+
+.game-dept-code {
+  display: inline-block;
+  margin-bottom: 0.2rem;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1f6f8b;
+  letter-spacing: 0.04em;
+}
+
+.game-dept-prompt .game-big-text {
+  margin-top: 0.15rem;
+  margin-bottom: 0.85rem;
 }
 
 .game-emblem {
@@ -159,6 +199,10 @@
   gap: 0.65rem;
 }
 
+.game-choices.is-flags {
+  gap: 0.75rem;
+}
+
 .game-choice {
   border: 1px solid var(--line);
   background: #fff;
@@ -171,6 +215,21 @@
     transform 0.15s ease,
     background 0.15s ease,
     border-color 0.15s ease;
+}
+
+.game-choice.is-flag-choice {
+  padding: 0.55rem;
+  min-height: 5.2rem;
+  display: grid;
+  place-items: center;
+}
+
+.game-choice-flag {
+  width: 100%;
+  max-width: 9.5rem;
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
+  border-radius: 0.15rem;
 }
 
 .game-choice:hover:not(:disabled) {
@@ -188,6 +247,11 @@
   background: #8c3a4b;
   border-color: transparent;
   color: #fff;
+}
+
+.game-choice.is-flag-choice.is-correct,
+.game-choice.is-flag-choice.is-wrong {
+  outline: 3px solid currentColor;
 }
 
 .game-feedback {
@@ -235,6 +299,10 @@
 @media (max-width: 560px) {
   .game-choices {
     grid-template-columns: 1fr;
+  }
+
+  .game-choices.is-flags {
+    grid-template-columns: 1fr 1fr;
   }
 
   .game-score {

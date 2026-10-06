@@ -3,19 +3,49 @@ import { DEPT_CARDS, type DeptCard } from '../cards/CartesFranceView'
 import { COUNTRIES, type Country } from '../data/countries'
 import './GameView.css'
 
-type Scope = 'france' | 'monde' | 'mixte'
-type Mode = 'emblem' | 'name' | 'capital'
+type Category = 'departements' | 'pays' | 'capitale'
 
-type QuizItem =
-  | { kind: 'france'; card: DeptCard }
-  | { kind: 'monde'; card: Country }
+type DeptMode = 'chiffre' | 'chefLieu' | 'blason' | 'region'
+type PaysMode = 'flagToName' | 'nameToFlag' | 'capitalToName' | 'capitalToFlag'
+type CapitaleMode = 'flagToCapital' | 'nameToCapital'
+type Mode = DeptMode | PaysMode | CapitaleMode
+
+type ChoiceKind = 'text' | 'flag'
 
 type Round = {
-  item: QuizItem
-  mode: Mode
   prompt: string
+  show: 'code' | 'chefLieu' | 'blason' | 'flag' | 'name' | 'capital' | 'deptName'
+  showValue?: string
+  showCode?: string
   answer: string
   choices: string[]
+  choiceKind: ChoiceKind
+  answerLabel: string
+}
+
+const DEPT_MODES: { id: DeptMode; label: string }[] = [
+  { id: 'chiffre', label: 'Par chiffre' },
+  { id: 'chefLieu', label: 'Par chef-lieu' },
+  { id: 'blason', label: 'Par blason' },
+  { id: 'region', label: 'Par région' },
+]
+
+const PAYS_MODES: { id: PaysMode; label: string }[] = [
+  { id: 'flagToName', label: 'Drapeau → nom' },
+  { id: 'nameToFlag', label: 'Nom → drapeau' },
+  { id: 'capitalToName', label: 'Capitale → pays' },
+  { id: 'capitalToFlag', label: 'Capitale → drapeau' },
+]
+
+const CAPITALE_MODES: { id: CapitaleMode; label: string }[] = [
+  { id: 'flagToCapital', label: 'Drapeau → capitale' },
+  { id: 'nameToCapital', label: 'Nom → capitale' },
+]
+
+const CATEGORY_LABEL: Record<Category, string> = {
+  departements: 'Départements',
+  pays: 'Pays',
+  capitale: 'Capitales',
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -35,126 +65,254 @@ function flagUrl(code: string): string {
   return `/flags/${code.toLowerCase()}.svg`
 }
 
-function blasonUrl(code: string): string {
-  return `/blasons/${code}.svg`
+function blasonSrc(code: string): string {
+  return `/blasons/${code}.png`
 }
 
-function buildPool(scope: Scope): QuizItem[] {
-  const fr: QuizItem[] = DEPT_CARDS.map((card) => ({ kind: 'france', card }))
-  const monde: QuizItem[] = COUNTRIES.map((card) => ({ kind: 'monde', card }))
-  if (scope === 'france') return fr
-  if (scope === 'monde') return monde
-  return [...fr, ...monde]
+function modesFor(cat: Category) {
+  if (cat === 'departements') return DEPT_MODES
+  if (cat === 'pays') return PAYS_MODES
+  return CAPITALE_MODES
 }
 
-function labelOf(item: QuizItem): string {
-  return item.kind === 'france' ? item.card.name : item.card.name
+function defaultMode(cat: Category): Mode {
+  return modesFor(cat)[0]!.id
 }
 
-function capitalOf(item: QuizItem): string {
-  return item.kind === 'france' ? item.card.chefLieu : item.card.capital
+function uniqueRegions(except: string): string[] {
+  const set = new Set(DEPT_CARDS.map((d) => d.region).filter((r) => r !== except))
+  return [...set]
 }
 
-function makeRound(pool: QuizItem[], mode: Mode): Round | null {
-  if (pool.length < 4) return null
-  const [item, ...rest] = shuffle(pool)
-  if (!item) return null
+function makeDeptRound(mode: DeptMode): Round | null {
+  if (DEPT_CARDS.length < 4) return null
+  const [card, ...rest] = shuffle(DEPT_CARDS) as [DeptCard, ...DeptCard[]]
+  const distractors = pickN(rest, 3)
 
-  if (mode === 'emblem') {
-    const answer = labelOf(item)
-    const distractors = pickN(rest, 3).map(labelOf)
+  if (mode === 'chiffre') {
+    const answer = card.name
     return {
-      item,
-      mode,
-      prompt: item.kind === 'france' ? 'Quel département ?' : 'Quel pays ?',
+      prompt: 'Quel département ?',
+      show: 'code',
+      showValue: card.code,
       answer,
-      choices: shuffle([answer, ...distractors]),
+      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: 'text',
+      answerLabel: answer,
     }
   }
 
-  if (mode === 'name') {
-    const answer = capitalOf(item)
-    const distractors = pickN(rest, 3).map(capitalOf)
+  if (mode === 'chefLieu') {
+    const answer = card.name
     return {
-      item,
-      mode,
-      prompt:
-        item.kind === 'france'
-          ? `Chef-lieu de ${item.card.name} ?`
-          : `Capitale de ${item.card.name} ?`,
+      prompt: 'Quel département ?',
+      show: 'chefLieu',
+      showValue: card.chefLieu,
       answer,
-      choices: shuffle([answer, ...distractors]),
+      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: 'text',
+      answerLabel: answer,
     }
   }
 
-  // capital → name
-  const answer = labelOf(item)
-  const distractors = pickN(rest, 3).map(labelOf)
+  if (mode === 'blason') {
+    const answer = card.name
+    return {
+      prompt: 'Quel département ?',
+      show: 'blason',
+      showCode: card.code,
+      answer,
+      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: 'text',
+      answerLabel: answer,
+    }
+  }
+
+  // région : on montre le département, il faut trouver la région
+  const answer = card.region
+  const regionPool = uniqueRegions(answer)
+  if (regionPool.length < 3) return null
   return {
-    item,
-    mode,
-    prompt:
-      item.kind === 'france'
-        ? `Département dont le chef-lieu est ${item.card.chefLieu} ?`
-        : `Pays dont la capitale est ${item.card.capital} ?`,
+    prompt: 'Quelle région ?',
+    show: 'deptName',
+    showValue: card.name,
+    showCode: card.code,
     answer,
-    choices: shuffle([answer, ...distractors]),
+    choices: shuffle([answer, ...pickN(regionPool, 3)]),
+    choiceKind: 'text',
+    answerLabel: answer,
   }
 }
 
-function Emblem({ item }: { item: QuizItem }) {
-  if (item.kind === 'monde') {
+function makePaysRound(mode: PaysMode): Round | null {
+  if (COUNTRIES.length < 4) return null
+  const [card, ...rest] = shuffle(COUNTRIES) as [Country, ...Country[]]
+  const distractors = pickN(rest, 3)
+
+  if (mode === 'flagToName') {
+    const answer = card.name
+    return {
+      prompt: 'Quel pays ?',
+      show: 'flag',
+      showCode: card.code,
+      answer,
+      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: 'text',
+      answerLabel: answer,
+    }
+  }
+
+  if (mode === 'nameToFlag') {
+    const answer = card.code
+    return {
+      prompt: 'Quel drapeau ?',
+      show: 'name',
+      showValue: card.name,
+      answer,
+      choices: shuffle([answer, ...distractors.map((d) => d.code)]),
+      choiceKind: 'flag',
+      answerLabel: card.name,
+    }
+  }
+
+  if (mode === 'capitalToName') {
+    const answer = card.name
+    return {
+      prompt: 'Quel pays ?',
+      show: 'capital',
+      showValue: card.capital,
+      answer,
+      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: 'text',
+      answerLabel: answer,
+    }
+  }
+
+  const answer = card.code
+  return {
+    prompt: 'Quel drapeau ?',
+    show: 'capital',
+    showValue: card.capital,
+    answer,
+    choices: shuffle([answer, ...distractors.map((d) => d.code)]),
+    choiceKind: 'flag',
+    answerLabel: card.name,
+  }
+}
+
+function makeCapitaleRound(mode: CapitaleMode): Round | null {
+  if (COUNTRIES.length < 4) return null
+  const [card, ...rest] = shuffle(COUNTRIES) as [Country, ...Country[]]
+  const distractors = pickN(rest, 3)
+  const answer = card.capital
+
+  if (mode === 'flagToCapital') {
+    return {
+      prompt: 'Quelle capitale ?',
+      show: 'flag',
+      showCode: card.code,
+      answer,
+      choices: shuffle([answer, ...distractors.map((d) => d.capital)]),
+      choiceKind: 'text',
+      answerLabel: answer,
+    }
+  }
+
+  return {
+    prompt: 'Quelle capitale ?',
+    show: 'name',
+    showValue: card.name,
+    answer,
+    choices: shuffle([answer, ...distractors.map((d) => d.capital)]),
+    choiceKind: 'text',
+    answerLabel: answer,
+  }
+}
+
+function makeRound(category: Category, mode: Mode): Round | null {
+  if (category === 'departements') return makeDeptRound(mode as DeptMode)
+  if (category === 'pays') return makePaysRound(mode as PaysMode)
+  return makeCapitaleRound(mode as CapitaleMode)
+}
+
+function PromptVisual({ round }: { round: Round }) {
+  if (round.show === 'code') {
+    return <p className="game-big-code">{round.showValue}</p>
+  }
+  if (round.show === 'chefLieu' || round.show === 'capital' || round.show === 'name') {
+    return <p className="game-big-text">{round.showValue}</p>
+  }
+  if (round.show === 'deptName') {
     return (
-      <img
-        className="game-emblem-img is-flag"
-        src={flagUrl(item.card.code)}
-        alt=""
-        decoding="async"
-      />
+      <div className="game-dept-prompt">
+        {round.showCode ? <span className="game-dept-code">{round.showCode}</span> : null}
+        <p className="game-big-text">{round.showValue}</p>
+      </div>
     )
   }
+  if (round.show === 'blason' && round.showCode) {
+    return (
+      <div className="game-emblem">
+        <img
+          className="game-emblem-img is-blason"
+          src={blasonSrc(round.showCode)}
+          alt=""
+          decoding="async"
+        />
+      </div>
+    )
+  }
+  if (round.show === 'flag' && round.showCode) {
+    return (
+      <div className="game-emblem">
+        <img
+          className="game-emblem-img is-flag"
+          src={flagUrl(round.showCode)}
+          alt=""
+          decoding="async"
+        />
+      </div>
+    )
+  }
+  return null
+}
+
+function FlagChoice({ code }: { code: string }) {
   return (
-    <img
-      className="game-emblem-img is-blason"
-      src={blasonUrl(item.card.code)}
-      alt=""
-      decoding="async"
-      onError={(e) => {
-        const el = e.currentTarget
-        if (el.src.endsWith('.svg')) {
-          el.src = `/blasons/${item.card.code}.png`
-        }
-      }}
-    />
+    <img className="game-choice-flag" src={flagUrl(code)} alt="" decoding="async" />
   )
 }
 
-const MODE_LABEL: Record<Mode, string> = {
-  emblem: 'Blason / drapeau',
-  name: 'Chef-lieu / capitale',
-  capital: 'Nom',
-}
-
-const SCOPE_LABEL: Record<Scope, string> = {
-  france: 'France',
-  monde: 'Monde',
-  mixte: 'Mixte',
-}
-
 export function GameView() {
-  const [scope, setScope] = useState<Scope>('mixte')
-  const [mode, setMode] = useState<Mode>('emblem')
+  const [category, setCategory] = useState<Category>('departements')
+  const [mode, setMode] = useState<Mode>('chiffre')
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
   const [seed, setSeed] = useState(0)
 
-  const pool = useMemo(() => buildPool(scope), [scope])
+  const availableModes = modesFor(category)
 
-  const round = useMemo(() => makeRound(pool, mode), [pool, mode, seed])
+  const round = useMemo(() => makeRound(category, mode), [category, mode, seed])
 
   function next() {
+    setPicked(null)
+    setSeed((s) => s + 1)
+  }
+
+  function selectCategory(cat: Category) {
+    setCategory(cat)
+    setMode(defaultMode(cat))
+    setScore(0)
+    setAsked(0)
+    setStreak(0)
+    setPicked(null)
+    setSeed((s) => s + 1)
+  }
+
+  function selectMode(m: Mode) {
+    setMode(m)
     setPicked(null)
     setSeed((s) => s + 1)
   }
@@ -169,13 +327,6 @@ export function GameView() {
     } else {
       setStreak(0)
     }
-  }
-
-  function resetScore() {
-    setScore(0)
-    setAsked(0)
-    setStreak(0)
-    next()
   }
 
   if (!round) {
@@ -193,33 +344,27 @@ export function GameView() {
   return (
     <div className="game-view">
       <div className="game-toolbar">
-        <div className="game-group" role="group" aria-label="Périmètre">
-          {(Object.keys(SCOPE_LABEL) as Scope[]).map((s) => (
+        <div className="game-group" role="group" aria-label="Catégorie">
+          {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
             <button
-              key={s}
+              key={c}
               type="button"
-              className={`game-chip ${scope === s ? 'is-active' : ''}`}
-              onClick={() => {
-                setScope(s)
-                resetScore()
-              }}
+              className={`game-chip ${category === c ? 'is-active' : ''}`}
+              onClick={() => selectCategory(c)}
             >
-              {SCOPE_LABEL[s]}
+              {CATEGORY_LABEL[c]}
             </button>
           ))}
         </div>
         <div className="game-group" role="group" aria-label="Mode">
-          {(Object.keys(MODE_LABEL) as Mode[]).map((m) => (
+          {availableModes.map((m) => (
             <button
-              key={m}
+              key={m.id}
               type="button"
-              className={`game-chip ${mode === m ? 'is-active' : ''}`}
-              onClick={() => {
-                setMode(m)
-                next()
-              }}
+              className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
+              onClick={() => selectMode(m.id)}
             >
-              {MODE_LABEL[m]}
+              {m.label}
             </button>
           ))}
         </div>
@@ -232,25 +377,14 @@ export function GameView() {
         </div>
       </div>
 
-      <div className="game-board">
+      <div className="game-board" key={`${category}-${mode}-${seed}`}>
         <p className="game-prompt">{round.prompt}</p>
+        <PromptVisual round={round} />
 
-        {round.mode === 'emblem' ? (
-          <div className="game-emblem" data-kind={round.item.kind}>
-            <Emblem item={round.item} />
-          </div>
-        ) : null}
-
-        {round.mode !== 'emblem' && round.item.kind === 'monde' ? (
-          <p className="game-hint">{round.item.card.continent}</p>
-        ) : null}
-        {round.mode !== 'emblem' && round.item.kind === 'france' ? (
-          <p className="game-hint">{round.item.card.region}</p>
-        ) : null}
-
-        <div className="game-choices">
+        <div className={`game-choices ${round.choiceKind === 'flag' ? 'is-flags' : ''}`}>
           {round.choices.map((choice) => {
             let cls = 'game-choice'
+            if (round.choiceKind === 'flag') cls += ' is-flag-choice'
             if (revealed) {
               if (choice === round.answer) cls += ' is-correct'
               else if (choice === picked) cls += ' is-wrong'
@@ -262,8 +396,13 @@ export function GameView() {
                 className={cls}
                 disabled={revealed}
                 onClick={() => answer(choice)}
+                aria-label={
+                  round.choiceKind === 'flag'
+                    ? (COUNTRIES.find((c) => c.code === choice)?.name ?? choice)
+                    : choice
+                }
               >
-                {choice}
+                {round.choiceKind === 'flag' ? <FlagChoice code={choice} /> : choice}
               </button>
             )
           })}
@@ -271,7 +410,7 @@ export function GameView() {
 
         {revealed ? (
           <div className={`game-feedback ${correct ? 'is-ok' : 'is-ko'}`}>
-            <p>{correct ? 'Exact.' : `La bonne réponse : ${round.answer}`}</p>
+            <p>{correct ? 'Exact.' : `La bonne réponse : ${round.answerLabel}`}</p>
             <button type="button" className="game-next" onClick={next}>
               Question suivante
             </button>
