@@ -344,36 +344,40 @@ export function GameView() {
   return (
     <div className="game-view">
       <div className="game-toolbar">
-        <div className="game-group" role="group" aria-label="Catégorie">
-          {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
-            <button
-              key={c}
-              type="button"
-              className={`game-chip ${category === c ? 'is-active' : ''}`}
-              onClick={() => selectCategory(c)}
-            >
-              {CATEGORY_LABEL[c]}
-            </button>
-          ))}
+        <div className="game-toolbar-row">
+          <div className="game-group" role="group" aria-label="Catégorie">
+            {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={`game-chip ${category === c ? 'is-active' : ''}`}
+                onClick={() => selectCategory(c)}
+              >
+                {CATEGORY_LABEL[c]}
+              </button>
+            ))}
+          </div>
+          <div className="game-score" aria-live="polite">
+            <span>
+              Score <strong>{score}</strong> / {asked}
+            </span>
+            <span className="game-pct">{pct} %</span>
+            {streak >= 3 ? <span className="game-streak">×{streak}</span> : null}
+          </div>
         </div>
-        <div className="game-group" role="group" aria-label="Mode">
-          {availableModes.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
-              onClick={() => selectMode(m.id)}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
-        <div className="game-score" aria-live="polite">
-          <span>
-            Score <strong>{score}</strong> / {asked}
-          </span>
-          <span className="game-pct">{pct} %</span>
-          {streak >= 3 ? <span className="game-streak">×{streak}</span> : null}
+        <div className="game-toolbar-row game-toolbar-modes">
+          <div className="game-group" role="group" aria-label="Mode">
+            {availableModes.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
+                onClick={() => selectMode(m.id)}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
