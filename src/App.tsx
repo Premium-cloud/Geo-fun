@@ -8,13 +8,19 @@ export default function App() {
         <div className="brand">
           <span className="brand-mark">◆</span>
           <div>
-            <p className="brand-kicker">Jeu de cartes</p>
+            <p className="brand-kicker">Collection</p>
             <h1>Drapeaux du monde</h1>
           </div>
         </div>
-        <p className="topbar-hint">
-          Cliquez une carte pour la retourner · Ctrl/Cmd+P pour imprimer
-        </p>
+        <div className="topbar-actions">
+          <a className="btn-pdf" href="/feuille-test.pdf" download>
+            Feuille test
+          </a>
+          <a className="btn-pdf btn-pdf-primary" href="/drapeaux-du-monde.pdf" download>
+            PDF complet
+          </a>
+          <p className="topbar-hint">Cliquez une carte pour la retourner</p>
+        </div>
       </header>
       <main>
         <CartesMondeView />

@@ -87,24 +87,21 @@ function GlobeWatermark() {
         </clipPath>
       </defs>
 
-      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      <ellipse cx="100" cy="100" rx="28" ry="78" fill="none" stroke="currentColor" strokeWidth="0.55" />
-      <ellipse cx="100" cy="100" rx="52" ry="78" fill="none" stroke="currentColor" strokeWidth="0.55" />
-      <line x1="22" y1="100" x2="178" y2="100" stroke="currentColor" strokeWidth="0.55" />
-      <path
-        d="M34 66c22-5 46-7 66-7s44 2 66 7"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      />
-      <path
-        d="M34 134c22 5 46 7 66 7s44-2 66-7"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      />
+      <g className="globe-grid" fill="none" stroke="currentColor">
+        <circle cx="100" cy="100" r="78" strokeWidth="1.15" />
+        <ellipse cx="100" cy="100" rx="28" ry="78" strokeWidth="0.4" />
+        <ellipse cx="100" cy="100" rx="52" ry="78" strokeWidth="0.4" />
+        <line x1="22" y1="100" x2="178" y2="100" strokeWidth="0.4" />
+        <path d="M34 66c22-5 46-7 66-7s44 2 66 7" strokeWidth="0.35" />
+        <path d="M34 134c22 5 46 7 66 7s44-2 66-7" strokeWidth="0.35" />
+      </g>
 
-      <g clipPath={`url(#${clipId})`} fill="currentColor" fillRule="evenodd" opacity="0.72">
+      <g
+        className="globe-land"
+        clipPath={`url(#${clipId})`}
+        fill="currentColor"
+        fillRule="evenodd"
+      >
         <path d={GLOBE_LAND_PATH} />
       </g>
     </svg>

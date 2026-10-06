@@ -1,6 +1,6 @@
 # Drapeaux du monde
 
-Jeu de cartes des pays du monde : drapeau, continent, capitale, population et langue. Verso unifié « DRAPEAU DU MONDE ».
+Collection de cartes des pays du monde : drapeau, continent, capitale, population et langue. Verso unifié « DRAPEAU DU MONDE ».
 
 ## Lancer en local
 
@@ -11,19 +11,25 @@ npm run dev
 
 L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
-## Utilisation
+## Impression
 
-- Cliquez une carte pour la retourner
-- Filtrez par continent ou recherchez un pays / une capitale
-- `Ctrl/Cmd + P` pour imprimer (recto puis verso miroir, 9 cartes / feuille A4, fond perdu 3 mm + traits de coupe)
+- Boutons **Feuille test** (1 recto + 1 verso) et **PDF complet** dans l’app
+- Ou régénérer les PDF :
+
+```bash
+npm run pdf:test   # feuille-test.pdf (pour valider bleed / découpe)
+npm run pdf        # drapeaux-du-monde.pdf (deck entier)
+```
+
+Les PDF sont dans `public/` (A4, fond perdu 3 mm, traits de coupe). Imprimez sans mise à l’échelle (« 100 % » / « taille réelle »).
 
 ## Contenu
 
 - 198 pays, drapeaux SVG locaux (`public/flags`)
 - Continents dont Amérique du Nord / centrale / Sud
 - Ratios de drapeau corrects (Suisse, Vatican, Népal…)
-- Langues : principale / officielles, avec langues d’origine quand c’est pertinent
+- Langues : principale / officielles + langues locales majeures
 
 ## Stack
 
-Vite + React + TypeScript.
+Vite + React + TypeScript. Export PDF via Playwright.
