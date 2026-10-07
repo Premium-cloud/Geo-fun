@@ -29,6 +29,135 @@ html.is-night body {
     linear-gradient(180deg, #181512 0%, var(--paper) 100%);
 }
 
+/* Surfaces encore en #fff en dur → sinon texte clair invisible */
+html.is-night .topbar {
+  background: rgba(28, 25, 22, 0.94);
+  border-bottom-color: var(--line);
+}
+
+html.is-night .tab,
+html.is-night .chip,
+html.is-night .game-chip,
+html.is-night .btn-pdf,
+html.is-night .btn-options,
+html.is-night .opt-btn,
+html.is-night .search input,
+html.is-night .game-saisie-input,
+html.is-night .game-choice {
+  background: #2a2622;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+html.is-night .tab.is-active,
+html.is-night .chip.is-active,
+html.is-night .game-chip.is-active,
+html.is-night .btn-pdf-primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #141210;
+}
+
+html.is-night .tab.tab-play.is-active,
+html.is-night .game-chip-diff.is-difficile.is-active {
+  background: #a85a6a;
+  color: #fff;
+}
+
+html.is-night .game-chip-diff.is-facile.is-active {
+  background: #3d8a66;
+  color: #fff;
+}
+
+html.is-night .game-chip-diff.is-hardcore.is-active {
+  background: #6b3040;
+  color: #fff;
+}
+
+html.is-night .brand h1,
+html.is-night .brand-mode-sub,
+html.is-night .brand-link,
+html.is-night .brand-mode,
+html.is-night .brand-kicker,
+html.is-night .count,
+html.is-night .game-field-label,
+html.is-night .game-record,
+html.is-night .game-prompt,
+html.is-night .game-score,
+html.is-night .game-pct {
+  color: var(--ink);
+}
+
+html.is-night .brand-mode,
+html.is-night .brand-kicker,
+html.is-night .count,
+html.is-night .game-field-label,
+html.is-night .game-record {
+  color: var(--muted);
+}
+
+html.is-night .brand-link:hover,
+html.is-night .brand-link:focus-visible {
+  color: var(--accent);
+}
+
+html.is-night .game-board {
+  background: linear-gradient(180deg, #2a2622 0%, #221e1a 100%);
+  border-color: var(--line);
+}
+
+html.is-night .game-big-code,
+html.is-night .game-dept-code,
+html.is-night .game-timer {
+  color: var(--accent);
+}
+
+html.is-night .game-big-text {
+  color: var(--ink);
+}
+
+html.is-night .game-choice:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+html.is-night .opt-panel {
+  background: var(--paper-elev);
+  color: var(--ink);
+}
+
+html.is-night .face-front {
+  background: linear-gradient(180deg, #2c2824 0%, #221e1a 100%);
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html.is-night .back-face,
+html.is-night .back-face-fr,
+html.is-night .back-face-monde {
+  background: #26221e;
+}
+
+html.is-night .back-mark {
+  color: var(--ink);
+}
+
+html.is-night .chef,
+html.is-night .chef-k,
+html.is-night .meta,
+html.is-night .code,
+html.is-night .dept {
+  color: var(--ink);
+}
+
+html.is-night .chef-k,
+html.is-night .meta {
+  color: var(--muted);
+}
+
+html.is-night .empty {
+  color: var(--muted);
+}
+
 *,
 *::before,
 *::after {
