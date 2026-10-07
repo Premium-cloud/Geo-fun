@@ -167,21 +167,34 @@ for (const code of ['971', '972', '973', '974', '976']) {
   }
 }
 
-for (const [code, q] of Object.entries(NOMINATIM)) {
-  const fc = await fetchNominatim(code, q)
-  const f = fc.features?.[0]
-  if (!f) {
-    console.warn('missing nominatim', code)
-    continue
-  }
-  // Polynésie / TAAF : cluster autour des plus grandes îles
-  const cluster = code === '987' ? 8 : code === '984' ? 15 : 12
-  const focused = focusLargest(f, code === '987' ? 16 : 10, cluster)
-  const d = toPath(focused)
-  if (d) {
-    out[code] = { viewBox: `0 0 ${SIZE} ${SIZE}`, d }
-    console.log(code, 'ok', d.length)
-  }
+// TOM : silhouettes dessinées (Nominatim renvoie souvent une enveloppe pleine
+// illisible à 3–4 rem). Formes reconnaissables, viewBox 0 0 120 120.
+const HANDMADE_TOM = {
+  // Saint-Pierre-et-Miquelon : deux îles
+  '975':
+    'M28 38c8-14 22-16 34-8 8 6 10 18 4 28l-18 22c-8 8-22 6-28-4-8-12-4-26 8-38zm52 18c10-6 24-2 28 10 4 12-2 24-14 28-10 4-22-2-26-12-4-12 2-22 12-26z',
+  // Saint-Barthélemy
+  '977':
+    'M22 58c6-18 28-28 48-22 18 6 28 24 22 42-4 12-16 20-30 22-18 2-32-8-38-22-4-10-4-16-2-20z',
+  // Saint-Martin
+  '978': 'M30 40l50-8 18 28-12 36-42 8-22-24z',
+  // TAAF — archipel
+  '984':
+    'M24 30c8-6 18-4 22 4 4 8-2 16-10 18-8 2-16-4-16-12 0-4 2-8 4-10zm40 8c10-8 24-6 28 6 4 10-4 20-14 22-12 2-22-8-20-18 0-4 2-8 6-10zm-18 40c12-4 22 4 24 14 2 12-8 20-18 18-12-2-18-14-12-24 2-4 4-6 6-8zm38 6c8-6 18-2 20 8 2 8-4 14-12 14-8 0-14-8-12-16 0-2 2-4 4-6z',
+  // Wallis-et-Futuna : 3 îles
+  '986':
+    'M24 36c10-8 22-6 26 4 4 10-4 20-14 22-12 2-20-8-18-18 0-4 2-6 6-8zm40-8c8-4 18 0 20 10 2 10-6 16-14 14-10-2-14-12-10-20 2-2 2-4 4-4zm8 40c12-6 24 0 26 12 2 12-8 20-18 18-12-2-18-14-14-24 2-4 4-6 6-6z',
+  // Polynésie — Tahiti + Moorea
+  '987':
+    'M48 28c18-10 40-4 48 16 8 18 0 40-18 50-16 10-38 6-48-12-10-16-4-36 10-46 2-2 6-6 8-8zm-22 8c6-4 12-2 14 4 2 6-2 10-8 10s-10-6-6-14z',
+  // Nouvelle-Calédonie + Loyauté
+  '988':
+    'M18 70c8-28 28-48 52-52 14-2 28 6 34 20 6 14 2 30-10 40-14 12-34 14-50 6-14-6-24-8-26-14zM92 28c6-2 12 2 12 8s-6 10-12 8-8-6-6-12c2-2 4-4 6-4zm8 22c4-2 10 0 10 6s-4 8-8 6-6-6-4-10c0-2 2-2 2-2zm4 20c4 0 8 4 6 8s-8 4-10 0 0-8 4-8z',
+}
+
+for (const [code, d] of Object.entries(HANDMADE_TOM)) {
+  out[code] = { viewBox: `0 0 ${SIZE} ${SIZE}`, d }
+  console.log(code, 'handmade', d.length)
 }
 
 writeFileSync('public/maps/dom-tom-shapes.json', JSON.stringify(out))
