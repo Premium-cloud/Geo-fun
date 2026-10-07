@@ -1,12 +1,26 @@
 import type { DeptCard } from '../cards/CartesFranceView'
 import type { Country } from '../data/countries'
+import type { DifficultyId } from '../lib/storage'
 
-export type Difficulty = 'facile' | 'difficile'
+export type Difficulty = DifficultyId
 
 export const DIFFICULTY_OPTIONS: { id: Difficulty; label: string }[] = [
   { id: 'facile', label: 'Facile' },
   { id: 'difficile', label: 'Difficile' },
+  { id: 'hardcore', label: 'Hardcore' },
 ]
+
+export const TIMER_SECONDS: Record<Difficulty, number> = {
+  facile: 20,
+  difficile: 10,
+  hardcore: 7,
+}
+
+export const LIVES_FOR: Record<Difficulty, number> = {
+  facile: 3,
+  difficile: 3,
+  hardcore: 1,
+}
 
 /** Pays très reconnus : en facile = souvent éliminables ; en difficile = à éviter. */
 const FAMOUS = new Set([
@@ -23,8 +37,7 @@ const OBSCURE = new Set([
   'MN', 'KP', 'YE', 'OM', 'BH', 'QA', 'KW', 'AM', 'AZ', 'GE', 'MD', 'AL', 'ME',
   'BA', 'BY', 'PY', 'BO', 'GY', 'SR', 'BZ', 'HN', 'NI', 'SV', 'GT', 'HT', 'JM',
   'TT', 'BB', 'LC', 'VC', 'GD', 'AG', 'KN', 'DM', 'BS', 'AD', 'MC', 'SM', 'LI',
-  'VA', 'MT', 'CY', 'IS', 'LU', 'RW', 'BI', 'LS', 'SZ', 'GM', 'SL', 'TG', 'BJ',
-  'CV', 'SC', 'MU', 'KM',
+  'VA', 'MT', 'CY', 'IS', 'LU', 'RW', 'GM', 'SL', 'TG', 'BJ', 'CV', 'SC', 'MU',
 ])
 
 /** Clusters de drapeaux ressemblants. */
@@ -152,6 +165,10 @@ function isOverseas(d: DeptCard): boolean {
   return d.group !== 'metro'
 }
 
+function isIdfOuter(code: string): boolean {
+  return ['91', '92', '93', '94', '95'].includes(code)
+}
+
 function stripAccents(s: string): string {
   return s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
 }
@@ -197,28 +214,44 @@ function clusterMates(code: string): Set<string> {
   return mates
 }
 
-// —— Départements ——————————————————————————————————————————————
-
 function metroOnly(answer: DeptCard, d: DeptCard): boolean {
   if (d.code === answer.code) return false
   if (!isOverseas(answer) && isOverseas(d)) return false
   return true
 }
 
-/** Pièges durs : même famille de nom (Alpes…), même lettre, codes voisins. */
+/** Pièges durs : même famille de nom, même lettre, codes voisins. */
 function deptHardPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
   const ak = codeKey(answer.code)
+  const tight = answer.region === 'Île-de-France' || isIdfOuter(answer.code) ? 2 : 3
   return all.filter((d) => {
     if (!metroOnly(answer, d) && !(isOverseas(answer) && isOverseas(d))) return false
     if (isOverseas(answer) && isOverseas(d)) return true
+    // Évite Paris comme piège par défaut pour les 91–95
+    if (isIdfOuter(answer.code) && d.code === '75') return false
     if (sharesNameFamily(answer.name, d.name)) return true
     if (firstLetter(answer.name) === firstLetter(d.name)) return true
-    if (Math.abs(codeKey(d.code) - ak) <= 3) return true
+    if (Math.abs(codeKey(d.code) - ak) <= tight) return true
     return false
   })
 }
 
-/** Même lettre mais pas même famille — éliminable en partie (Ain vs Alpes…). */
+/** En Difficile/Hardcore : encore plus collé (codes ±1–2 + même région hors Paris pour 9x). */
+function deptHarderPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
+  const ak = codeKey(answer.code)
+  return all.filter((d) => {
+    if (d.code === answer.code) return false
+    if (!metroOnly(answer, d) && !(isOverseas(answer) && isOverseas(d))) return false
+    if (isIdfOuter(answer.code) && d.code === '75') return false
+    if (isOverseas(answer) && isOverseas(d)) return true
+    if (Math.abs(codeKey(d.code) - ak) <= 2) return true
+    if (sharesNameFamily(answer.name, d.name)) return true
+    if (d.region === answer.region && firstLetter(answer.name) === firstLetter(d.name)) return true
+    if (d.region === answer.region && Math.abs(codeKey(d.code) - ak) <= 5) return true
+    return false
+  })
+}
+
 function deptSameLetterSoft(answer: DeptCard, all: DeptCard[]): DeptCard[] {
   return all.filter((d) => {
     if (!metroOnly(answer, d)) return false
@@ -227,12 +260,13 @@ function deptSameLetterSoft(answer: DeptCard, all: DeptCard[]): DeptCard[] {
   })
 }
 
-/** Même région, autre famille (ex. Bouches-du-Rhône pour 04). */
 function deptSameRegionSoft(answer: DeptCard, all: DeptCard[]): DeptCard[] {
   return all.filter((d) => {
     if (!metroOnly(answer, d)) return false
     if (sharesNameFamily(answer.name, d.name)) return false
     if (Math.abs(codeKey(d.code) - codeKey(answer.code)) <= 2) return false
+    // 91–95 : préférer d’autres couronnes, pas Paris
+    if (isIdfOuter(answer.code) && d.code === '75') return false
     return d.region === answer.region
   })
 }
@@ -253,8 +287,8 @@ function deptFarPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
 
 /**
  * Facile : 1 même lettre soft + 1 même région soft + 1 loin
- *   (ex. Ain, Bouches-du-Rhône, Corrèze) — 1–2 éliminables, pas Hautes-Alpes.
- * Difficile : 3 pièges durs (ex. Ain, Hautes-Alpes, Allier) ; DOM-TOM entre eux.
+ * Difficile : 3 pièges durs (codes proches / famille)
+ * Hardcore : pool encore plus collé (harder)
  */
 export function pickDeptDistractors(
   answer: DeptCard,
@@ -262,6 +296,7 @@ export function pickDeptDistractors(
   difficulty: Difficulty,
 ): DeptCard[] {
   const hard = deptHardPool(answer, all)
+  const harder = deptHarderPool(answer, all)
   const softLetter = deptSameLetterSoft(answer, all)
   const softRegion = deptSameRegionSoft(answer, all)
   const far = deptFarPool(answer, all)
@@ -286,12 +321,22 @@ export function pickDeptDistractors(
   }
 
   if (isOverseas(answer)) {
-    const overseas = others.filter(isOverseas).length
-      ? all.filter((d) => d.code !== answer.code && isOverseas(d))
-      : hard
-    return fillFromPools([], 3, [overseas, hard, others], used, (d) => d.code)
+    const overseas = all.filter((d) => d.code !== answer.code && isOverseas(d))
+    return fillFromPools(
+      [],
+      3,
+      [overseas, harder, hard, others],
+      used,
+      (d) => d.code,
+    )
   }
-  return fillFromPools([], 3, [hard, softLetter, others], used, (d) => d.code)
+
+  if (difficulty === 'hardcore') {
+    return fillFromPools([], 3, [harder, hard, softLetter, others], used, (d) => d.code)
+  }
+
+  // difficile : priorise harder puis hard
+  return fillFromPools([], 3, [harder, hard, softLetter, others], used, (d) => d.code)
 }
 
 export function pickRegionDistractors(
@@ -315,8 +360,6 @@ export function pickRegionDistractors(
   return fillFromPools([], 3, [neighbors, far, others], used, (r) => r)
 }
 
-// —— Pays ——————————————————————————————————————————————
-
 function countryClusterPool(answer: Country, all: Country[]): Country[] {
   const mates = clusterMates(answer.code)
   return all.filter((c) => c.code !== answer.code && mates.has(c.code))
@@ -331,10 +374,6 @@ function countryContinentPool(answer: Country, all: Country[]): Country[] {
   )
 }
 
-/**
- * Facile : 2 célèbres éliminables + 1 obscur (Espagne, Brésil, Burundi).
- * Difficile : 2 cluster drapeau (Équateur, Venezuela) + 1 obscur ; pas de cadeaux FR/US/ES.
- */
 export function pickCountryDistractors(
   answer: Country,
   all: Country[],
@@ -365,11 +404,12 @@ export function pickCountryDistractors(
     )
   }
 
+  // Difficile / Hardcore : zéro cadeau célèbre
   const c1 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
   if (c1) picked.push(c1)
   const c2 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
   if (c2) picked.push(c2)
-  const o = pickOne(obscure, used, (c) => c.code)
+  const o = pickOne(obscure.length ? obscure : nonFamous, used, (c) => c.code)
   if (o) picked.push(o)
   return fillFromPools(
     picked,

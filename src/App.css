@@ -178,6 +178,31 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn-options {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  border-radius: 999px;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+html.is-night .btn-options {
+  background: #2a2622;
+  color: #d9d2c5;
+}
+
+.btn-options:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .tab {

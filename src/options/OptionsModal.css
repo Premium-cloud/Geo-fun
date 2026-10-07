@@ -1,0 +1,120 @@
+.opt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(20, 16, 12, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.opt-panel {
+  width: min(26rem, 100%);
+  max-height: min(90vh, 40rem);
+  overflow: auto;
+  background: var(--paper-elev, #fffefb);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.1rem 1.15rem 1.25rem;
+  box-shadow: 0 18px 40px rgba(20, 16, 12, 0.18);
+}
+
+.opt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.opt-head h2 {
+  margin: 0;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.35rem;
+}
+
+.opt-close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.1rem;
+  padding: 0.25rem 0.45rem;
+}
+
+.opt-section {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.opt-section h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.opt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+  font-weight: 600;
+}
+
+.opt-row-col {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.opt-row input[type='range'] {
+  width: 100%;
+}
+
+.opt-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.opt-data-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.opt-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+html.is-night .opt-btn {
+  background: #2a2622;
+  color: #f3efe8;
+}
+
+.opt-btn-quiet {
+  opacity: 0.72;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.opt-file {
+  display: none;
+}
+
+.opt-msg {
+  margin: 0.65rem 0 0;
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 600;
+}

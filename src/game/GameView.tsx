@@ -1,8 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
-import { DEPT_CARDS, type DeptCard } from '../cards/CartesFranceView'
-import { COUNTRIES, type Country } from '../data/countries'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { DEPT_CARDS } from '../cards/CartesFranceView'
+import { COUNTRIES } from '../data/countries'
+import { answersMatch } from '../lib/answerMatch'
+import { pickWeightedItem } from '../lib/pickWeighted'
+import {
+  getModeStats,
+  loadOptions,
+  recordRun,
+  statsKey,
+  type AnswerMode,
+} from '../lib/storage'
 import {
   DIFFICULTY_OPTIONS,
+  LIVES_FOR,
+  TIMER_SECONDS,
   pickCountryDistractors,
   pickDeptDistractors,
   pickRegionDistractors,
@@ -17,7 +28,7 @@ type PaysMode = 'flagToName' | 'nameToFlag' | 'capitalToName' | 'capitalToFlag'
 type CapitaleMode = 'flagToCapital' | 'nameToCapital'
 type Mode = DeptMode | PaysMode | CapitaleMode
 
-type ChoiceKind = 'text' | 'flag'
+type ChoiceKind = 'text' | 'flag' | 'saisie'
 
 type Round = {
   prompt: string
@@ -28,6 +39,7 @@ type Round = {
   choices: string[]
   choiceKind: ChoiceKind
   answerLabel: string
+  itemId: string
 }
 
 const DEPT_MODES: { id: DeptMode; label: string }[] = [
@@ -86,18 +98,48 @@ function allRegions(): string[] {
   return [...new Set(DEPT_CARDS.map((d) => d.region))]
 }
 
-function pickDeptCard(): DeptCard {
-  return shuffle(DEPT_CARDS)[0]!
+function sortAlpha(choices: string[]): string[] {
+  return [...choices].sort((a, b) =>
+    a.localeCompare(b, 'fr', { sensitivity: 'base' }),
+  )
 }
 
-function pickCountry(): Country {
-  return shuffle(COUNTRIES)[0]!
+function beep(ok: boolean) {
+  const opts = loadOptions()
+  if (!opts.sound) return
+  try {
+    const ctx = new AudioContext()
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = 'sine'
+    o.frequency.value = ok ? 660 : 180
+    g.gain.value = opts.volume * 0.08
+    o.connect(g)
+    g.connect(ctx.destination)
+    o.start()
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18)
+    o.stop(ctx.currentTime + 0.2)
+    window.setTimeout(() => ctx.close(), 300)
+  } catch {
+    /* ignore */
+  }
 }
 
-function makeDeptRound(mode: DeptMode, difficulty: Difficulty): Round | null {
+function makeDeptRound(
+  mode: DeptMode,
+  difficulty: Difficulty,
+  preferUnseen: boolean,
+  answerMode: AnswerMode,
+): Round | null {
   if (DEPT_CARDS.length < 4) return null
-  const card = pickDeptCard()
+  const card = pickWeightedItem(
+    `dept:${mode}`,
+    DEPT_CARDS,
+    (d) => d.code,
+    preferUnseen,
+  )
   const distractors = pickDeptDistractors(card, DEPT_CARDS, difficulty)
+  const saisie = answerMode === 'saisie'
 
   if (mode === 'chiffre') {
     const answer = card.name
@@ -106,9 +148,10 @@ function makeDeptRound(mode: DeptMode, difficulty: Difficulty): Round | null {
       show: 'code',
       showValue: card.code,
       answer,
-      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
-      choiceKind: 'text',
+      choices: saisie ? [] : sortAlpha([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: saisie ? 'saisie' : 'text',
       answerLabel: answer,
+      itemId: card.code,
     }
   }
 
@@ -119,9 +162,10 @@ function makeDeptRound(mode: DeptMode, difficulty: Difficulty): Round | null {
       show: 'chefLieu',
       showValue: card.chefLieu,
       answer,
-      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
-      choiceKind: 'text',
+      choices: saisie ? [] : sortAlpha([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: saisie ? 'saisie' : 'text',
       answerLabel: answer,
+      itemId: card.code,
     }
   }
 
@@ -132,13 +176,27 @@ function makeDeptRound(mode: DeptMode, difficulty: Difficulty): Round | null {
       show: 'blason',
       showCode: card.code,
       answer,
-      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
-      choiceKind: 'text',
+      choices: saisie ? [] : sortAlpha([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: saisie ? 'saisie' : 'text',
       answerLabel: answer,
+      itemId: card.code,
     }
   }
 
   const answer = card.region
+  if (saisie) {
+    return {
+      prompt: 'Quelle région ?',
+      show: 'deptName',
+      showValue: card.name,
+      showCode: card.code,
+      answer,
+      choices: [],
+      choiceKind: 'saisie',
+      answerLabel: answer,
+      itemId: card.code,
+    }
+  }
   const regionChoices = pickRegionDistractors(answer, allRegions(), difficulty)
   if (regionChoices.length < 3) return null
   return {
@@ -147,16 +205,28 @@ function makeDeptRound(mode: DeptMode, difficulty: Difficulty): Round | null {
     showValue: card.name,
     showCode: card.code,
     answer,
-    choices: shuffle([answer, ...regionChoices]),
+    choices: sortAlpha([answer, ...regionChoices]),
     choiceKind: 'text',
     answerLabel: answer,
+    itemId: card.code,
   }
 }
 
-function makePaysRound(mode: PaysMode, difficulty: Difficulty): Round | null {
+function makePaysRound(
+  mode: PaysMode,
+  difficulty: Difficulty,
+  preferUnseen: boolean,
+  answerMode: AnswerMode,
+): Round | null {
   if (COUNTRIES.length < 4) return null
-  const card = pickCountry()
+  const card = pickWeightedItem(
+    `pays:${mode}`,
+    COUNTRIES,
+    (c) => c.code,
+    preferUnseen,
+  )
   const distractors = pickCountryDistractors(card, COUNTRIES, difficulty)
+  const saisie = answerMode === 'saisie'
 
   if (mode === 'flagToName') {
     const answer = card.name
@@ -165,13 +235,27 @@ function makePaysRound(mode: PaysMode, difficulty: Difficulty): Round | null {
       show: 'flag',
       showCode: card.code,
       answer,
-      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
-      choiceKind: 'text',
+      choices: saisie ? [] : sortAlpha([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: saisie ? 'saisie' : 'text',
       answerLabel: answer,
+      itemId: card.code,
     }
   }
 
   if (mode === 'nameToFlag') {
+    if (saisie) {
+      // saisie du nom de pays à partir du drapeau plutôt que l’inverse
+      return {
+        prompt: 'Quel pays ?',
+        show: 'flag',
+        showCode: card.code,
+        answer: card.name,
+        choices: [],
+        choiceKind: 'saisie',
+        answerLabel: card.name,
+        itemId: card.code,
+      }
+    }
     const answer = card.code
     return {
       prompt: 'Quel drapeau ?',
@@ -181,6 +265,7 @@ function makePaysRound(mode: PaysMode, difficulty: Difficulty): Round | null {
       choices: shuffle([answer, ...distractors.map((d) => d.code)]),
       choiceKind: 'flag',
       answerLabel: card.name,
+      itemId: card.code,
     }
   }
 
@@ -191,9 +276,23 @@ function makePaysRound(mode: PaysMode, difficulty: Difficulty): Round | null {
       show: 'capital',
       showValue: card.capital,
       answer,
-      choices: shuffle([answer, ...distractors.map((d) => d.name)]),
-      choiceKind: 'text',
+      choices: saisie ? [] : sortAlpha([answer, ...distractors.map((d) => d.name)]),
+      choiceKind: saisie ? 'saisie' : 'text',
       answerLabel: answer,
+      itemId: card.code,
+    }
+  }
+
+  if (saisie) {
+    return {
+      prompt: 'Quelle capitale ?',
+      show: 'name',
+      showValue: card.name,
+      answer: card.capital,
+      choices: [],
+      choiceKind: 'saisie',
+      answerLabel: card.capital,
+      itemId: card.code,
     }
   }
 
@@ -206,13 +305,25 @@ function makePaysRound(mode: PaysMode, difficulty: Difficulty): Round | null {
     choices: shuffle([answer, ...distractors.map((d) => d.code)]),
     choiceKind: 'flag',
     answerLabel: card.name,
+    itemId: card.code,
   }
 }
 
-function makeCapitaleRound(mode: CapitaleMode, difficulty: Difficulty): Round | null {
+function makeCapitaleRound(
+  mode: CapitaleMode,
+  difficulty: Difficulty,
+  preferUnseen: boolean,
+  answerMode: AnswerMode,
+): Round | null {
   if (COUNTRIES.length < 4) return null
-  const card = pickCountry()
+  const card = pickWeightedItem(
+    `capitale:${mode}`,
+    COUNTRIES,
+    (c) => c.code,
+    preferUnseen,
+  )
   const distractors = pickCountryDistractors(card, COUNTRIES, difficulty)
+  const saisie = answerMode === 'saisie'
   const answer = card.capital
 
   if (mode === 'flagToCapital') {
@@ -221,9 +332,12 @@ function makeCapitaleRound(mode: CapitaleMode, difficulty: Difficulty): Round | 
       show: 'flag',
       showCode: card.code,
       answer,
-      choices: shuffle([answer, ...distractors.map((d) => d.capital)]),
-      choiceKind: 'text',
+      choices: saisie
+        ? []
+        : sortAlpha([answer, ...distractors.map((d) => d.capital)]),
+      choiceKind: saisie ? 'saisie' : 'text',
       answerLabel: answer,
+      itemId: card.code,
     }
   }
 
@@ -232,9 +346,12 @@ function makeCapitaleRound(mode: CapitaleMode, difficulty: Difficulty): Round | 
     show: 'name',
     showValue: card.name,
     answer,
-    choices: shuffle([answer, ...distractors.map((d) => d.capital)]),
-    choiceKind: 'text',
+    choices: saisie
+      ? []
+      : sortAlpha([answer, ...distractors.map((d) => d.capital)]),
+    choiceKind: saisie ? 'saisie' : 'text',
     answerLabel: answer,
+    itemId: card.code,
   }
 }
 
@@ -242,10 +359,16 @@ function makeRound(
   category: Category,
   mode: Mode,
   difficulty: Difficulty,
+  preferUnseen: boolean,
+  answerMode: AnswerMode,
 ): Round | null {
-  if (category === 'departements') return makeDeptRound(mode as DeptMode, difficulty)
-  if (category === 'pays') return makePaysRound(mode as PaysMode, difficulty)
-  return makeCapitaleRound(mode as CapitaleMode, difficulty)
+  if (category === 'departements') {
+    return makeDeptRound(mode as DeptMode, difficulty, preferUnseen, answerMode)
+  }
+  if (category === 'pays') {
+    return makePaysRound(mode as PaysMode, difficulty, preferUnseen, answerMode)
+  }
+  return makeCapitaleRound(mode as CapitaleMode, difficulty, preferUnseen, answerMode)
 }
 
 function PromptVisual({ round }: { round: Round }) {
@@ -298,13 +421,12 @@ function FlagChoice({ code }: { code: string }) {
 
 export type PlayVariant = 'entrainement' | 'jeu'
 
-const MAX_LIVES = 3
 const AUTO_NEXT_MS = 900
 
-function Lives({ lives }: { lives: number }) {
+function Lives({ lives, max }: { lives: number; max: number }) {
   return (
     <div className="game-lives" aria-label={`${lives} vie${lives > 1 ? 's' : ''}`}>
-      {Array.from({ length: MAX_LIVES }, (_, i) => (
+      {Array.from({ length: max }, (_, i) => (
         <span
           key={i}
           className={`game-life ${i < lives ? 'is-on' : 'is-off'}`}
@@ -320,56 +442,98 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   const [category, setCategory] = useState<Category>('departements')
   const [mode, setMode] = useState<Mode>('chiffre')
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
+  const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
-  const [lives, setLives] = useState(MAX_LIVES)
+  const [streakPeak, setStreakPeak] = useState(0)
+  const [lives, setLives] = useState(LIVES_FOR.facile)
   const [gameOver, setGameOver] = useState(false)
   const [seed, setSeed] = useState(0)
+  const [typed, setTyped] = useState('')
+  const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS.facile)
+  const [statsTick, setStatsTick] = useState(0)
+  const timedOut = useRef(false)
+  const endAfterFeedback = useRef(false)
+  const runSnapshot = useRef({ score: 0, asked: 0, peak: 0 })
 
   const availableModes = modesFor(category)
+  const maxLives = LIVES_FOR[difficulty]
+  const timerMax = TIMER_SECONDS[difficulty]
+  const key = statsKey(category, mode, difficulty, answerMode)
+  const best = useMemo(() => getModeStats(key), [key, statsTick])
 
   const round = useMemo(
-    () => makeRound(category, mode, difficulty),
-    [category, mode, difficulty, seed],
+    () => makeRound(category, mode, difficulty, isPlay, answerMode),
+    [category, mode, difficulty, seed, isPlay, answerMode],
   )
 
   function resetRun() {
     setScore(0)
     setAsked(0)
     setStreak(0)
-    setLives(MAX_LIVES)
+    setStreakPeak(0)
+    setLives(LIVES_FOR[difficulty])
     setGameOver(false)
     setPicked(null)
+    setTyped('')
+    timedOut.current = false
+    setSecondsLeft(TIMER_SECONDS[difficulty])
     setSeed((s) => s + 1)
   }
 
   function next() {
     setPicked(null)
+    setTyped('')
+    timedOut.current = false
+    setSecondsLeft(TIMER_SECONDS[difficulty])
     setSeed((s) => s + 1)
   }
 
-  // Reset when switching Entraînement ↔ Jeu
+  function finishRun(finalScore: number, finalAsked: number, peak: number) {
+    recordRun({ key, score: finalScore, asked: finalAsked, streakPeak: peak })
+    setStatsTick((t) => t + 1)
+  }
+
   useEffect(() => {
     resetRun()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
-  // Mode Jeu : enchaîne auto après un court feedback
   useEffect(() => {
     if (!isPlay || !picked || gameOver) return
     const t = window.setTimeout(() => {
-      if (lives <= 0) {
+      if (endAfterFeedback.current) {
         setGameOver(true)
         setPicked(null)
+        const snap = runSnapshot.current
+        finishRun(snap.score, snap.asked, snap.peak)
       } else {
         next()
       }
     }, AUTO_NEXT_MS)
     return () => window.clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [picked, isPlay, gameOver, lives])
+  }, [picked, isPlay, gameOver])
+
+  // Timer countdown (Jeu only)
+  useEffect(() => {
+    if (!isPlay || gameOver || picked || !round) return
+    setSecondsLeft(timerMax)
+    timedOut.current = false
+    const started = Date.now()
+    const id = window.setInterval(() => {
+      const left = Math.max(0, timerMax - Math.floor((Date.now() - started) / 1000))
+      setSecondsLeft(left)
+      if (left <= 0 && !timedOut.current) {
+        timedOut.current = true
+        resolveAnswer('__timeout__', false)
+      }
+    }, 200)
+    return () => window.clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seed, isPlay, gameOver, timerMax, picked])
 
   function selectCategory(cat: Category) {
     setCategory(cat)
@@ -380,30 +544,69 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   function selectMode(m: Mode) {
     setMode(m)
     setPicked(null)
+    setTyped('')
     setSeed((s) => s + 1)
+    setSecondsLeft(TIMER_SECONDS[difficulty])
   }
 
   function selectDifficulty(d: Difficulty) {
     setDifficulty(d)
+    setLives(LIVES_FOR[d])
+    setScore(0)
+    setAsked(0)
+    setStreak(0)
+    setStreakPeak(0)
+    setGameOver(false)
+    setPicked(null)
+    setTyped('')
+    setSecondsLeft(TIMER_SECONDS[d])
+    setSeed((s) => s + 1)
+  }
+
+  function selectAnswerMode(am: AnswerMode) {
+    setAnswerMode(am)
     resetRun()
   }
 
-  function answer(choice: string) {
+  function resolveAnswer(choice: string, isCorrect: boolean) {
     if (!round || picked || gameOver) return
     setPicked(choice)
-    setAsked((n) => n + 1)
-    if (choice === round.answer) {
-      setScore((s) => s + 1)
-      setStreak((s) => s + 1)
+    const nextAsked = asked + 1
+    setAsked(nextAsked)
+    beep(isCorrect)
+    if (isCorrect) {
+      const nextScore = score + 1
+      setScore(nextScore)
+      const nextStreak = streak + 1
+      setStreak(nextStreak)
+      const peak = Math.max(streakPeak, nextStreak)
+      setStreakPeak(peak)
+      endAfterFeedback.current = false
+      runSnapshot.current = { score: nextScore, asked: nextAsked, peak }
     } else {
       setStreak(0)
+      runSnapshot.current = { score, asked: nextAsked, peak: streakPeak }
       if (isPlay) {
-        setLives((l) => {
-          const nextLives = l - 1
-          return nextLives
-        })
+        const nextLives = Math.max(0, lives - 1)
+        setLives(nextLives)
+        endAfterFeedback.current = nextLives <= 0
+      } else {
+        endAfterFeedback.current = false
       }
     }
+  }
+
+  function answer(choice: string) {
+    if (!round) return
+    resolveAnswer(choice, choice === round.answer)
+  }
+
+  function submitTyped(e: FormEvent) {
+    e.preventDefault()
+    if (!round || picked) return
+    const strict = difficulty === 'facile' ? 'loose' : 'strict'
+    const ok = answersMatch(typed, round.answer, strict)
+    resolveAnswer(typed || '—', ok)
   }
 
   if (!round) {
@@ -415,7 +618,10 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   }
 
   const revealed = picked !== null
-  const correct = picked === round.answer
+  const correct =
+    revealed &&
+    picked !== '__timeout__' &&
+    (picked === round.answer || answersMatch(picked, round.answer, 'loose'))
   const pct = asked > 0 ? Math.round((score / asked) * 100) : 0
 
   if (gameOver) {
@@ -426,6 +632,12 @@ export function GameView({ variant }: { variant: PlayVariant }) {
           <p className="game-over-score">
             Score <strong>{score}</strong> / {asked}
             <span className="game-pct"> · {pct} %</span>
+          </p>
+          <p className="game-over-streak">
+            Meilleure série cette partie : <strong>×{streakPeak}</strong>
+            {best.bestStreak > 0 ? (
+              <> · Record <strong>×{best.bestStreak}</strong></>
+            ) : null}
           </p>
           <button type="button" className="game-next" onClick={resetRun}>
             Rejouer
@@ -473,6 +685,28 @@ export function GameView({ variant }: { variant: PlayVariant }) {
 
           <div className="game-field-sep" aria-hidden />
 
+          <div className="game-field">
+            <span className="game-field-label">Réponse</span>
+            <div className="game-group" role="group" aria-label="Type de réponse">
+              <button
+                type="button"
+                className={`game-chip ${answerMode === 'qcm' ? 'is-active' : ''}`}
+                onClick={() => selectAnswerMode('qcm')}
+              >
+                QCM
+              </button>
+              <button
+                type="button"
+                className={`game-chip ${answerMode === 'saisie' ? 'is-active' : ''}`}
+                onClick={() => selectAnswerMode('saisie')}
+              >
+                Réponse unique
+              </button>
+            </div>
+          </div>
+
+          <div className="game-field-sep" aria-hidden />
+
           <div className="game-field game-field-diff">
             <span className="game-field-label">Difficulté</span>
             <div className="game-group" role="group" aria-label="Difficulté">
@@ -480,20 +714,35 @@ export function GameView({ variant }: { variant: PlayVariant }) {
                 <button
                   key={d.id}
                   type="button"
-                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} ${d.id === 'difficile' ? 'is-hard' : 'is-easy'}`}
+                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} is-${d.id}`}
                   onClick={() => selectDifficulty(d.id)}
                 >
                   {d.label}
                 </button>
               ))}
             </div>
+            {best.bestStreak > 0 ? (
+              <p className="game-record">Record ×{best.bestStreak}</p>
+            ) : (
+              <p className="game-record is-empty">Pas encore de record</p>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="game-board" key={`${variant}-${category}-${mode}-${difficulty}-${seed}`}>
+      <div className="game-board" key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${seed}`}>
         <div className="game-board-hud" aria-live="polite">
-          {isPlay ? <Lives lives={lives} /> : null}
+          {isPlay ? (
+            <>
+              <Lives lives={lives} max={maxLives} />
+              <span
+                className={`game-timer ${secondsLeft <= 3 ? 'is-urgent' : ''}`}
+                aria-label={`${secondsLeft} secondes`}
+              >
+                {secondsLeft}s
+              </span>
+            </>
+          ) : null}
           <span className="game-score">
             Score <strong>{score}</strong>
             {!isPlay ? <> / {asked}</> : null}
@@ -504,36 +753,61 @@ export function GameView({ variant }: { variant: PlayVariant }) {
         <p className="game-prompt">{round.prompt}</p>
         <PromptVisual round={round} />
 
-        <div className={`game-choices ${round.choiceKind === 'flag' ? 'is-flags' : ''}`}>
-          {round.choices.map((choice) => {
-            let cls = 'game-choice'
-            if (round.choiceKind === 'flag') cls += ' is-flag-choice'
-            if (revealed) {
-              if (choice === round.answer) cls += ' is-correct'
-              else if (choice === picked) cls += ' is-wrong'
-            }
-            return (
-              <button
-                key={choice}
-                type="button"
-                className={cls}
-                disabled={revealed}
-                onClick={() => answer(choice)}
-                aria-label={
-                  round.choiceKind === 'flag'
-                    ? (COUNTRIES.find((c) => c.code === choice)?.name ?? choice)
-                    : choice
-                }
-              >
-                {round.choiceKind === 'flag' ? <FlagChoice code={choice} /> : choice}
-              </button>
-            )
-          })}
-        </div>
+        {round.choiceKind === 'saisie' ? (
+          <form className="game-saisie" onSubmit={submitTyped}>
+            <input
+              className="game-saisie-input"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              placeholder="Ta réponse…"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              disabled={revealed}
+              autoFocus
+            />
+            <button type="submit" className="game-next" disabled={revealed || !typed.trim()}>
+              Valider
+            </button>
+          </form>
+        ) : (
+          <div className={`game-choices ${round.choiceKind === 'flag' ? 'is-flags' : ''}`}>
+            {round.choices.map((choice) => {
+              let cls = 'game-choice'
+              if (round.choiceKind === 'flag') cls += ' is-flag-choice'
+              if (revealed) {
+                if (choice === round.answer) cls += ' is-correct'
+                else if (choice === picked) cls += ' is-wrong'
+              }
+              return (
+                <button
+                  key={choice}
+                  type="button"
+                  className={cls}
+                  disabled={revealed}
+                  onClick={() => answer(choice)}
+                  aria-label={
+                    round.choiceKind === 'flag'
+                      ? (COUNTRIES.find((c) => c.code === choice)?.name ?? choice)
+                      : choice
+                  }
+                >
+                  {round.choiceKind === 'flag' ? <FlagChoice code={choice} /> : choice}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         {revealed ? (
           <div className={`game-feedback ${correct ? 'is-ok' : 'is-ko'}`}>
-            <p>{correct ? 'Exact.' : `La bonne réponse : ${round.answerLabel}`}</p>
+            <p>
+              {picked === '__timeout__'
+                ? `Temps écoulé. Réponse : ${round.answerLabel}`
+                : correct
+                  ? 'Exact.'
+                  : `La bonne réponse : ${round.answerLabel}`}
+            </p>
             {!isPlay ? (
               <button type="button" className="game-next" onClick={next}>
                 Question suivante

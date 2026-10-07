@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { GameView, type PlayVariant } from './game/GameView'
+import { applyNightClass, loadOptions } from './lib/storage'
+import { OptionsModal } from './options/OptionsModal'
 import './App.css'
 
 type Tab = 'france' | 'monde' | 'entrainement' | 'jeu'
@@ -35,14 +37,7 @@ function CardPicto({ className }: { className?: string }) {
         opacity="0.22"
         transform="rotate(-8 16 16)"
       />
-      <rect
-        x="8"
-        y="4"
-        width="16"
-        height="24"
-        rx="2"
-        fill="currentColor"
-      />
+      <rect x="8" y="4" width="16" height="24" rx="2" fill="currentColor" />
       <circle cx="12.2" cy="9.2" r="1.35" fill="#fff" />
       <path
         d="M16 12.2c1.7 1.7 2.9 3.3 2.9 5.1 0 1.55-1.2 2.7-2.9 2.7s-2.9-1.15-2.9-2.7c0-1.8 1.2-3.4 2.9-5.1z"
@@ -55,7 +50,12 @@ function CardPicto({ className }: { className?: string }) {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('france')
+  const [optionsOpen, setOptionsOpen] = useState(false)
   const lexique = isLexique(tab)
+
+  useEffect(() => {
+    applyNightClass(loadOptions().night)
+  }, [])
 
   return (
     <div className="app">
@@ -118,6 +118,15 @@ export default function App() {
         </nav>
 
         <div className="topbar-right">
+          <button
+            type="button"
+            className="btn-options"
+            onClick={() => setOptionsOpen(true)}
+            aria-label="Options"
+            title="Options"
+          >
+            ⚙
+          </button>
           {lexique ? (
             <button
               type="button"
@@ -151,6 +160,8 @@ export default function App() {
           <GameView variant={tab as PlayVariant} />
         ) : null}
       </main>
+
+      <OptionsModal open={optionsOpen} onClose={() => setOptionsOpen(false)} />
     </div>
   )
 }
