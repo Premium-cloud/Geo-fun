@@ -230,11 +230,11 @@
   max-height: 100%;
   aspect-ratio: 3 / 2;
   object-fit: contain;
-  border: 1px solid rgba(40, 28, 12, 0.28);
-  border-radius: 0.12rem;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+  border: 1.5px solid #2a2622;
+  border-radius: 0.1rem;
+  box-shadow: none;
   outline: none;
-  background: #fff;
+  background: #d9d2c5;
   box-sizing: border-box;
 }
 

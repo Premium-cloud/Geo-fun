@@ -196,10 +196,11 @@
 .game-emblem-img.is-flag {
   width: min(16rem, 72vw);
   aspect-ratio: 3 / 2;
-  border-radius: 0.2rem;
-  border: 1px solid rgba(40, 28, 12, 0.28);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
-  background: #fff;
+  border-radius: 0.15rem;
+  border: 2px solid #2a2622;
+  box-shadow: none;
+  background: #d9d2c5;
+  filter: none;
 }
 
 .game-emblem-img.is-blason {
@@ -243,10 +244,11 @@
 }
 
 .game-choice.is-flag-choice {
-  padding: 0.55rem;
+  padding: 0.7rem;
   min-height: 5.2rem;
   display: grid;
   place-items: center;
+  background: #ebe6dc;
 }
 
 .game-choice-flag {
@@ -254,10 +256,10 @@
   max-width: 9.5rem;
   aspect-ratio: 3 / 2;
   object-fit: contain;
-  border-radius: 0.15rem;
-  border: 1px solid rgba(40, 28, 12, 0.28);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
-  background: #fff;
+  border-radius: 0.12rem;
+  border: 2px solid #2a2622;
+  box-shadow: none;
+  background: #d9d2c5;
   box-sizing: border-box;
 }
 
@@ -278,9 +280,22 @@
   color: #fff;
 }
 
-.game-choice.is-flag-choice.is-correct,
+.game-choice.is-flag-choice.is-correct {
+  background: #dce8e0;
+}
+
 .game-choice.is-flag-choice.is-wrong {
-  outline: 3px solid currentColor;
+  background: #f0e0e3;
+}
+
+.game-choice.is-flag-choice.is-correct .game-choice-flag {
+  border-color: #2f6b4f;
+  box-shadow: 0 0 0 2px #2f6b4f;
+}
+
+.game-choice.is-flag-choice.is-wrong .game-choice-flag {
+  border-color: #8c3a4b;
+  box-shadow: 0 0 0 2px #8c3a4b;
 }
 
 .game-feedback {
