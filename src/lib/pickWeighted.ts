@@ -19,15 +19,13 @@ export function pickWeightedId(
   if (!preferUnseen) return shuffle(ids)[0]!
 
   const seen = new Set(loadSeen()[bucket] ?? [])
-  const unseen = ids.filter((id) => !seen.has(id))
-  const pool = unseen.length ? unseen : ids
-  // si tout vu : reset soft du bucket pour recommencer un cycle
+  let unseen = ids.filter((id) => !seen.has(id))
+  // cycle terminé → nouveau tour
   if (!unseen.length) {
-    const pick = shuffle(ids)[0]!
-    markSeen(bucket, pick)
-    return pick
+    clearSeenBucket(bucket)
+    unseen = ids
   }
-  const pick = shuffle(pool)[0]!
+  const pick = shuffle(unseen)[0]!
   markSeen(bucket, pick)
   return pick
 }
