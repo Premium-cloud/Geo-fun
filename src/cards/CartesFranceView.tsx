@@ -108,10 +108,10 @@ function CardBack() {
   return (
     <span className="back-face back-face-fr">
       <FranceBackPictos />
-      <span className="back-title">
-        DÉPARTEMENT
+      <span className="back-mark">
+        Départements
         <br />
-        DE FRANCE
+        de France
       </span>
     </span>
   )

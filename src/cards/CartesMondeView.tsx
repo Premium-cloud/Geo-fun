@@ -110,12 +110,12 @@ function GlobeWatermark() {
 
 function CardBack() {
   return (
-    <span className="back-face">
+    <span className="back-face back-face-monde">
       <GlobeWatermark />
-      <span className="back-title">
-        DRAPEAU
+      <span className="back-mark">
+        Drapeaux
         <br />
-        DU MONDE
+        du monde
       </span>
     </span>
   )

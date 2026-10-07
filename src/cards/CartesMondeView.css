@@ -271,7 +271,11 @@
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 1rem;
+  padding: 0;
+  background: #fffefb;
+}
+
+.back-face-monde {
   background: linear-gradient(160deg, #fffefb 0%, #f7f2ea 100%);
 }
 
@@ -292,15 +296,22 @@
   opacity: 0.13;
 }
 
-.back-title {
+.back-mark {
   position: relative;
   z-index: 1;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0 0.55rem;
+  margin: 0;
   font-family: Fraunces, Georgia, serif;
   font-weight: 800;
-  font-size: 1.15rem;
-  line-height: 1.05;
-  letter-spacing: 0.04em;
+  font-size: 0.78rem;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
   text-align: center;
+  text-wrap: balance;
   color: #1a1a1a;
 }
 
@@ -407,7 +418,7 @@
   }
 
   .print-card .back-face {
-    padding: 4mm;
+    padding: 0;
   }
 
   .print-card .code {
@@ -430,8 +441,10 @@
     font-size: 6pt;
   }
 
-  .print-card .back-title {
-    font-size: 14pt;
+  .print-card .back-mark {
+    font-size: 9.5pt;
+    letter-spacing: 0.01em;
+    padding: 0 3mm;
   }
 
   @page {

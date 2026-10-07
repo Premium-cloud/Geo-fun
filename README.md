@@ -17,11 +17,13 @@ L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
 ## Impression recto-verso
 
-1. Onglet France ou Monde → **Imprimer recto-verso**
-2. (Monde) PDF test / PDF complet disponibles
+1. Onglet **France** (blasons) ou **Monde** (drapeaux) → **Imprimer recto-verso**
+2. (Monde) PDF test / PDF complet disponibles en complément
 3. Options d’impression : **duplex**, retournement **bord long**
 
 Chaque paire de pages = 1 feuille (9 cartes face + dos miroir).
+
+Le verso France reprend les pictogrammes ; le verso Monde le globe. Même typo Fraunces sur les deux jeux.
 
 Régénérer les PDF monde :
 

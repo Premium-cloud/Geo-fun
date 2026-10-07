@@ -19,8 +19,10 @@
   font-size: 1rem;
 }
 
+/* Verso France : fond uni, pictos, titre centré (typo dédiée, pas le .back-title Monde). */
 .back-face-fr {
-  background: linear-gradient(160deg, #fffefb 0%, #f1ece3 100%);
+  padding: 0;
+  background: #fffefb;
 }
 
 .back-pictos {
@@ -45,9 +47,23 @@
   display: block;
 }
 
-.back-face-fr .back-title {
+.back-face-fr .back-mark {
   position: relative;
   z-index: 1;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0 0.55rem;
+  margin: 0;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 800;
+  font-size: 0.78rem;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-wrap: balance;
+  color: #1a1a1a;
 }
 
 .cartes-france .chips-regions {
@@ -65,5 +81,11 @@
 
   .back-picto {
     opacity: 1 !important;
+  }
+
+  .print-card .back-face-fr .back-mark {
+    font-size: 9.5pt;
+    letter-spacing: 0.01em;
+    padding: 0 3mm;
   }
 }

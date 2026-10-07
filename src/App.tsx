@@ -71,7 +71,7 @@ export default function App() {
                 className="btn-pdf btn-pdf-primary"
                 onClick={() => window.print()}
               >
-                Imprimer
+                Imprimer recto-verso
               </button>
               {tab === 'monde' ? (
                 <>
