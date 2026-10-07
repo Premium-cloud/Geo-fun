@@ -1,0 +1,114 @@
+.map-quiz {
+  width: min(100%, 40rem);
+  margin: 0.35rem auto 0.5rem;
+}
+
+.map-quiz-frame {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: #f3efe8;
+  overflow: hidden;
+  padding: 0.4rem;
+}
+
+html.is-night .map-quiz-frame {
+  background: #1f1c19;
+}
+
+.map-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: min(52vh, 28rem);
+}
+
+.map-region {
+  stroke: #cfc6b8;
+  stroke-width: 0.6;
+  cursor: pointer;
+  transition: fill 0.12s ease;
+}
+
+.map-region.is-idle {
+  fill: #ddd6ca;
+}
+
+.map-region.is-idle:hover {
+  fill: #c5dce6;
+}
+
+.map-region.is-correct {
+  fill: #2f6b4f;
+}
+
+.map-region.is-wrong {
+  fill: #8c3a4b;
+}
+
+.map-region.is-reveal {
+  fill: #3d8f66;
+  stroke: #1f6f8b;
+  stroke-width: 1.4;
+}
+
+.map-region:disabled,
+.map-region.is-locked {
+  pointer-events: none;
+}
+
+.dom-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin-top: 0.55rem;
+}
+
+.dom-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 0.55rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-width: 5.5rem;
+  text-align: center;
+}
+
+.dom-chip.is-correct {
+  background: #2f6b4f;
+  border-color: transparent;
+  color: #fff;
+}
+
+.dom-chip.is-wrong {
+  background: #8c3a4b;
+  border-color: transparent;
+  color: #fff;
+}
+
+.dom-chip.is-reveal {
+  box-shadow: 0 0 0 2px #1f6f8b;
+}
+
+.dom-chip-code {
+  display: block;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 0.95rem;
+}
+
+.dom-chip-name {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.map-loading {
+  padding: 2rem;
+  color: var(--muted);
+  text-align: center;
+}

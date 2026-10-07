@@ -19,20 +19,24 @@ import {
   pickRegionDistractors,
   type Difficulty,
 } from './difficulty'
+import { FranceMapQuiz } from './FranceMapQuiz'
+import { HistoryPanel } from './HistoryPanel'
+import { WORLD_MAP_CODES } from './mapCodes'
+import { WorldMapQuiz } from './WorldMapQuiz'
 import './GameView.css'
 
 type Category = 'departements' | 'pays' | 'capitale'
 
-type DeptMode = 'chiffre' | 'chefLieu' | 'blason' | 'region'
-type PaysMode = 'flagToName' | 'nameToFlag' | 'capitalToName' | 'capitalToFlag'
+type DeptMode = 'chiffre' | 'chefLieu' | 'blason' | 'region' | 'carte'
+type PaysMode = 'flagToName' | 'nameToFlag' | 'capitalToName' | 'capitalToFlag' | 'carte'
 type CapitaleMode = 'flagToCapital' | 'nameToCapital'
 type Mode = DeptMode | PaysMode | CapitaleMode
 
-type ChoiceKind = 'text' | 'flag' | 'saisie'
+type ChoiceKind = 'text' | 'flag' | 'saisie' | 'map'
 
 type Round = {
   prompt: string
-  show: 'code' | 'chefLieu' | 'blason' | 'flag' | 'name' | 'capital' | 'deptName'
+  show: 'code' | 'chefLieu' | 'blason' | 'flag' | 'name' | 'capital' | 'deptName' | 'mapPrompt'
   showValue?: string
   showCode?: string
   answer: string
@@ -40,6 +44,7 @@ type Round = {
   choiceKind: ChoiceKind
   answerLabel: string
   itemId: string
+  mapKind?: 'france' | 'world'
 }
 
 const DEPT_MODES: { id: DeptMode; label: string }[] = [
@@ -47,6 +52,7 @@ const DEPT_MODES: { id: DeptMode; label: string }[] = [
   { id: 'chefLieu', label: 'Par chef-lieu' },
   { id: 'blason', label: 'Par blason' },
   { id: 'region', label: 'Par région' },
+  { id: 'carte', label: 'Carte' },
 ]
 
 const PAYS_MODES: { id: PaysMode; label: string }[] = [
@@ -54,7 +60,10 @@ const PAYS_MODES: { id: PaysMode; label: string }[] = [
   { id: 'nameToFlag', label: 'Nom → drapeau' },
   { id: 'capitalToName', label: 'Capitale → pays' },
   { id: 'capitalToFlag', label: 'Capitale → drapeau' },
+  { id: 'carte', label: 'Carte' },
 ]
+
+const MAP_COUNTRIES = COUNTRIES.filter((c) => WORLD_MAP_CODES.has(c.code))
 
 const CAPITALE_MODES: { id: CapitaleMode; label: string }[] = [
   { id: 'flagToCapital', label: 'Drapeau → capitale' },
@@ -138,6 +147,22 @@ function makeDeptRound(
     (d) => d.code,
     preferUnseen,
   )
+
+  if (mode === 'carte') {
+    return {
+      prompt: 'Où se trouve ce département ?',
+      show: 'mapPrompt',
+      showValue: card.name,
+      showCode: card.code,
+      answer: card.code,
+      choices: [],
+      choiceKind: 'map',
+      answerLabel: `${card.code} — ${card.name}`,
+      itemId: card.code,
+      mapKind: 'france',
+    }
+  }
+
   const distractors = pickDeptDistractors(card, DEPT_CARDS, difficulty)
   const saisie = answerMode === 'saisie'
 
@@ -218,6 +243,28 @@ function makePaysRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
 ): Round | null {
+  if (mode === 'carte') {
+    if (MAP_COUNTRIES.length < 4) return null
+    const card = pickWeightedItem(
+      `pays:carte`,
+      MAP_COUNTRIES,
+      (c) => c.code,
+      preferUnseen,
+    )
+    return {
+      prompt: 'Où se trouve ce pays ?',
+      show: 'mapPrompt',
+      showValue: card.name,
+      showCode: card.code,
+      answer: card.code,
+      choices: [],
+      choiceKind: 'map',
+      answerLabel: card.name,
+      itemId: card.code,
+      mapKind: 'world',
+    }
+  }
+
   if (COUNTRIES.length < 4) return null
   const card = pickWeightedItem(
     `pays:${mode}`,
@@ -372,6 +419,14 @@ function makeRound(
 }
 
 function PromptVisual({ round }: { round: Round }) {
+  if (round.show === 'mapPrompt') {
+    return (
+      <div className="game-dept-prompt">
+        {round.showCode ? <span className="game-dept-code">{round.showCode}</span> : null}
+        <p className="game-big-text">{round.showValue}</p>
+      </div>
+    )
+  }
   if (round.show === 'code') {
     return <p className="game-big-code">{round.showValue}</p>
   }
@@ -422,6 +477,7 @@ function FlagChoice({ code }: { code: string }) {
 export type PlayVariant = 'entrainement' | 'jeu'
 
 const AUTO_NEXT_MS = 900
+const AUTO_NEXT_WRONG_HARDCORE_MS = 2400
 
 function Lives({ lives, max }: { lives: number; max: number }) {
   return (
@@ -454,19 +510,22 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   const [typed, setTyped] = useState('')
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS.facile)
   const [statsTick, setStatsTick] = useState(0)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
   const runSnapshot = useRef({ score: 0, asked: 0, peak: 0 })
 
   const availableModes = modesFor(category)
+  const isMapMode = mode === 'carte'
+  const effectiveAnswerMode: AnswerMode = isMapMode ? 'map' : answerMode === 'map' ? 'qcm' : answerMode
   const maxLives = LIVES_FOR[difficulty]
   const timerMax = TIMER_SECONDS[difficulty]
-  const key = statsKey(category, mode, difficulty, answerMode)
+  const key = statsKey(category, mode, difficulty, effectiveAnswerMode)
   const best = useMemo(() => getModeStats(key), [key, statsTick])
 
   const round = useMemo(
-    () => makeRound(category, mode, difficulty, isPlay, answerMode),
-    [category, mode, difficulty, seed, isPlay, answerMode],
+    () => makeRound(category, mode, difficulty, isPlay, effectiveAnswerMode),
+    [category, mode, difficulty, seed, isPlay, effectiveAnswerMode],
   )
 
   function resetRun() {
@@ -503,6 +562,11 @@ export function GameView({ variant }: { variant: PlayVariant }) {
 
   useEffect(() => {
     if (!isPlay || !picked || gameOver) return
+    const wrong =
+      picked === '__timeout__' ||
+      !(picked === round?.answer || answersMatch(picked, round?.answer ?? '', 'loose'))
+    const delay =
+      difficulty === 'hardcore' && wrong ? AUTO_NEXT_WRONG_HARDCORE_MS : AUTO_NEXT_MS
     const t = window.setTimeout(() => {
       if (endAfterFeedback.current) {
         setGameOver(true)
@@ -512,10 +576,10 @@ export function GameView({ variant }: { variant: PlayVariant }) {
       } else {
         next()
       }
-    }, AUTO_NEXT_MS)
+    }, delay)
     return () => window.clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [picked, isPlay, gameOver])
+  }, [picked, isPlay, gameOver, difficulty])
 
   // Timer countdown (Jeu only)
   useEffect(() => {
@@ -537,12 +601,17 @@ export function GameView({ variant }: { variant: PlayVariant }) {
 
   function selectCategory(cat: Category) {
     setCategory(cat)
-    setMode(defaultMode(cat))
+    const nextMode = defaultMode(cat)
+    setMode(nextMode)
+    if (nextMode === 'carte') setAnswerMode('map')
+    else if (answerMode === 'map') setAnswerMode('qcm')
     resetRun()
   }
 
   function selectMode(m: Mode) {
     setMode(m)
+    if (m === 'carte') setAnswerMode('map')
+    else if (answerMode === 'map') setAnswerMode('qcm')
     setPicked(null)
     setTyped('')
     setSeed((s) => s + 1)
@@ -651,19 +720,28 @@ export function GameView({ variant }: { variant: PlayVariant }) {
     <div className="game-view">
       <div className="game-toolbar">
         <div className="game-toolbar-primary">
-          <span className="game-field-label">Catégorie</span>
-          <div className="game-group game-categories" role="group" aria-label="Catégorie">
-            {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`game-chip game-chip-cat ${category === c ? 'is-active' : ''}`}
-                onClick={() => selectCategory(c)}
-              >
-                {CATEGORY_LABEL[c]}
-              </button>
-            ))}
+          <div className="game-field">
+            <span className="game-field-label">Catégorie</span>
+            <div className="game-group game-categories" role="group" aria-label="Catégorie">
+              {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`game-chip game-chip-cat ${category === c ? 'is-active' : ''}`}
+                  onClick={() => selectCategory(c)}
+                >
+                  {CATEGORY_LABEL[c]}
+                </button>
+              ))}
+            </div>
           </div>
+          <button
+            type="button"
+            className="game-chip game-hist-btn"
+            onClick={() => setHistoryOpen(true)}
+          >
+            Historique
+          </button>
         </div>
 
         <div className="game-toolbar-secondary">
@@ -683,27 +761,30 @@ export function GameView({ variant }: { variant: PlayVariant }) {
             </div>
           </div>
 
-          <div className="game-field-sep" aria-hidden />
-
-          <div className="game-field">
-            <span className="game-field-label">Réponse</span>
-            <div className="game-group" role="group" aria-label="Type de réponse">
-              <button
-                type="button"
-                className={`game-chip ${answerMode === 'qcm' ? 'is-active' : ''}`}
-                onClick={() => selectAnswerMode('qcm')}
-              >
-                QCM
-              </button>
-              <button
-                type="button"
-                className={`game-chip ${answerMode === 'saisie' ? 'is-active' : ''}`}
-                onClick={() => selectAnswerMode('saisie')}
-              >
-                Réponse unique
-              </button>
-            </div>
-          </div>
+          {!isMapMode ? (
+            <>
+              <div className="game-field-sep" aria-hidden />
+              <div className="game-field">
+                <span className="game-field-label">Réponse</span>
+                <div className="game-group" role="group" aria-label="Type de réponse">
+                  <button
+                    type="button"
+                    className={`game-chip ${effectiveAnswerMode === 'qcm' ? 'is-active' : ''}`}
+                    onClick={() => selectAnswerMode('qcm')}
+                  >
+                    QCM
+                  </button>
+                  <button
+                    type="button"
+                    className={`game-chip ${effectiveAnswerMode === 'saisie' ? 'is-active' : ''}`}
+                    onClick={() => selectAnswerMode('saisie')}
+                  >
+                    Réponse unique
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
 
           <div className="game-field-sep" aria-hidden />
 
@@ -753,6 +834,24 @@ export function GameView({ variant }: { variant: PlayVariant }) {
         <p className="game-prompt">{round.prompt}</p>
         <PromptVisual round={round} />
 
+        {round.choiceKind === 'map' && round.mapKind === 'france' ? (
+          <FranceMapQuiz
+            answerCode={round.answer}
+            locked={revealed}
+            picked={picked}
+            onPick={answer}
+          />
+        ) : null}
+
+        {round.choiceKind === 'map' && round.mapKind === 'world' ? (
+          <WorldMapQuiz
+            answerCode={round.answer}
+            locked={revealed}
+            picked={picked}
+            onPick={answer}
+          />
+        ) : null}
+
         {round.choiceKind === 'saisie' ? (
           <form className="game-saisie" onSubmit={submitTyped}>
             <input
@@ -770,7 +869,9 @@ export function GameView({ variant }: { variant: PlayVariant }) {
               Valider
             </button>
           </form>
-        ) : (
+        ) : null}
+
+        {round.choiceKind === 'text' || round.choiceKind === 'flag' ? (
           <div className={`game-choices ${round.choiceKind === 'flag' ? 'is-flags' : ''}`}>
             {round.choices.map((choice) => {
               let cls = 'game-choice'
@@ -797,7 +898,7 @@ export function GameView({ variant }: { variant: PlayVariant }) {
               )
             })}
           </div>
-        )}
+        ) : null}
 
         {revealed ? (
           <div className={`game-feedback ${correct ? 'is-ok' : 'is-ko'}`}>
@@ -816,6 +917,8 @@ export function GameView({ variant }: { variant: PlayVariant }) {
           </div>
         ) : null}
       </div>
+
+      {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
     </div>
   )
 }

@@ -158,6 +158,60 @@ html.is-night .empty {
   color: var(--muted);
 }
 
+html.is-night .game-choice.is-correct {
+  background: #1f6b45;
+  border-color: transparent;
+  color: #eafff3;
+}
+
+html.is-night .game-choice.is-wrong {
+  background: #8a3348;
+  border-color: transparent;
+  color: #ffe8ee;
+}
+
+html.is-night .game-choice.is-flag-choice.is-correct {
+  background: #1a3d2c;
+}
+
+html.is-night .game-choice.is-flag-choice.is-wrong {
+  background: #3d1c24;
+}
+
+html.is-night .game-feedback.is-ok p {
+  color: #6dcea0;
+}
+
+html.is-night .game-feedback.is-ko p {
+  color: #f0a0b0;
+}
+
+html.is-night .map-region {
+  stroke: #4a433c;
+}
+
+html.is-night .map-region.is-idle {
+  fill: #3a342e;
+}
+
+html.is-night .map-region.is-correct {
+  fill: #1f6b45;
+}
+
+html.is-night .map-region.is-wrong {
+  fill: #8a3348;
+}
+
+html.is-night .map-region.is-reveal {
+  fill: #2f8f5c;
+}
+
+html.is-night .dom-chip {
+  background: #2a2622;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
 *,
 *::before,
 *::after {

@@ -13,9 +13,14 @@
 
 .game-toolbar-primary {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+}
+
+.game-hist-btn {
+  margin-left: auto;
 }
 
 .game-toolbar-secondary {

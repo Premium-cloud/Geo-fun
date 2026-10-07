@@ -1,7 +1,7 @@
 /** Persistance locale (stats + options). Pas de compte. */
 
 export type DifficultyId = 'facile' | 'difficile' | 'hardcore'
-export type AnswerMode = 'qcm' | 'saisie'
+export type AnswerMode = 'qcm' | 'saisie' | 'map'
 
 export type StatsKey = string
 
