@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { GameView, type PlayVariant } from './game/GameView'
-import { applyNightClass, loadOptions } from './lib/storage'
+import {
+  applyNightClass,
+  loadOptions,
+  saveOptions,
+  type OptionsState,
+} from './lib/storage'
 import { OptionsModal } from './options/OptionsModal'
 import './App.css'
 
@@ -51,11 +56,23 @@ function CardPicto({ className }: { className?: string }) {
 export default function App() {
   const [tab, setTab] = useState<Tab>('france')
   const [optionsOpen, setOptionsOpen] = useState(false)
+  const [options, setOptions] = useState<OptionsState>(() => loadOptions())
   const lexique = isLexique(tab)
 
   useEffect(() => {
-    applyNightClass(loadOptions().night)
-  }, [])
+    applyNightClass(options.night)
+  }, [options.night])
+
+  function handleOptionsChange(next: OptionsState) {
+    setOptions(next)
+    applyNightClass(next.night)
+  }
+
+  function setMapDomTom(mapDomTom: boolean) {
+    const next = { ...loadOptions(), mapDomTom }
+    saveOptions(next)
+    setOptions(next)
+  }
 
   return (
     <div className="app">
@@ -157,11 +174,19 @@ export default function App() {
         {tab === 'france' ? <CartesFranceView /> : null}
         {tab === 'monde' ? <CartesMondeView /> : null}
         {tab === 'entrainement' || tab === 'jeu' ? (
-          <GameView variant={tab as PlayVariant} />
+          <GameView
+            variant={tab as PlayVariant}
+            mapDomTom={options.mapDomTom}
+            onMapDomTomChange={setMapDomTom}
+          />
         ) : null}
       </main>
 
-      <OptionsModal open={optionsOpen} onClose={() => setOptionsOpen(false)} />
+      <OptionsModal
+        open={optionsOpen}
+        onClose={() => setOptionsOpen(false)}
+        onOptionsChange={handleOptionsChange}
+      />
     </div>
   )
 }

@@ -7,7 +7,6 @@ import {
   getModeStats,
   loadOptions,
   recordRun,
-  saveOptions,
   statsKey,
   type AnswerMode,
 } from '../lib/storage'
@@ -512,7 +511,15 @@ function Lives({ lives, max }: { lives: number; max: number }) {
   )
 }
 
-export function GameView({ variant }: { variant: PlayVariant }) {
+export function GameView({
+  variant,
+  mapDomTom,
+  onMapDomTomChange,
+}: {
+  variant: PlayVariant
+  mapDomTom: boolean
+  onMapDomTomChange: (on: boolean) => void
+}) {
   const isPlay = variant === 'jeu'
   const [category, setCategory] = useState<Category>('departements')
   const [mode, setMode] = useState<Mode>('chiffre')
@@ -530,10 +537,10 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS.facile)
   const [statsTick, setStatsTick] = useState(0)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [mapDomTom, setMapDomTom] = useState(() => loadOptions().mapDomTom)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
   const runSnapshot = useRef({ score: 0, asked: 0, peak: 0 })
+  const mapDomTomPrev = useRef(mapDomTom)
 
   const availableModes = modesFor(category)
   const isMapMode = mode === 'carte'
@@ -549,16 +556,19 @@ export function GameView({ variant }: { variant: PlayVariant }) {
     [category, mode, difficulty, seed, isPlay, effectiveAnswerMode, mapDomTom],
   )
 
-  function toggleMapDomTom() {
-    const next = !mapDomTom
-    setMapDomTom(next)
-    const opts = loadOptions()
-    saveOptions({ ...opts, mapDomTom: next })
+  // Options ↔ chip Carte : même réglage, relance la question si ça change
+  useEffect(() => {
+    if (mapDomTomPrev.current === mapDomTom) return
+    mapDomTomPrev.current = mapDomTom
     setPicked(null)
     setTyped('')
     timedOut.current = false
     setSecondsLeft(timerMax)
     setSeed((s) => s + 1)
+  }, [mapDomTom, timerMax])
+
+  function toggleMapDomTom() {
+    onMapDomTomChange(!mapDomTom)
   }
 
   function resetRun() {
