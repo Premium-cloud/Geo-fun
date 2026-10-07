@@ -11,7 +11,7 @@ const LABELS: Record<string, string> = {
   blason: 'Par blason',
   region: 'Par région',
   carte: 'Carte',
-  mixte_mode: 'Aléatoire',
+  mixte_mode: 'Drapeau / capitale / chiffre',
   flagToName: 'Drapeau → nom',
   nameToFlag: 'Nom → drapeau',
   capitalToName: 'Capitale → pays',
@@ -118,7 +118,7 @@ export function HistoryPanel({ onClose }: { onClose: () => void }) {
                         : 0
                     const modeLabel =
                       r.category === 'mixte' || r.mode === 'mixte'
-                        ? 'Aléatoire'
+                        ? 'Drapeau / capitale / chiffre'
                         : label(r.mode)
                     return (
                       <li key={r.key} className="hist-row">

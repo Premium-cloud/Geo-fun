@@ -6,7 +6,9 @@ import {
   type Fiche,
 } from '../data/cartes'
 import { DEPARTEMENTS } from '../data/departements'
+import { DEPT_PICTOS } from '../data/deptPictos'
 import { FranceBackPictos } from './FranceBackIcons'
+import { Picto } from './pictos'
 import './CartesMondeView.css'
 import './CartesFranceView.css'
 
@@ -82,6 +84,7 @@ function CardFront({ card }: { card: DeptCard }) {
   const color = REGION_COLOR[card.region] ?? '#1f6f8b'
   const ink = inkOn(color)
   const chefClass = card.chefLieu.length > 16 ? 'is-long' : ''
+  const pictos = DEPT_PICTOS[card.code] ?? []
 
   return (
     <>
@@ -97,9 +100,18 @@ function CardFront({ card }: { card: DeptCard }) {
           <span className="chef-k">Chef-lieu</span> {card.chefLieu}
         </span>
       </span>
-      <span className="emblem">
+      <span className="emblem has-pictos">
         <BlasonImg code={card.code} name={card.name} />
       </span>
+      {pictos.length > 0 ? (
+        <span className="front-pictos" aria-label="Spécialités">
+          {pictos.map((p) => (
+            <span key={p.icon} className="front-picto" title={p.label}>
+              <Picto id={p.icon} />
+            </span>
+          ))}
+        </span>
+      ) : null}
     </>
   )
 }

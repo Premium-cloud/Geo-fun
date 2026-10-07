@@ -113,30 +113,14 @@ function toPath(feature) {
   const pts = walkCoords(feat.geometry)
   const stride = pts.length > 8000 ? 4 : pts.length > 2500 ? 3 : 2
   feat = { ...feat, geometry: simplify(feat.geometry, stride) }
-  const [[minX, minY], [maxX, maxY]] = manualBounds(feat)
-  // fitExtent manuel via une bbox Feature
-  const bboxFeat = {
-    type: 'Feature',
-    properties: {},
-    geometry: {
-      type: 'Polygon',
-      coordinates: [
-        [
-          [minX, minY],
-          [maxX, minY],
-          [maxX, maxY],
-          [minX, maxY],
-          [minX, minY],
-        ],
-      ],
-    },
-  }
+  // fitExtent sur la feature elle-même (pas une bbox polygon) —
+  // sinon Mercator sous-échelle les DOM france-geojson (~0.2×0.2 dans 120).
   const proj = geoMercator().fitExtent(
     [
       [PAD, PAD],
       [SIZE - PAD, SIZE - PAD],
     ],
-    bboxFeat,
+    feat,
   )
   const d = geoPath(proj)(feat)
   return d

@@ -6,6 +6,34 @@
   object-fit: contain;
 }
 
+.cartes-france .emblem.has-pictos {
+  padding: 0.12rem 0.45rem 0.05rem;
+}
+
+.front-pictos {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.08rem 0.35rem 0.28rem;
+  color: #3a342c;
+}
+
+.front-picto {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  place-items: center;
+  opacity: 0.82;
+}
+
+.front-picto svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .blason-fallback {
   display: grid;
   place-items: center;
@@ -72,7 +100,18 @@
 
 @media print {
   .print-card .blason {
-    max-width: 72%;
+    max-width: 68%;
+  }
+
+  .print-card .front-pictos {
+    padding: 0.5mm 2mm 1.5mm;
+    gap: 1.6mm;
+  }
+
+  .print-card .front-picto {
+    width: 5.2mm;
+    height: 5.2mm;
+    opacity: 1;
   }
 
   .back-pictos {

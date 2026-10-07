@@ -20,7 +20,7 @@ function gi(name) {
   return icon.body
 }
 
-/** IDs utilisés au verso (40) + repli flower. */
+/** IDs verso (40) + spécialités recto + repli flower. */
 const GI_MAP = {
   wheat: 'wheat',
   wine: 'wine-glass',
@@ -61,11 +61,48 @@ const GI_MAP = {
   volcano: 'volcano',
   beach: 'beach-ball',
   flower: 'flowers',
+  // Spécialités recto
+  sheep: 'sheep',
+  goat: 'goat',
+  soap: 'soap',
+  oak: 'oak-leaf',
+  watch: 'pocket-watch',
+  airplane: 'airplane',
+  ribbon: 'ribbon',
+  coal: 'coal-pile',
+  cookie: 'cookie',
+  crystal: 'crystal-growth',
+  fries: 'french-fries',
+  beer: 'beer-stein',
+  horse: 'horse-head',
+  pepper: 'chili-pepper',
+  pig: 'pig',
+  pretzel: 'pretzel',
+  stork: 'stork-delivery',
+  race: 'race-car',
+  garlic: 'garlic',
+  lion: 'lion',
+  atom: 'atom',
+  briefcase: 'briefcase',
+  film: 'film-projector',
+  rose: 'rose',
+  gold: 'gold-bar',
+  penguin: 'penguin',
+  metal: 'metal-bar',
+  factory: 'factory',
+  vanilla: 'vanilla-flower',
+  sword: 'broadsword',
+  walnut: 'acorn',
+  mushroom: 'mushroom',
+  plum: 'plum',
+  pottery: 'amphora',
+  silk: 'rolled-cloth',
 }
 
 const CUSTOM = {
   eiffel: `<path fill="currentColor" d="M256 32l-28 168h56zm-72 168l-36 88h24l8-48h128l8 48h24l-36-88zm36 88l-12 72h24l-6-36zm48 0l-6 36h24l-12-72zM220 200h72l36 216h-24l-8-48H216l-8 48h-24z"/>`,
   beret: `<path fill="currentColor" d="M128 280c0-88 64-136 128-136s128 48 128 136c0 24-8 44-24 56l16 48H136l16-48c-16-12-24-32-24-56zm128-96c-52 0-92 36-100 88h200c-8-52-48-88-100-88z"/>`,
+  crepe: `<path fill="currentColor" d="M256 80c-88 0-160 40-160 96v32c0 24 24 48 64 64l16 96h160l16-96c40-16 64-40 64-64v-32c0-56-72-96-160-96zm0 32c64 0 112 24 112 48s-48 48-112 48-112-24-112-48 48-48 112-48z"/>`,
 }
 
 const pictoIds = [...new Set([...Object.keys(GI_MAP), ...Object.keys(CUSTOM)])]

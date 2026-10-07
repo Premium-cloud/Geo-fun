@@ -453,6 +453,13 @@ function makeRound(
   return makeCapitaleRound(mode as CapitaleMode, difficulty, preferUnseen, answerMode)
 }
 
+/** Mixte = uniquement drapeau→pays, nom→capitale, chiffre→département. */
+const MIXTE_POOL: { cat: Exclude<Category, 'mixte'>; mode: Mode }[] = [
+  { cat: 'pays', mode: 'flagToName' },
+  { cat: 'capitale', mode: 'nameToCapital' },
+  { cat: 'departements', mode: 'chiffre' },
+]
+
 function makeMixedRound(
   difficulty: Difficulty,
   preferUnseen: boolean,
@@ -460,11 +467,16 @@ function makeMixedRound(
   includeDomTom: boolean,
 ): Round | null {
   for (let i = 0; i < 10; i++) {
-    const cat = BASE_CATEGORIES[Math.floor(Math.random() * BASE_CATEGORIES.length)]!
-    const modes = modesFor(cat)
-    const m = modes[Math.floor(Math.random() * modes.length)]!.id
-    const am: AnswerMode = m === 'carte' ? 'map' : answerMode === 'map' ? 'qcm' : answerMode
-    const round = makeRound(cat, m, difficulty, preferUnseen, am, includeDomTom)
+    const pick = MIXTE_POOL[Math.floor(Math.random() * MIXTE_POOL.length)]!
+    const am: AnswerMode = answerMode === 'map' ? 'qcm' : answerMode
+    const round = makeRound(
+      pick.cat,
+      pick.mode,
+      difficulty,
+      preferUnseen,
+      am,
+      includeDomTom,
+    )
     if (round) return round
   }
   return null
@@ -1168,7 +1180,9 @@ export function GameView({
           ) : (
             <div className="game-field">
               <span className="game-field-label">Sous-mode</span>
-              <p className="game-mixte-hint">Aléatoire (départements, pays, capitales)</p>
+              <p className="game-mixte-hint">
+                Drapeau → pays · Nom → capitale · Chiffre → département
+              </p>
             </div>
           )}
 

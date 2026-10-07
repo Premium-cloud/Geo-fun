@@ -195,7 +195,12 @@ export function ZoomableMap({
       >
         <div
           className="zoom-map-stage"
-          style={{ transform: `translate(${tx}px, ${ty}px) scale(${scale})` }}
+          style={{
+            // Agrandir la boîte plutôt que CSS scale() : le SVG reste net au zoom.
+            width: `${scale * 100}%`,
+            height: `${scale * 100}%`,
+            transform: `translate(${tx}px, ${ty}px)`,
+          }}
         >
           {children}
         </div>
