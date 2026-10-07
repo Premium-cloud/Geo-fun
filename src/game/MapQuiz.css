@@ -1,34 +1,91 @@
 .map-quiz {
-  width: min(100%, 40rem);
-  margin: 0.35rem auto 0.5rem;
+  width: min(100%, 48rem);
+  margin: 0.1rem auto 0.2rem;
+}
+
+.map-quiz.is-world {
+  width: min(100%, 52rem);
+}
+
+.zoom-map {
+  position: relative;
+}
+
+.zoom-map-tools {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.zoom-btn {
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: rgba(255, 254, 251, 0.94);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(40, 28, 12, 0.08);
+}
+
+html.is-night .zoom-btn {
+  background: rgba(42, 38, 34, 0.94);
+}
+
+.zoom-map-viewport {
+  touch-action: none;
+  overflow: hidden;
+  border-radius: 0.85rem;
+  cursor: grab;
+  height: min(60vh, 28rem);
+  background: #f3efe8;
+  border: 1px solid var(--line);
+}
+
+html.is-night .zoom-map-viewport {
+  background: #1f1c19;
+}
+
+.map-quiz.is-world .zoom-map-viewport {
+  height: min(64vh, 32rem);
+}
+
+.zoom-map-viewport:active {
+  cursor: grabbing;
+}
+
+.zoom-map-stage {
+  transform-origin: 0 0;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
 }
 
 .map-quiz-frame {
-  position: relative;
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 0.85rem;
-  background: #f3efe8;
-  overflow: hidden;
-  padding: 0.4rem;
-}
-
-html.is-night .map-quiz-frame {
-  background: #1f1c19;
+  height: 100%;
+  padding: 0.2rem;
+  box-sizing: border-box;
 }
 
 .map-svg {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  max-height: min(52vh, 28rem);
 }
 
 .map-region {
   stroke: #cfc6b8;
-  stroke-width: 0.6;
+  stroke-width: 0.7;
   cursor: pointer;
   transition: fill 0.12s ease;
+  /* Le trait grossit avec le zoom → zones plus faciles à viser */
 }
 
 .map-region.is-idle {
@@ -39,7 +96,8 @@ html.is-night .map-quiz-frame {
   fill: #c5dce6;
 }
 
-.map-region.is-correct {
+.map-region.is-correct,
+.map-region.is-reveal {
   fill: #2f6b4f;
 }
 
@@ -47,68 +105,38 @@ html.is-night .map-quiz-frame {
   fill: #8c3a4b;
 }
 
-.map-region.is-reveal {
-  fill: #3d8f66;
-  stroke: #1f6f8b;
-  stroke-width: 1.4;
-}
-
-.map-region:disabled,
 .map-region.is-locked {
   pointer-events: none;
 }
 
-.dom-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  justify-content: center;
-  margin-top: 0.55rem;
-}
-
-.dom-chip {
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--ink);
-  border-radius: 0.55rem;
-  padding: 0.45rem 0.65rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  min-width: 5.5rem;
-  text-align: center;
-}
-
-.dom-chip.is-correct {
-  background: #2f6b4f;
-  border-color: transparent;
-  color: #fff;
-}
-
-.dom-chip.is-wrong {
-  background: #8c3a4b;
-  border-color: transparent;
-  color: #fff;
-}
-
-.dom-chip.is-reveal {
-  box-shadow: 0 0 0 2px #1f6f8b;
-}
-
-.dom-chip-code {
-  display: block;
-  font-family: Fraunces, Georgia, serif;
-  font-size: 0.95rem;
-}
-
-.dom-chip-name {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 600;
-  opacity: 0.9;
-}
-
 .map-loading {
-  padding: 2rem;
+  padding: 1.5rem;
   color: var(--muted);
   text-align: center;
+}
+
+@media (max-width: 560px) {
+  .zoom-map-viewport,
+  .map-quiz.is-world .zoom-map-viewport {
+    height: min(58vh, 24rem);
+    border-radius: 0.7rem;
+  }
+
+  .zoom-map-tools {
+    top: 0.35rem;
+    right: 0.35rem;
+    gap: 0.25rem;
+  }
+
+  .zoom-btn {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .zoom-map-viewport,
+  .map-quiz.is-world .zoom-map-viewport {
+    height: min(55vh, 22rem);
+  }
 }

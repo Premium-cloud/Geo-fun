@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { DEPT_CARDS } from '../cards/CartesFranceView'
+import { ZoomableMap } from './ZoomableMap'
 import './MapQuiz.css'
 
 type MapData = { viewBox: string; paths: Record<string, string> }
-
-const OVERSEAS = DEPT_CARDS.filter((d) => d.group !== 'metro')
 
 type Props = {
   answerCode: string
@@ -13,6 +11,7 @@ type Props = {
   onPick: (code: string) => void
 }
 
+/** Carte métropole uniquement (pas de DOM-TOM). */
 export function FranceMapQuiz({ answerCode, locked, picked, onPick }: Props) {
   const [data, setData] = useState<MapData | null>(null)
 
@@ -20,8 +19,8 @@ export function FranceMapQuiz({ answerCode, locked, picked, onPick }: Props) {
     let alive = true
     fetch('/maps/france-depts.json')
       .then((r) => r.json())
-      .then((j: MapData) => {
-        if (alive) setData(j)
+      .then((fr: MapData) => {
+        if (alive) setData(fr)
       })
       .catch(() => {
         if (alive) setData(null)
@@ -44,52 +43,30 @@ export function FranceMapQuiz({ answerCode, locked, picked, onPick }: Props) {
     return 'map-region is-idle is-locked'
   }
 
-  function chipClass(code: string) {
-    let cls = 'dom-chip'
-    if (!revealed) return cls
-    if (code === answerCode) cls += ' is-reveal is-correct'
-    else if (code === picked) cls += ' is-wrong'
-    return cls
-  }
-
   return (
-    <div className="map-quiz">
-      <div className="map-quiz-frame">
-        <svg
-          className="map-svg"
-          viewBox={data.viewBox}
-          role="img"
-          aria-label="Carte des départements"
-        >
-          {Object.entries(data.paths).map(([code, d]) => (
-            <path
-              key={code}
-              d={d}
-              className={regionClass(code)}
-              onClick={() => {
-                if (!locked) onPick(code)
-              }}
-            >
-              <title>{code}</title>
-            </path>
-          ))}
-        </svg>
-      </div>
-
-      <div className="dom-strip" role="group" aria-label="DOM-TOM">
-        {OVERSEAS.map((d) => (
-          <button
-            key={d.code}
-            type="button"
-            className={chipClass(d.code)}
-            disabled={locked}
-            onClick={() => onPick(d.code)}
+    <div className="map-quiz is-france">
+      <ZoomableMap resetKey={answerCode}>
+        <div className="map-quiz-frame">
+          <svg
+            className="map-svg"
+            viewBox={data.viewBox}
+            role="img"
+            aria-label="Carte des départements (métropole)"
           >
-            <span className="dom-chip-code">{d.code}</span>
-            <span className="dom-chip-name">{d.name}</span>
-          </button>
-        ))}
-      </div>
+            {Object.entries(data.paths).map(([code, d]) => (
+              <path
+                key={code}
+                d={d}
+                className={regionClass(code)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (!locked) onPick(code)
+                }}
+              />
+            ))}
+          </svg>
+        </div>
+      </ZoomableMap>
     </div>
   )
 }

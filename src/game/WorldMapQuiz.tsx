@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ZoomableMap } from './ZoomableMap'
 import './MapQuiz.css'
 
 type MapData = { viewBox: string; paths: Record<string, string> }
@@ -42,28 +43,29 @@ export function WorldMapQuiz({ answerCode, locked, picked, onPick }: Props) {
   }
 
   return (
-    <div className="map-quiz">
-      <div className="map-quiz-frame">
-        <svg
-          className="map-svg"
-          viewBox={data.viewBox}
-          role="img"
-          aria-label="Carte du monde"
-        >
-          {Object.entries(data.paths).map(([code, d]) => (
-            <path
-              key={code}
-              d={d}
-              className={regionClass(code)}
-              onClick={() => {
-                if (!locked) onPick(code)
-              }}
-            >
-              <title>{code}</title>
-            </path>
-          ))}
-        </svg>
-      </div>
+    <div className="map-quiz is-world">
+      <ZoomableMap maxScale={6} resetKey={answerCode}>
+        <div className="map-quiz-frame">
+          <svg
+            className="map-svg map-svg-world"
+            viewBox={data.viewBox}
+            role="img"
+            aria-label="Carte du monde"
+          >
+            {Object.entries(data.paths).map(([code, d]) => (
+              <path
+                key={code}
+                d={d}
+                className={regionClass(code)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (!locked) onPick(code)
+                }}
+              />
+            ))}
+          </svg>
+        </div>
+      </ZoomableMap>
     </div>
   )
 }

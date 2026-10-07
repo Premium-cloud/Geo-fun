@@ -16,6 +16,13 @@ export const TIMER_SECONDS: Record<Difficulty, number> = {
   hardcore: 7,
 }
 
+/** Mode Carte : plus de temps pour zoomer / viser. */
+export const MAP_TIMER_SECONDS: Record<Difficulty, number> = {
+  facile: 35,
+  difficile: 25,
+  hardcore: 18,
+}
+
 export const LIVES_FOR: Record<Difficulty, number> = {
   facile: 3,
   difficile: 3,

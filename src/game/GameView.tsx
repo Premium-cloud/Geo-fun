@@ -13,6 +13,7 @@ import {
 import {
   DIFFICULTY_OPTIONS,
   LIVES_FOR,
+  MAP_TIMER_SECONDS,
   TIMER_SECONDS,
   pickCountryDistractors,
   pickDeptDistractors,
@@ -64,6 +65,8 @@ const PAYS_MODES: { id: PaysMode; label: string }[] = [
 ]
 
 const MAP_COUNTRIES = COUNTRIES.filter((c) => WORLD_MAP_CODES.has(c.code))
+/** Mode Carte départements : métropole seulement (pas de DOM-TOM). */
+const METRO_DEPTS = DEPT_CARDS.filter((d) => d.group === 'metro')
 
 const CAPITALE_MODES: { id: CapitaleMode; label: string }[] = [
   { id: 'flagToCapital', label: 'Drapeau → capitale' },
@@ -140,15 +143,14 @@ function makeDeptRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
 ): Round | null {
-  if (DEPT_CARDS.length < 4) return null
-  const card = pickWeightedItem(
-    `dept:${mode}`,
-    DEPT_CARDS,
-    (d) => d.code,
-    preferUnseen,
-  )
-
   if (mode === 'carte') {
+    if (METRO_DEPTS.length < 4) return null
+    const card = pickWeightedItem(
+      `dept:carte`,
+      METRO_DEPTS,
+      (d) => d.code,
+      preferUnseen,
+    )
     return {
       prompt: 'Où se trouve ce département ?',
       show: 'mapPrompt',
@@ -162,6 +164,14 @@ function makeDeptRound(
       mapKind: 'france',
     }
   }
+
+  if (DEPT_CARDS.length < 4) return null
+  const card = pickWeightedItem(
+    `dept:${mode}`,
+    DEPT_CARDS,
+    (d) => d.code,
+    preferUnseen,
+  )
 
   const distractors = pickDeptDistractors(card, DEPT_CARDS, difficulty)
   const saisie = answerMode === 'saisie'
@@ -421,7 +431,7 @@ function makeRound(
 function PromptVisual({ round }: { round: Round }) {
   if (round.show === 'mapPrompt') {
     return (
-      <div className="game-dept-prompt">
+      <div className="game-dept-prompt game-map-prompt">
         {round.showCode ? <span className="game-dept-code">{round.showCode}</span> : null}
         <p className="game-big-text">{round.showValue}</p>
       </div>
@@ -519,7 +529,7 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   const isMapMode = mode === 'carte'
   const effectiveAnswerMode: AnswerMode = isMapMode ? 'map' : answerMode === 'map' ? 'qcm' : answerMode
   const maxLives = LIVES_FOR[difficulty]
-  const timerMax = TIMER_SECONDS[difficulty]
+  const timerMax = isMapMode ? MAP_TIMER_SECONDS[difficulty] : TIMER_SECONDS[difficulty]
   const key = statsKey(category, mode, difficulty, effectiveAnswerMode)
   const best = useMemo(() => getModeStats(key), [key, statsTick])
 
@@ -538,7 +548,9 @@ export function GameView({ variant }: { variant: PlayVariant }) {
     setPicked(null)
     setTyped('')
     timedOut.current = false
-    setSecondsLeft(TIMER_SECONDS[difficulty])
+    setSecondsLeft(
+      (mode === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty],
+    )
     setSeed((s) => s + 1)
   }
 
@@ -546,7 +558,7 @@ export function GameView({ variant }: { variant: PlayVariant }) {
     setPicked(null)
     setTyped('')
     timedOut.current = false
-    setSecondsLeft(TIMER_SECONDS[difficulty])
+    setSecondsLeft(timerMax)
     setSeed((s) => s + 1)
   }
 
@@ -615,7 +627,7 @@ export function GameView({ variant }: { variant: PlayVariant }) {
     setPicked(null)
     setTyped('')
     setSeed((s) => s + 1)
-    setSecondsLeft(TIMER_SECONDS[difficulty])
+    setSecondsLeft((m === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty])
   }
 
   function selectDifficulty(d: Difficulty) {
@@ -628,7 +640,7 @@ export function GameView({ variant }: { variant: PlayVariant }) {
     setGameOver(false)
     setPicked(null)
     setTyped('')
-    setSecondsLeft(TIMER_SECONDS[d])
+    setSecondsLeft((isMapMode ? MAP_TIMER_SECONDS : TIMER_SECONDS)[d])
     setSeed((s) => s + 1)
   }
 
@@ -717,8 +729,8 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   }
 
   return (
-    <div className="game-view">
-      <div className="game-toolbar">
+    <div className={`game-view ${isMapMode ? 'is-map-mode' : ''}`}>
+      <div className={`game-toolbar ${isMapMode ? 'is-compact' : ''}`}>
         <div className="game-toolbar-primary">
           <div className="game-field">
             <span className="game-field-label">Catégorie</span>
@@ -811,13 +823,16 @@ export function GameView({ variant }: { variant: PlayVariant }) {
         </div>
       </div>
 
-      <div className="game-board" key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${seed}`}>
+      <div
+        className={`game-board ${isMapMode ? 'is-map-board' : ''}`}
+        key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${seed}`}
+      >
         <div className="game-board-hud" aria-live="polite">
           {isPlay ? (
             <>
               <Lives lives={lives} max={maxLives} />
               <span
-                className={`game-timer ${secondsLeft <= 3 ? 'is-urgent' : ''}`}
+                className={`game-timer ${secondsLeft <= 5 ? 'is-urgent' : ''}`}
                 aria-label={`${secondsLeft} secondes`}
               >
                 {secondsLeft}s

@@ -504,6 +504,48 @@ html.is-night .game-saisie-input {
   }
 }
 
+/* Mode Carte : moins de chrome, carte dominante */
+.game-view.is-map-mode {
+  padding-bottom: 1.25rem;
+  max-width: 56rem;
+}
+
+.game-view.is-map-mode .game-toolbar.is-compact {
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+}
+
+.game-view.is-map-mode .game-toolbar-secondary {
+  gap: 0.65rem 1rem;
+  padding-top: 0.55rem;
+}
+
+.game-view.is-map-mode .game-board.is-map-board {
+  padding: 1.35rem 0.85rem 0.85rem;
+}
+
+.game-view.is-map-mode .game-prompt {
+  margin-bottom: 0.35rem;
+  font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+}
+
+.game-view.is-map-mode .game-map-prompt {
+  margin: 0 auto 0.35rem;
+}
+
+.game-view.is-map-mode .game-map-prompt .game-dept-code {
+  font-size: 0.95rem;
+}
+
+.game-view.is-map-mode .game-map-prompt .game-big-text {
+  margin: 0.1rem auto 0.35rem;
+  font-size: clamp(1.2rem, 3.2vw, 1.65rem);
+}
+
+.game-view.is-map-mode .game-feedback {
+  margin-top: 0.65rem;
+}
+
 @media (max-width: 560px) {
   .game-choices {
     grid-template-columns: 1fr;
@@ -526,5 +568,31 @@ html.is-night .game-saisie-input {
     top: 0.7rem;
     right: 0.75rem;
     font-size: 0.82rem;
+  }
+
+  .game-view.is-map-mode {
+    padding: 0.65rem 0.7rem 1rem;
+  }
+
+  .game-view.is-map-mode .game-chip {
+    padding: 0.32rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
+  .game-view.is-map-mode .game-categories .game-chip-cat {
+    padding: 0.38rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .game-view.is-map-mode .game-field-label {
+    font-size: 0.6rem;
+  }
+
+  .game-view.is-map-mode .game-record {
+    display: none;
+  }
+
+  .game-view.is-map-mode .game-board.is-map-board {
+    padding: 2.1rem 0.55rem 0.55rem;
   }
 }
