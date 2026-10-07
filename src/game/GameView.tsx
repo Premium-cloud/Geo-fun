@@ -437,12 +437,9 @@ export function GameView({ variant }: { variant: PlayVariant }) {
 
   return (
     <div className="game-view">
-      <p className="game-session">
-        {isPlay ? 'Mode Jeu · 3 vies' : 'Entraînement'}
-      </p>
-
       <div className="game-toolbar">
         <div className="game-toolbar-primary">
+          <span className="game-field-label">Catégorie</span>
           <div className="game-group game-categories" role="group" aria-label="Catégorie">
             {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
               <button

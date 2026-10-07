@@ -4,7 +4,7 @@
 
 .topbar {
   display: grid;
-  grid-template-columns: 9.5rem 1fr minmax(9.5rem, auto);
+  grid-template-columns: minmax(9.5rem, auto) 1fr minmax(4rem, auto);
   align-items: center;
   column-gap: 0.75rem;
   padding: 0.75rem 1.25rem;
@@ -35,6 +35,53 @@
 
 .brand:hover h1 {
   color: #1f6f8b;
+}
+
+.brand-quiz {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.brand-mode {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brand-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  cursor: pointer;
+}
+
+.brand-back:hover {
+  color: #1f6f8b;
+}
+
+.brand-back:hover .brand-mark {
+  transform: translateY(-1px);
+}
+
+.brand-back .brand-mark {
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 0.7rem;
 }
 
 .brand-mark {
