@@ -6,6 +6,8 @@ Collection de cartes à collectionner et mode jeu :
 - **Entraînement** — quiz pour apprendre (validation manuelle)
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
 - **Carte** — pointer le département ou le pays ; zoom / pinch ; timers allongés ; option DOM-TOM (silhouettes)
+- **Hardcore** — pièges QCM plus collés, saisie très stricte (Entraînement et Jeu)
+- **Récap** — fin de partie avec bonnes / mauvaises réponses
 - **Réponse unique** — saisie libre avec tolérances (tirets, accents…)
 - **Options** — mode nuit, son, suppression / import-export des données locales
 

@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "pdf": "node scripts/export-pdf.mjs",
-    "pdf:test": "node scripts/export-pdf.mjs --test-only"
+    "pdf:test": "node scripts/export-pdf.mjs --test-only",
+    "maps:dom": "node scripts/generate-dom-tom-shapes.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

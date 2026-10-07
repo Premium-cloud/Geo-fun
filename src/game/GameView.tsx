@@ -6,6 +6,7 @@ import { pickWeightedItem } from '../lib/pickWeighted'
 import {
   getModeStats,
   loadOptions,
+  noteBestStreak,
   recordRun,
   statsKey,
   type AnswerMode,
@@ -497,6 +498,16 @@ export type PlayVariant = 'entrainement' | 'jeu'
 const AUTO_NEXT_MS = 900
 const AUTO_NEXT_WRONG_HARDCORE_MS = 2400
 
+type RunEntry = {
+  prompt: string
+  question: string
+  given: string
+  expected: string
+  ok: boolean
+}
+
+type RecapFilter = 'all' | 'ok' | 'ko'
+
 function Lives({ lives, max }: { lives: number; max: number }) {
   return (
     <div className="game-lives" aria-label={`${lives} vie${lives > 1 ? 's' : ''}`}>
@@ -509,6 +520,40 @@ function Lives({ lives, max }: { lives: number; max: number }) {
       ))}
     </div>
   )
+}
+
+function labelForChoice(choice: string, round: Round): string {
+  if (choice === '__timeout__') return 'Temps écoulé'
+  if (choice === '__miss__') return 'À côté'
+  if (round.mapKind === 'world' || round.choiceKind === 'flag') {
+    return COUNTRIES.find((c) => c.code === choice)?.name ?? choice
+  }
+  if (round.mapKind === 'france') {
+    const d = DEPT_CARDS.find((x) => x.code === choice)
+    return d ? `${d.code} — ${d.name}` : choice
+  }
+  return choice
+}
+
+function questionLabel(round: Round): string {
+  if (round.show === 'mapPrompt') {
+    return [round.showCode, round.showValue].filter(Boolean).join(' ')
+  }
+  if (round.show === 'deptName') {
+    return [round.showCode, round.showValue].filter(Boolean).join(' ')
+  }
+  if (round.showValue) return round.showValue
+  if (round.showCode) {
+    if (round.show === 'flag') {
+      return COUNTRIES.find((c) => c.code === round.showCode)?.name ?? round.showCode
+    }
+    if (round.show === 'blason') {
+      const d = DEPT_CARDS.find((x) => x.code === round.showCode)
+      return d ? `${d.code} ${d.name}` : round.showCode
+    }
+    return round.showCode
+  }
+  return round.prompt
 }
 
 export function GameView({
@@ -537,10 +582,14 @@ export function GameView({
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS.facile)
   const [statsTick, setStatsTick] = useState(0)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [runLog, setRunLog] = useState<RunEntry[]>([])
+  const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
+  const [missHint, setMissHint] = useState(false)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
   const runSnapshot = useRef({ score: 0, asked: 0, peak: 0 })
   const mapDomTomPrev = useRef(mapDomTom)
+  const missTimer = useRef(0)
 
   const availableModes = modesFor(category)
   const isMapMode = mode === 'carte'
@@ -571,7 +620,14 @@ export function GameView({
     onMapDomTomChange(!mapDomTom)
   }
 
+  function flushTrainingSession() {
+    if (isPlay || asked <= 0) return
+    recordRun({ key, score, asked, streakPeak })
+    setStatsTick((t) => t + 1)
+  }
+
   function resetRun() {
+    flushTrainingSession()
     setScore(0)
     setAsked(0)
     setStreak(0)
@@ -580,6 +636,9 @@ export function GameView({
     setGameOver(false)
     setPicked(null)
     setTyped('')
+    setRunLog([])
+    setRecapFilter('all')
+    setMissHint(false)
     timedOut.current = false
     setSecondsLeft(
       (mode === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty],
@@ -654,16 +713,23 @@ export function GameView({
   }
 
   function selectMode(m: Mode) {
+    flushTrainingSession()
     setMode(m)
     if (m === 'carte') setAnswerMode('map')
     else if (answerMode === 'map') setAnswerMode('qcm')
     setPicked(null)
     setTyped('')
+    setScore(0)
+    setAsked(0)
+    setStreak(0)
+    setStreakPeak(0)
+    setRunLog([])
     setSeed((s) => s + 1)
     setSecondsLeft((m === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty])
   }
 
   function selectDifficulty(d: Difficulty) {
+    flushTrainingSession()
     setDifficulty(d)
     setLives(LIVES_FOR[d])
     setScore(0)
@@ -673,6 +739,7 @@ export function GameView({
     setGameOver(false)
     setPicked(null)
     setTyped('')
+    setRunLog([])
     setSecondsLeft((isMapMode ? MAP_TIMER_SECONDS : TIMER_SECONDS)[d])
     setSeed((s) => s + 1)
   }
@@ -684,10 +751,21 @@ export function GameView({
 
   function resolveAnswer(choice: string, isCorrect: boolean) {
     if (!round || picked || gameOver) return
+    setMissHint(false)
     setPicked(choice)
     const nextAsked = asked + 1
     setAsked(nextAsked)
     beep(isCorrect)
+    setRunLog((prev) => [
+      ...prev,
+      {
+        prompt: round.prompt,
+        question: questionLabel(round),
+        given: labelForChoice(choice, round),
+        expected: round.answerLabel,
+        ok: isCorrect,
+      },
+    ])
     if (isCorrect) {
       const nextScore = score + 1
       setScore(nextScore)
@@ -695,6 +773,8 @@ export function GameView({
       setStreak(nextStreak)
       const peak = Math.max(streakPeak, nextStreak)
       setStreakPeak(peak)
+      noteBestStreak(key, peak)
+      setStatsTick((t) => t + 1)
       endAfterFeedback.current = false
       runSnapshot.current = { score: nextScore, asked: nextAsked, peak }
     } else {
@@ -715,10 +795,18 @@ export function GameView({
     resolveAnswer(choice, choice === round.answer)
   }
 
+  function onMapMiss() {
+    if (picked || gameOver) return
+    setMissHint(true)
+    window.clearTimeout(missTimer.current)
+    missTimer.current = window.setTimeout(() => setMissHint(false), 1200)
+  }
+
   function submitTyped(e: FormEvent) {
     e.preventDefault()
     if (!round || picked) return
-    const strict = difficulty === 'facile' ? 'loose' : 'strict'
+    const strict =
+      difficulty === 'facile' ? 'loose' : difficulty === 'hardcore' ? 'hardcore' : 'strict'
     const ok = answersMatch(typed, round.answer, strict)
     resolveAnswer(typed || '—', ok)
   }
@@ -739,6 +827,12 @@ export function GameView({
   const pct = asked > 0 ? Math.round((score / asked) * 100) : 0
 
   if (gameOver) {
+    const okCount = runLog.filter((e) => e.ok).length
+    const koCount = runLog.length - okCount
+    const filtered =
+      recapFilter === 'all'
+        ? runLog
+        : runLog.filter((e) => (recapFilter === 'ok' ? e.ok : !e.ok))
     return (
       <div className="game-view">
         <div className="game-board game-over">
@@ -747,16 +841,64 @@ export function GameView({
             Score <strong>{score}</strong> / {asked}
             <span className="game-pct"> · {pct} %</span>
           </p>
+          <p className="game-over-recap-sum">
+            <span className="is-ok">{okCount} bonnes</span>
+            {' · '}
+            <span className="is-ko">{koCount} mauvaises</span>
+          </p>
           <p className="game-over-streak">
-            Meilleure série cette partie : <strong>×{streakPeak}</strong>
+            Meilleure série : <strong>×{streakPeak}</strong>
             {best.bestStreak > 0 ? (
               <> · Record <strong>×{best.bestStreak}</strong></>
             ) : null}
           </p>
-          <button type="button" className="game-next" onClick={resetRun}>
-            Rejouer
-          </button>
+
+          <div className="game-recap-filters" role="group" aria-label="Filtrer le récap">
+            {(
+              [
+                ['all', 'Toutes'],
+                ['ok', '✓'],
+                ['ko', '✗'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`game-chip ${recapFilter === id ? 'is-active' : ''}`}
+                onClick={() => setRecapFilter(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <ul className="game-recap-list">
+            {filtered.map((e, i) => (
+              <li key={`${i}-${e.question}`} className={e.ok ? 'is-ok' : 'is-ko'}>
+                <strong>
+                  {e.ok ? '✓' : '✗'} {e.question}
+                </strong>
+                <span>
+                  {e.ok ? e.expected : `${e.given} → ${e.expected}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="game-over-actions">
+            <button type="button" className="game-next" onClick={resetRun}>
+              Rejouer
+            </button>
+            <button
+              type="button"
+              className="game-next game-next-quiet"
+              onClick={() => setHistoryOpen(true)}
+            >
+              Voir l’historique
+            </button>
+          </div>
         </div>
+        {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
       </div>
     )
   }
@@ -911,6 +1053,7 @@ export function GameView({
             picked={picked}
             showDomTom={mapDomTom}
             onPick={answer}
+            onMiss={onMapMiss}
           />
         ) : null}
 
@@ -920,7 +1063,14 @@ export function GameView({
             locked={revealed}
             picked={picked}
             onPick={answer}
+            onMiss={onMapMiss}
           />
+        ) : null}
+
+        {missHint && !revealed ? (
+          <p className="game-miss-hint" role="status">
+            À côté — vise un pays ou un département
+          </p>
         ) : null}
 
         {round.choiceKind === 'saisie' ? (
@@ -985,6 +1135,22 @@ export function GameView({
                 Question suivante
               </button>
             ) : null}
+          </div>
+        ) : null}
+
+        {!isPlay && asked > 0 ? (
+          <div className="game-train-end">
+            <button
+              type="button"
+              className="game-next game-next-quiet"
+              onClick={() => {
+                recordRun({ key, score, asked, streakPeak })
+                setStatsTick((t) => t + 1)
+                setGameOver(true)
+              }}
+            >
+              Voir le récap
+            </button>
           </div>
         ) : null}
       </div>

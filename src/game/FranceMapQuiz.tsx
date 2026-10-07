@@ -14,6 +14,7 @@ type Props = {
   picked: string | null
   showDomTom: boolean
   onPick: (code: string) => void
+  onMiss?: () => void
 }
 
 export function FranceMapQuiz({
@@ -22,6 +23,7 @@ export function FranceMapQuiz({
   picked,
   showDomTom,
   onPick,
+  onMiss,
 }: Props) {
   const [data, setData] = useState<MapData | null>(null)
   const [domShapes, setDomShapes] = useState<Record<string, DomShape>>({})
@@ -71,7 +73,12 @@ export function FranceMapQuiz({
 
   return (
     <div className={`map-quiz is-france ${showDomTom ? 'has-dom' : ''}`}>
-      <ZoomableMap resetKey={answerCode}>
+      <ZoomableMap
+        resetKey={answerCode}
+        locked={locked}
+        onPickCode={onPick}
+        onMiss={onMiss}
+      >
         <div className="map-quiz-frame">
           <svg
             className="map-svg"
@@ -79,16 +86,12 @@ export function FranceMapQuiz({
             role="img"
             aria-label="Carte des départements (métropole)"
           >
+            <rect className="map-ocean" x={0} y={0} width={900} height={900} fill="transparent" />
             {Object.entries(data.paths).map(([code, d]) => (
-              <path
-                key={code}
-                d={d}
-                className={regionClass(code)}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (!locked) onPick(code)
-                }}
-              />
+              <g key={code}>
+                <path d={d} className="map-region-hit" data-map-code={code} strokeWidth={5} />
+                <path d={d} className={regionClass(code)} data-map-code={code} />
+              </g>
             ))}
           </svg>
         </div>

@@ -74,6 +74,7 @@ function levenshtein(a: string, b: string): number {
 }
 
 function maxEdits(len: number, strictness: MatchStrictness): number {
+  if (strictness === 'hardcore') return 0
   if (strictness === 'strict') {
     if (len <= 5) return 0
     if (len <= 10) return 1
@@ -110,7 +111,7 @@ function aliasHits(norm: string, targetNorm: string): boolean {
   return false
 }
 
-export type MatchStrictness = 'loose' | 'strict'
+export type MatchStrictness = 'loose' | 'strict' | 'hardcore'
 
 export function answersMatch(
   userInput: string,
@@ -123,13 +124,18 @@ export function answersMatch(
 
   // égalité exacte après normalisation (tirets/espaces déjà unifiés)
   if (u === e || compact(u) === compact(e)) return true
-  if (softenSpelling(u) === softenSpelling(e)) return true
 
   // sans article côté attendu
   const e2 = e.replace(/^(les?|la|le|l|du|de|des)\s+/, '')
-  if (u === e2 || compact(u) === compact(e2) || softenSpelling(u) === softenSpelling(e2)) {
-    return true
+  if (u === e2 || compact(u) === compact(e2)) return true
+
+  // Hardcore : pas de doubles lettres / fuzzy — accents & tirets seulement
+  if (strictness === 'hardcore') {
+    return aliasHits(u, e) || aliasHits(u, e2)
   }
+
+  if (softenSpelling(u) === softenSpelling(e)) return true
+  if (softenSpelling(u) === softenSpelling(e2)) return true
 
   if (aliasHits(u, e) || aliasHits(u, e2)) return true
 

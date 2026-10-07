@@ -243,7 +243,7 @@ function deptHardPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
   })
 }
 
-/** En Difficile/Hardcore : encore plus collé (codes ±1–2 + même région hors Paris pour 9x). */
+/** En Difficile : codes ±1–2 + même région hors Paris pour 9x. */
 function deptHarderPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
   const ak = codeKey(answer.code)
   return all.filter((d) => {
@@ -255,6 +255,21 @@ function deptHarderPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
     if (sharesNameFamily(answer.name, d.name)) return true
     if (d.region === answer.region && firstLetter(answer.name) === firstLetter(d.name)) return true
     if (d.region === answer.region && Math.abs(codeKey(d.code) - ak) <= 5) return true
+    return false
+  })
+}
+
+/** Hardcore : quasi uniquement voisins de code / même famille / même région. */
+function deptHardestPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
+  const ak = codeKey(answer.code)
+  return all.filter((d) => {
+    if (d.code === answer.code) return false
+    if (!metroOnly(answer, d) && !(isOverseas(answer) && isOverseas(d))) return false
+    if (isIdfOuter(answer.code) && d.code === '75') return false
+    if (isOverseas(answer) && isOverseas(d)) return true
+    if (Math.abs(codeKey(d.code) - ak) <= 1) return true
+    if (sharesNameFamily(answer.name, d.name)) return true
+    if (d.region === answer.region) return true
     return false
   })
 }
@@ -295,7 +310,7 @@ function deptFarPool(answer: DeptCard, all: DeptCard[]): DeptCard[] {
 /**
  * Facile : 1 même lettre soft + 1 même région soft + 1 loin
  * Difficile : 3 pièges durs (codes proches / famille)
- * Hardcore : pool encore plus collé (harder)
+ * Hardcore : uniquement voisins / famille / même région
  */
 export function pickDeptDistractors(
   answer: DeptCard,
@@ -304,6 +319,7 @@ export function pickDeptDistractors(
 ): DeptCard[] {
   const hard = deptHardPool(answer, all)
   const harder = deptHarderPool(answer, all)
+  const hardest = deptHardestPool(answer, all)
   const softLetter = deptSameLetterSoft(answer, all)
   const softRegion = deptSameRegionSoft(answer, all)
   const far = deptFarPool(answer, all)
@@ -332,14 +348,16 @@ export function pickDeptDistractors(
     return fillFromPools(
       [],
       3,
-      [overseas, harder, hard, others],
+      difficulty === 'hardcore'
+        ? [overseas, hardest, harder]
+        : [overseas, harder, hard, others],
       used,
       (d) => d.code,
     )
   }
 
   if (difficulty === 'hardcore') {
-    return fillFromPools([], 3, [harder, hard, softLetter, others], used, (d) => d.code)
+    return fillFromPools([], 3, [hardest, harder, hard], used, (d) => d.code)
   }
 
   // difficile : priorise harder puis hard
@@ -363,6 +381,9 @@ export function pickRegionDistractors(
     const a = pickOne(neighbors.length ? neighbors : others, used, (r) => r)
     if (a) picked.push(a)
     return fillFromPools(picked, 3, [far, neighbors, others], used, (r) => r)
+  }
+  if (difficulty === 'hardcore') {
+    return fillFromPools([], 3, [neighbors, others], used, (r) => r)
   }
   return fillFromPools([], 3, [neighbors, far, others], used, (r) => r)
 }
@@ -411,17 +432,34 @@ export function pickCountryDistractors(
     )
   }
 
-  // Difficile / Hardcore : zéro cadeau célèbre
-  const c1 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
-  if (c1) picked.push(c1)
-  const c2 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
-  if (c2) picked.push(c2)
-  const o = pickOne(obscure.length ? obscure : nonFamous, used, (c) => c.code)
-  if (o) picked.push(o)
+  // Difficile : clusters + continent, zéro cadeau célèbre
+  if (difficulty === 'difficile') {
+    const c1 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
+    if (c1) picked.push(c1)
+    const c2 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
+    if (c2) picked.push(c2)
+    const o = pickOne(obscure.length ? obscure : nonFamous, used, (c) => c.code)
+    if (o) picked.push(o)
+    return fillFromPools(
+      picked,
+      3,
+      [cluster, continent, nonFamous, obscure, others],
+      used,
+      (c) => c.code,
+    )
+  }
+
+  // Hardcore : presque uniquement les drapeaux / pays du même cluster
+  const h1 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
+  if (h1) picked.push(h1)
+  const h2 = pickOne(cluster.length ? cluster : obscure, used, (c) => c.code)
+  if (h2) picked.push(h2)
+  const h3 = pickOne(cluster.length ? cluster : continent, used, (c) => c.code)
+  if (h3) picked.push(h3)
   return fillFromPools(
     picked,
     3,
-    [cluster, continent, nonFamous, obscure, others],
+    [cluster, obscure, continent, nonFamous],
     used,
     (c) => c.code,
   )

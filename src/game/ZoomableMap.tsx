@@ -15,7 +15,14 @@ type Props = {
   maxScale?: number
   /** Remet le zoom à zéro quand cette clé change (nouvelle question). */
   resetKey?: string | number
+  locked?: boolean
+  /** Clic validé (sans drag) sur un élément [data-map-code]. */
+  onPickCode?: (code: string) => void
+  /** Clic sur le vide (océan / hors pays). */
+  onMiss?: () => void
 }
+
+const DRAG_THRESHOLD = 8
 
 export function ZoomableMap({
   children,
@@ -23,6 +30,9 @@ export function ZoomableMap({
   minScale = 1,
   maxScale = 4.5,
   resetKey,
+  locked = false,
+  onPickCode,
+  onMiss,
 }: Props) {
   const [scale, setScale] = useState(1)
   const [tx, setTx] = useState(0)
@@ -33,11 +43,14 @@ export function ZoomableMap({
     tx: number
     ty: number
     moved: boolean
+    target: EventTarget | null
   } | null>(null)
   const pinch = useRef<{ dist: number; scale: number; tx: number; ty: number } | null>(
     null,
   )
   const boxRef = useRef<HTMLDivElement>(null)
+  const scaleRef = useRef(scale)
+  scaleRef.current = scale
 
   const reset = useCallback(() => {
     setScale(1)
@@ -71,24 +84,42 @@ export function ZoomableMap({
     zoomBy(e.deltaY < 0 ? 1.12 : 0.9, e.clientX, e.clientY)
   }
 
+  function codeFromTarget(target: EventTarget | null): string | null {
+    if (!(target instanceof Element)) return null
+    const el = target.closest('[data-map-code]')
+    return el?.getAttribute('data-map-code') ?? null
+  }
+
+  function finishPointer(e: RPointerEvent) {
+    const d = drag.current
+    drag.current = null
+    if (!d || d.moved || locked || pinch.current) return
+    const code = codeFromTarget(e.target) ?? codeFromTarget(d.target)
+    if (code) onPickCode?.(code)
+    else onMiss?.()
+  }
+
   function onPointerDown(e: RPointerEvent) {
     if (e.pointerType === 'touch' && e.isPrimary === false) return
-    ;(e.target as Element).setPointerCapture?.(e.pointerId)
-    drag.current = { x: e.clientX, y: e.clientY, tx, ty, moved: false }
+    // Ne pas capturer : laisse le hit-test SVG intact au pointerup
+    drag.current = {
+      x: e.clientX,
+      y: e.clientY,
+      tx,
+      ty,
+      moved: false,
+      target: e.target,
+    }
   }
 
   function onPointerMove(e: RPointerEvent) {
     if (!drag.current || pinch.current) return
     const dx = e.clientX - drag.current.x
     const dy = e.clientY - drag.current.y
-    if (!drag.current.moved && Math.hypot(dx, dy) < 6) return
+    if (!drag.current.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return
     drag.current.moved = true
     setTx(drag.current.tx + dx)
     setTy(drag.current.ty + dy)
-  }
-
-  function onPointerUp() {
-    drag.current = null
   }
 
   function onTouchStart(e: React.TouchEvent) {
@@ -96,7 +127,7 @@ export function ZoomableMap({
       const a = e.touches[0]!
       const b = e.touches[1]!
       const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
-      pinch.current = { dist, scale, tx, ty }
+      pinch.current = { dist, scale: scaleRef.current, tx, ty }
       drag.current = null
     }
   }
@@ -154,8 +185,10 @@ export function ZoomableMap({
         onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerUp={finishPointer}
+        onPointerCancel={() => {
+          drag.current = null
+        }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}

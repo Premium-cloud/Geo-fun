@@ -116,6 +116,16 @@ export function recordRun(input: {
   return all[input.key]!
 }
 
+/** Met à jour le record de série sans compter une partie (Entraînement). */
+export function noteBestStreak(key: StatsKey, streakPeak: number) {
+  if (streakPeak <= 0) return
+  const all = loadStats()
+  const cur = all[key] ?? emptyStats()
+  if (streakPeak <= cur.bestStreak) return
+  all[key] = { ...cur, bestStreak: streakPeak }
+  saveStats(all)
+}
+
 export function loadSeen(): Record<string, string[]> {
   return readJson(SEEN_KEY, {})
 }
