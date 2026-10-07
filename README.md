@@ -21,6 +21,16 @@ npm run dev
 
 L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
+## Déploiement Vercel (prod stable)
+
+Ne pas utiliser `vercel deploy --temporary` ni les déploiements anonymes « prebuilt » : ils ne se redéploient pas correctement.
+
+1. Créer un dépôt GitHub pour ce projet (bouton **Create repo** dans Cursor si besoin).
+2. Sur [vercel.com/new](https://vercel.com/new) → **Import** ce dépôt.
+3. Nom du projet : `geofun` (Framework : Vite, détecté via `vercel.json`).
+4. Deploy. URL typique : `https://geofun.vercel.app` (ou `geofun-xxx` si le nom est pris).
+5. Ensuite : chaque `git push` sur `main` = nouveau déploiement Production. **Redeploy** marche aussi depuis le dashboard.
+
 ## Impression recto-verso
 
 1. Onglet **France** (blasons) ou **Monde** (drapeaux) → **Imprimer**

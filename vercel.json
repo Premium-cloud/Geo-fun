@@ -1,4 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "headers": [
     {
       "source": "/(.*)",
@@ -14,5 +19,10 @@
       ]
     }
   ],
-  "rewrites": [{ "source": "/((?!assets/|maps/|flags/|blasons/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/((?!assets/|maps/|flags/|blasons/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
