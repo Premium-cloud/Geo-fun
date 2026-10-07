@@ -53,8 +53,8 @@ for (const row of slim) {
   numToA2[String(n).padStart(3, '0')] = row['alpha-2']
 }
 
-/** Exclus du fit + du rendu : Antarctique (trop gros en Mercator). */
-const EXCLUDE_A2 = new Set(['AQ'])
+/** Exclus du fit + du rendu : pas de pays quizables là (et Antarctique trop gros). */
+const EXCLUDE_A2 = new Set(['AQ', 'TF'])
 
 function featureA2(f) {
   if (f.id == null) return null
