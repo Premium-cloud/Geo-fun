@@ -64,10 +64,46 @@
 .game-score {
   margin-left: auto;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.65rem;
   color: var(--muted);
   font-size: 0.95rem;
+}
+
+.game-lives {
+  display: flex;
+  gap: 0.28rem;
+  margin-right: 0.15rem;
+}
+
+.game-life {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: #8c3a4b;
+  box-shadow: 0 0 0 1px rgba(140, 58, 75, 0.25);
+}
+
+.game-life.is-off {
+  background: transparent;
+  border: 1.5px solid #c4b8a8;
+  box-shadow: none;
+}
+
+.game-over {
+  padding: 2.5rem 1.25rem;
+}
+
+.game-over-score {
+  margin: 0 0 1.25rem;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+.game-over-score strong {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--ink);
 }
 
 .game-score strong {

@@ -1,15 +1,20 @@
 import { useState } from 'react'
 import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
-import { GameView } from './game/GameView'
+import { GameView, type PlayVariant } from './game/GameView'
 import './App.css'
 
-type Tab = 'france' | 'monde' | 'jeu'
+type Tab = 'france' | 'monde' | 'entrainement' | 'jeu'
 
 const TAB_LABEL: Record<Tab, string> = {
   france: 'France',
   monde: 'Monde',
-  jeu: 'Mode Jeu',
+  entrainement: 'Entraînement',
+  jeu: 'Jeu',
+}
+
+function isLexique(tab: Tab): boolean {
+  return tab === 'france' || tab === 'monde'
 }
 
 export default function App() {
@@ -23,27 +28,43 @@ export default function App() {
             ◆
           </span>
           <div>
-            <p className="brand-kicker">Collection</p>
+            <p className="brand-kicker">{isLexique(tab) ? 'Lexique' : 'Quiz'}</p>
             <h1>Cartes</h1>
           </div>
         </div>
 
         <nav className="tabs" aria-label="Sections">
-          {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={`tab ${tab === t ? 'is-active' : ''}`}
-              onClick={() => setTab(t)}
-              aria-current={tab === t ? 'page' : undefined}
-            >
-              {TAB_LABEL[t]}
-            </button>
-          ))}
+          <div className="tabs-group" role="presentation">
+            {(['france', 'monde'] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`tab ${tab === t ? 'is-active' : ''}`}
+                onClick={() => setTab(t)}
+                aria-current={tab === t ? 'page' : undefined}
+              >
+                {TAB_LABEL[t]}
+              </button>
+            ))}
+          </div>
+          <span className="tabs-sep" aria-hidden />
+          <div className="tabs-group" role="presentation">
+            {(['entrainement', 'jeu'] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`tab ${tab === t ? 'is-active' : ''} ${t === 'jeu' ? 'tab-play' : ''}`}
+                onClick={() => setTab(t)}
+                aria-current={tab === t ? 'page' : undefined}
+              >
+                {TAB_LABEL[t]}
+              </button>
+            ))}
+          </div>
         </nav>
 
         <div className="topbar-right">
-          {tab === 'france' || tab === 'monde' ? (
+          {isLexique(tab) ? (
             <div className="topbar-actions">
               <button
                 type="button"
@@ -70,7 +91,9 @@ export default function App() {
       <main>
         {tab === 'france' ? <CartesFranceView /> : null}
         {tab === 'monde' ? <CartesMondeView /> : null}
-        {tab === 'jeu' ? <GameView /> : null}
+        {tab === 'entrainement' || tab === 'jeu' ? (
+          <GameView variant={tab as PlayVariant} />
+        ) : null}
       </main>
     </div>
   )

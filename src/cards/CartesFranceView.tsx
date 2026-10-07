@@ -6,6 +6,7 @@ import {
   type Fiche,
 } from '../data/cartes'
 import { DEPARTEMENTS } from '../data/departements'
+import { FranceBackPictos } from './FranceBackIcons'
 import './CartesMondeView.css'
 import './CartesFranceView.css'
 
@@ -106,11 +107,7 @@ function CardFront({ card }: { card: DeptCard }) {
 function CardBack() {
   return (
     <span className="back-face back-face-fr">
-      <span className="back-fr-mark" aria-hidden>
-        <span className="back-fr-bar is-blue" />
-        <span className="back-fr-bar is-white" />
-        <span className="back-fr-bar is-red" />
-      </span>
+      <FranceBackPictos />
       <span className="back-title">
         DÉPARTEMENT
         <br />

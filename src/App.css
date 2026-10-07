@@ -55,8 +55,26 @@
   justify-self: center;
   display: flex;
   flex-wrap: nowrap;
+  align-items: center;
   justify-content: center;
+  gap: 0.45rem;
+}
+
+.tabs-group {
+  display: flex;
+  flex-wrap: nowrap;
   gap: 0.35rem;
+}
+
+.tabs-sep {
+  width: 1px;
+  height: 1.4rem;
+  background: var(--line);
+  margin: 0 0.15rem;
+}
+
+.tab.tab-play.is-active {
+  background: #8c3a4b;
 }
 
 .topbar-right {

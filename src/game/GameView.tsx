@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DEPT_CARDS, type DeptCard } from '../cards/CartesFranceView'
 import { COUNTRIES, type Country } from '../data/countries'
 import {
@@ -296,7 +296,27 @@ function FlagChoice({ code }: { code: string }) {
   )
 }
 
-export function GameView() {
+export type PlayVariant = 'entrainement' | 'jeu'
+
+const MAX_LIVES = 3
+const AUTO_NEXT_MS = 900
+
+function Lives({ lives }: { lives: number }) {
+  return (
+    <div className="game-lives" aria-label={`${lives} vie${lives > 1 ? 's' : ''}`}>
+      {Array.from({ length: MAX_LIVES }, (_, i) => (
+        <span
+          key={i}
+          className={`game-life ${i < lives ? 'is-on' : 'is-off'}`}
+          aria-hidden
+        />
+      ))}
+    </div>
+  )
+}
+
+export function GameView({ variant }: { variant: PlayVariant }) {
+  const isPlay = variant === 'jeu'
   const [category, setCategory] = useState<Category>('departements')
   const [mode, setMode] = useState<Mode>('chiffre')
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
@@ -304,6 +324,8 @@ export function GameView() {
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
+  const [lives, setLives] = useState(MAX_LIVES)
+  const [gameOver, setGameOver] = useState(false)
   const [seed, setSeed] = useState(0)
 
   const availableModes = modesFor(category)
@@ -313,19 +335,46 @@ export function GameView() {
     [category, mode, difficulty, seed],
   )
 
+  function resetRun() {
+    setScore(0)
+    setAsked(0)
+    setStreak(0)
+    setLives(MAX_LIVES)
+    setGameOver(false)
+    setPicked(null)
+    setSeed((s) => s + 1)
+  }
+
   function next() {
     setPicked(null)
     setSeed((s) => s + 1)
   }
 
+  // Reset when switching Entraînement ↔ Jeu
+  useEffect(() => {
+    resetRun()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant])
+
+  // Mode Jeu : enchaîne auto après un court feedback
+  useEffect(() => {
+    if (!isPlay || !picked || gameOver) return
+    const t = window.setTimeout(() => {
+      if (lives <= 0) {
+        setGameOver(true)
+        setPicked(null)
+      } else {
+        next()
+      }
+    }, AUTO_NEXT_MS)
+    return () => window.clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [picked, isPlay, gameOver, lives])
+
   function selectCategory(cat: Category) {
     setCategory(cat)
     setMode(defaultMode(cat))
-    setScore(0)
-    setAsked(0)
-    setStreak(0)
-    setPicked(null)
-    setSeed((s) => s + 1)
+    resetRun()
   }
 
   function selectMode(m: Mode) {
@@ -336,15 +385,11 @@ export function GameView() {
 
   function selectDifficulty(d: Difficulty) {
     setDifficulty(d)
-    setScore(0)
-    setAsked(0)
-    setStreak(0)
-    setPicked(null)
-    setSeed((s) => s + 1)
+    resetRun()
   }
 
   function answer(choice: string) {
-    if (!round || picked) return
+    if (!round || picked || gameOver) return
     setPicked(choice)
     setAsked((n) => n + 1)
     if (choice === round.answer) {
@@ -352,6 +397,12 @@ export function GameView() {
       setStreak((s) => s + 1)
     } else {
       setStreak(0)
+      if (isPlay) {
+        setLives((l) => {
+          const nextLives = l - 1
+          return nextLives
+        })
+      }
     }
   }
 
@@ -366,6 +417,23 @@ export function GameView() {
   const revealed = picked !== null
   const correct = picked === round.answer
   const pct = asked > 0 ? Math.round((score / asked) * 100) : 0
+
+  if (gameOver) {
+    return (
+      <div className="game-view">
+        <div className="game-board game-over">
+          <p className="game-prompt">Partie terminée</p>
+          <p className="game-over-score">
+            Score <strong>{score}</strong> / {asked}
+            <span className="game-pct"> · {pct} %</span>
+          </p>
+          <button type="button" className="game-next" onClick={resetRun}>
+            Rejouer
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="game-view">
@@ -396,10 +464,12 @@ export function GameView() {
             ))}
           </div>
           <div className="game-score" aria-live="polite">
+            {isPlay ? <Lives lives={lives} /> : null}
             <span>
-              Score <strong>{score}</strong> / {asked}
+              Score <strong>{score}</strong>
+              {!isPlay ? <> / {asked}</> : null}
             </span>
-            <span className="game-pct">{pct} %</span>
+            {!isPlay ? <span className="game-pct">{pct} %</span> : null}
             {streak >= 3 ? <span className="game-streak">×{streak}</span> : null}
           </div>
         </div>
@@ -419,7 +489,7 @@ export function GameView() {
         </div>
       </div>
 
-      <div className="game-board" key={`${category}-${mode}-${difficulty}-${seed}`}>
+      <div className="game-board" key={`${variant}-${category}-${mode}-${difficulty}-${seed}`}>
         <p className="game-prompt">{round.prompt}</p>
         <PromptVisual round={round} />
 
@@ -453,9 +523,11 @@ export function GameView() {
         {revealed ? (
           <div className={`game-feedback ${correct ? 'is-ok' : 'is-ko'}`}>
             <p>{correct ? 'Exact.' : `La bonne réponse : ${round.answerLabel}`}</p>
-            <button type="button" className="game-next" onClick={next}>
-              Question suivante
-            </button>
+            {!isPlay ? (
+              <button type="button" className="game-next" onClick={next}>
+                Question suivante
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>

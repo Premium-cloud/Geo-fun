@@ -23,27 +23,29 @@
   background: linear-gradient(160deg, #fffefb 0%, #f1ece3 100%);
 }
 
-.back-fr-mark {
+.back-pictos {
   position: absolute;
-  inset: 12% 18%;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  opacity: 0.14;
-  border-radius: 0.35rem;
-  overflow: hidden;
+  inset: 0;
   z-index: 0;
+  pointer-events: none;
+  color: #1f6f8b;
 }
 
-.back-fr-bar.is-blue {
-  background: #002395;
+.back-picto {
+  position: absolute;
+  display: grid;
+  place-items: center;
 }
 
-.back-fr-bar.is-white {
-  background: #fff;
+.back-picto svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.back-fr-bar.is-red {
-  background: #ed2939;
+.back-face-fr .back-title {
+  position: relative;
+  z-index: 1;
 }
 
 .cartes-france .chips-regions {
@@ -53,5 +55,13 @@
 @media print {
   .print-card .blason {
     max-width: 72%;
+  }
+
+  .back-pictos {
+    color: #1a4f63;
+  }
+
+  .back-picto {
+    opacity: 1 !important;
   }
 }
