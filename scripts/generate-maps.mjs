@@ -52,17 +52,36 @@ for (const row of slim) {
   numToA2[String(n)] = row['alpha-2']
   numToA2[String(n).padStart(3, '0')] = row['alpha-2']
 }
-const worldProj = geoMercator().fitSize([1000, 520], countries)
+
+/** Exclus du fit + du rendu : Antarctique (trop gros en Mercator). */
+const EXCLUDE_A2 = new Set(['AQ'])
+
+function featureA2(f) {
+  if (f.id == null) return null
+  return numToA2[String(f.id)] ?? numToA2[String(Number(f.id))] ?? null
+}
+
+const landFeatures = {
+  type: 'FeatureCollection',
+  features: countries.features.filter((f) => {
+    const a2 = featureA2(f)
+    return a2 && !EXCLUDE_A2.has(a2)
+  }),
+}
+
+// Clip sud ~60°S pour éviter que le Mercator étire le bas de carte
+const worldProj = geoMercator()
+  .clipExtent([
+    [0, 0],
+    [1000, 520],
+  ])
+  .fitSize([1000, 520], landFeatures)
 const worldPath = geoPath(worldProj)
 const worldPaths = {}
 let skipped = 0
 for (const f of countries.features) {
-  if (f.id == null) {
-    skipped++
-    continue
-  }
-  const a2 = numToA2[String(f.id)] ?? numToA2[String(Number(f.id))]
-  if (!a2) {
+  const a2 = featureA2(f)
+  if (!a2 || EXCLUDE_A2.has(a2)) {
     skipped++
     continue
   }
