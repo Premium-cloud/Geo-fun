@@ -829,11 +829,14 @@ export function GameView({ variant }: { variant: PlayVariant }) {
                 <div className="game-group" role="group" aria-label="DOM-TOM">
                   <button
                     type="button"
-                    className={`game-chip ${mapDomTom ? 'is-active' : ''}`}
+                    className={`game-chip game-chip-dom ${mapDomTom ? 'is-on' : 'is-off'}`}
                     onClick={toggleMapDomTom}
                     aria-pressed={mapDomTom}
                   >
                     DOM-TOM
+                    <span className="game-pastille" aria-hidden>
+                      {mapDomTom ? 'actif' : 'inactif'}
+                    </span>
                   </button>
                 </div>
               </div>

@@ -85,7 +85,9 @@ export function HistoryPanel({ onClose }: { onClose: () => void }) {
                   </span>
                 </div>
                 <div className="hist-meta">
-                  <span className="hist-streak">×{r.stats.bestStreak}</span>
+                  <span className="hist-streak">
+                    {r.stats.bestStreak > 0 ? `×${r.stats.bestStreak}` : '0'}
+                  </span>
                   <span>
                     {r.stats.plays} partie{r.stats.plays > 1 ? 's' : ''}
                     {r.stats.asked > 0

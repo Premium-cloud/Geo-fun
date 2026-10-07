@@ -87,6 +87,55 @@
   color: #fff;
 }
 
+.game-chip-dom {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-right: 0.45rem;
+}
+
+.game-chip-dom.is-on {
+  background: #1f6f8b;
+  border-color: transparent;
+  color: #fff;
+}
+
+.game-chip-dom.is-off {
+  background: #fff;
+  color: var(--ink);
+}
+
+.game-pastille {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  line-height: 1.2;
+}
+
+.game-chip-dom.is-on .game-pastille {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.game-chip-dom.is-off .game-pastille {
+  background: #ebe4d8;
+  color: var(--muted);
+}
+
+html.is-night .game-chip-dom.is-off {
+  background: #2a2622;
+}
+
+html.is-night .game-chip-dom.is-off .game-pastille {
+  background: #3a342e;
+  color: var(--muted);
+}
+
 .game-chip-diff.is-facile.is-active {
   background: #2f6b4f;
 }
