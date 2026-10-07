@@ -17,6 +17,8 @@ export type OptionsState = {
   sound: boolean
   volume: number
   night: boolean
+  /** Mode Carte France : inclure les DOM-TOM (silhouettes, sans spoil). */
+  mapDomTom: boolean
 }
 
 export type SaveBlob = {
@@ -35,6 +37,7 @@ export const DEFAULT_OPTIONS: OptionsState = {
   sound: true,
   volume: 0.55,
   night: false,
+  mapDomTom: false,
 }
 
 function emptyStats(): ModeStats {
@@ -65,6 +68,7 @@ export function loadOptions(): OptionsState {
     sound: o.sound ?? DEFAULT_OPTIONS.sound,
     volume: typeof o.volume === 'number' ? Math.min(1, Math.max(0, o.volume)) : DEFAULT_OPTIONS.volume,
     night: o.night ?? DEFAULT_OPTIONS.night,
+    mapDomTom: o.mapDomTom ?? DEFAULT_OPTIONS.mapDomTom,
   }
 }
 

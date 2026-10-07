@@ -7,6 +7,7 @@ import {
   getModeStats,
   loadOptions,
   recordRun,
+  saveOptions,
   statsKey,
   type AnswerMode,
 } from '../lib/storage'
@@ -65,7 +66,6 @@ const PAYS_MODES: { id: PaysMode; label: string }[] = [
 ]
 
 const MAP_COUNTRIES = COUNTRIES.filter((c) => WORLD_MAP_CODES.has(c.code))
-/** Mode Carte départements : métropole seulement (pas de DOM-TOM). */
 const METRO_DEPTS = DEPT_CARDS.filter((d) => d.group === 'metro')
 
 const CAPITALE_MODES: { id: CapitaleMode; label: string }[] = [
@@ -142,12 +142,14 @@ function makeDeptRound(
   difficulty: Difficulty,
   preferUnseen: boolean,
   answerMode: AnswerMode,
+  includeDomTom: boolean,
 ): Round | null {
   if (mode === 'carte') {
-    if (METRO_DEPTS.length < 4) return null
+    const pool = includeDomTom ? DEPT_CARDS : METRO_DEPTS
+    if (pool.length < 4) return null
     const card = pickWeightedItem(
-      `dept:carte`,
-      METRO_DEPTS,
+      includeDomTom ? `dept:carte:dom` : `dept:carte`,
+      pool,
       (d) => d.code,
       preferUnseen,
     )
@@ -418,9 +420,16 @@ function makeRound(
   difficulty: Difficulty,
   preferUnseen: boolean,
   answerMode: AnswerMode,
+  includeDomTom: boolean,
 ): Round | null {
   if (category === 'departements') {
-    return makeDeptRound(mode as DeptMode, difficulty, preferUnseen, answerMode)
+    return makeDeptRound(
+      mode as DeptMode,
+      difficulty,
+      preferUnseen,
+      answerMode,
+      includeDomTom,
+    )
   }
   if (category === 'pays') {
     return makePaysRound(mode as PaysMode, difficulty, preferUnseen, answerMode)
@@ -521,6 +530,7 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS.facile)
   const [statsTick, setStatsTick] = useState(0)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [mapDomTom, setMapDomTom] = useState(() => loadOptions().mapDomTom)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
   const runSnapshot = useRef({ score: 0, asked: 0, peak: 0 })
@@ -534,9 +544,22 @@ export function GameView({ variant }: { variant: PlayVariant }) {
   const best = useMemo(() => getModeStats(key), [key, statsTick])
 
   const round = useMemo(
-    () => makeRound(category, mode, difficulty, isPlay, effectiveAnswerMode),
-    [category, mode, difficulty, seed, isPlay, effectiveAnswerMode],
+    () =>
+      makeRound(category, mode, difficulty, isPlay, effectiveAnswerMode, mapDomTom),
+    [category, mode, difficulty, seed, isPlay, effectiveAnswerMode, mapDomTom],
   )
+
+  function toggleMapDomTom() {
+    const next = !mapDomTom
+    setMapDomTom(next)
+    const opts = loadOptions()
+    saveOptions({ ...opts, mapDomTom: next })
+    setPicked(null)
+    setTyped('')
+    timedOut.current = false
+    setSecondsLeft(timerMax)
+    setSeed((s) => s + 1)
+  }
 
   function resetRun() {
     setScore(0)
@@ -798,6 +821,25 @@ export function GameView({ variant }: { variant: PlayVariant }) {
             </>
           ) : null}
 
+          {isMapMode && category === 'departements' ? (
+            <>
+              <div className="game-field-sep" aria-hidden />
+              <div className="game-field">
+                <span className="game-field-label">Territoires</span>
+                <div className="game-group" role="group" aria-label="DOM-TOM">
+                  <button
+                    type="button"
+                    className={`game-chip ${mapDomTom ? 'is-active' : ''}`}
+                    onClick={toggleMapDomTom}
+                    aria-pressed={mapDomTom}
+                  >
+                    DOM-TOM
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
+
           <div className="game-field-sep" aria-hidden />
 
           <div className="game-field game-field-diff">
@@ -854,6 +896,7 @@ export function GameView({ variant }: { variant: PlayVariant }) {
             answerCode={round.answer}
             locked={revealed}
             picked={picked}
+            showDomTom={mapDomTom}
             onPick={answer}
           />
         ) : null}

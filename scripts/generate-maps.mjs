@@ -46,17 +46,30 @@ const slim = await (
 ).json()
 const numToA2 = {}
 for (const row of slim) {
-  numToA2[String(Number(row['country-code']))] = row['alpha-2']
+  const n = Number(row['country-code'])
+  if (!Number.isFinite(n)) continue
+  // world-atlas utilise parfois "032", parfois 32 — indexer les deux formes
+  numToA2[String(n)] = row['alpha-2']
+  numToA2[String(n).padStart(3, '0')] = row['alpha-2']
 }
 const worldProj = geoMercator().fitSize([1000, 520], countries)
 const worldPath = geoPath(worldProj)
 const worldPaths = {}
+let skipped = 0
 for (const f of countries.features) {
-  const a2 = numToA2[String(f.id)]
-  if (!a2) continue
+  if (f.id == null) {
+    skipped++
+    continue
+  }
+  const a2 = numToA2[String(f.id)] ?? numToA2[String(Number(f.id))]
+  if (!a2) {
+    skipped++
+    continue
+  }
   const d = worldPath(f)
   if (d) worldPaths[a2] = d
 }
+console.log('world skipped (no ISO / Antarctica)', skipped)
 writeFileSync(
   'public/maps/world-countries.json',
   JSON.stringify({ viewBox: '0 0 1000 520', paths: worldPaths }),

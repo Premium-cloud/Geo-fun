@@ -5,7 +5,7 @@ Collection de cartes à collectionner et mode jeu :
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
 - **Entraînement** — quiz pour apprendre (validation manuelle)
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
-- **Carte** — pointer le département (métropole) ou le pays ; zoom / pinch ; timers allongés
+- **Carte** — pointer le département ou le pays ; zoom / pinch ; timers allongés ; option DOM-TOM (silhouettes)
 - **Réponse unique** — saisie libre avec tolérances (tirets, accents…)
 - **Options** — mode nuit, son, suppression / import-export des données locales
 

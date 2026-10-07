@@ -104,6 +104,22 @@ export function OptionsModal({ open, onClose, onOptionsChange }: Props) {
         </section>
 
         <section className="opt-section">
+          <h3>Mode Carte</h3>
+          <label className="opt-row">
+            <span>Inclure les DOM-TOM</span>
+            <input
+              type="checkbox"
+              checked={options.mapDomTom}
+              onChange={(e) => patch({ mapDomTom: e.target.checked })}
+            />
+          </label>
+          <p className="opt-hint">
+            Silhouettes sans nom ni code (révélés après réponse). Sinon métropole
+            seulement.
+          </p>
+        </section>
+
+        <section className="opt-section">
           <h3>Audio</h3>
           <label className="opt-row">
             <span>Son</span>

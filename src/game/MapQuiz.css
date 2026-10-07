@@ -115,11 +115,91 @@ html.is-night .zoom-map-viewport {
   text-align: center;
 }
 
+.map-quiz.has-dom .zoom-map-viewport {
+  height: min(52vh, 24rem);
+}
+
+.dom-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3.8rem, 1fr));
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  max-height: 6.5rem;
+  overflow: auto;
+  padding: 0.1rem;
+}
+
+.dom-shape {
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 0.45rem;
+  padding: 0.2rem;
+  display: grid;
+  place-items: center;
+  position: relative;
+  min-height: 3.6rem;
+}
+
+html.is-night .dom-shape {
+  background: #2a2622;
+}
+
+.dom-shape-svg {
+  width: 85%;
+  height: 85%;
+  fill: #5a5348;
+}
+
+html.is-night .dom-shape-svg {
+  fill: #cfc6b8;
+}
+
+.dom-shape.is-correct .dom-shape-svg,
+.dom-shape.is-reveal .dom-shape-svg {
+  fill: #2f6b4f;
+}
+
+.dom-shape.is-wrong .dom-shape-svg {
+  fill: #8c3a4b;
+}
+
+.dom-shape.is-reveal {
+  box-shadow: 0 0 0 2px #1f6f8b;
+}
+
+.dom-shape-label {
+  position: absolute;
+  bottom: 0.1rem;
+  left: 0.15rem;
+  right: 0.15rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink);
+  line-height: 1.05;
+  pointer-events: none;
+}
+
+.dom-shape-fallback {
+  font-weight: 800;
+  color: var(--muted);
+}
+
 @media (max-width: 560px) {
   .zoom-map-viewport,
   .map-quiz.is-world .zoom-map-viewport {
     height: min(58vh, 24rem);
     border-radius: 0.7rem;
+  }
+
+  .map-quiz.has-dom .zoom-map-viewport {
+    height: min(48vh, 20rem);
+  }
+
+  .dom-strip {
+    max-height: 5.8rem;
+    grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr));
   }
 
   .zoom-map-tools {
