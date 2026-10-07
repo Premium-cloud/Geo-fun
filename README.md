@@ -1,10 +1,11 @@
 # Cartes — France & monde
 
 Collection de cartes à collectionner et mode jeu :
-- **France** — 108 départements / territoires (blason, chef-lieu, région)
+- **France** — 108 départements / territoires (blason, chef-lieu, région, pictos de spécialité)
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
 - **Entraînement** — quiz pour apprendre (validation manuelle)
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
+- **Mixte** (Jeu Difficile / Hardcore) — uniquement drapeau→pays, nom→capitale, chiffre→département
 - **Carte** — pointer le département ou le pays ; zoom / pinch ; timers allongés ; option DOM-TOM (silhouettes)
 - **Hardcore** — pièges QCM plus collés, saisie très stricte (Entraînement et Jeu)
 - **Récap** — fin de partie avec bonnes / mauvaises réponses
@@ -27,7 +28,7 @@ L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
 Chaque paire de pages = 1 feuille (9 cartes face + dos miroir).
 
-Le verso France reprend les pictogrammes ; le verso Monde le globe. Même typo Fraunces sur les deux jeux.
+Le recto France affiche 2–3 pictos de spécialité sous le blason ; le verso reprend le scatter Game Icons. Le verso Monde : globe. Même typo Fraunces.
 
 ## Blasons départements
 
