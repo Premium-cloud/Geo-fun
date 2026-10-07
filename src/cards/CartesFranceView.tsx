@@ -92,7 +92,9 @@ function CardFront({ card }: { card: DeptCard }) {
         {card.region}
       </span>
       <span className="identity">
-        <span className="code">{card.code}</span>
+        <span className="code" style={{ color }}>
+          {card.code}
+        </span>
         <span className={`dept ${nameSizeClass(card.name)}`} title={card.name}>
           {card.name}
         </span>
@@ -108,6 +110,7 @@ function CardFront({ card }: { card: DeptCard }) {
           {pictos.map((p) => (
             <span key={p.icon} className="front-picto" title={p.label}>
               <Picto id={p.icon} />
+              <span className="front-picto-label">{p.label}</span>
             </span>
           ))}
         </span>
@@ -121,9 +124,8 @@ function CardBack() {
     <span className="back-face back-face-fr">
       <FranceBackPictos />
       <span className="back-mark">
-        Départements
-        <br />
-        de France
+        <span className="back-title">Départements</span>
+        <span className="back-sub">de France</span>
       </span>
     </span>
   )

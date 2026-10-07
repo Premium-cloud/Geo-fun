@@ -6,7 +6,8 @@ export type Specialty = { icon: PictoId; label: string }
 export const DEPT_PICTOS: Record<string, Specialty[]> = {
   '01': [
     { icon: 'chicken', label: 'Poulet de Bresse' },
-    { icon: 'butter', label: 'Beurre' },
+    { icon: 'cheese', label: 'Comté' },
+    { icon: 'wine', label: 'Bugey' },
   ],
   '02': [
     { icon: 'cathedral', label: 'Cathédrales' },
@@ -23,6 +24,7 @@ export const DEPT_PICTOS: Record<string, Specialty[]> = {
   '05': [
     { icon: 'ski', label: 'Ski' },
     { icon: 'sheep', label: 'Alpages' },
+    { icon: 'honey', label: 'Miel' },
   ],
   '06': [
     { icon: 'olive', label: 'Olivier' },
