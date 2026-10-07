@@ -7,8 +7,8 @@ import './App.css'
 type Tab = 'france' | 'monde' | 'entrainement' | 'jeu'
 
 const TAB_LABEL: Record<Tab, string> = {
-  france: 'France',
-  monde: 'Monde',
+  france: 'Départements',
+  monde: 'Pays',
   entrainement: 'Entraînement',
   jeu: 'Jeu',
 }
@@ -25,35 +25,21 @@ export default function App() {
     <div className="app">
       <header className={`topbar no-print ${lexique ? 'is-lexique' : 'is-quiz'}`}>
         {lexique ? (
-          <button
-            type="button"
-            className="brand"
-            onClick={() => setTab('france')}
-            aria-label="Lexique Cartes"
-          >
+          <div className="brand brand-static">
             <span className="brand-mark" aria-hidden>
               ◆
             </span>
             <div>
-              <p className="brand-kicker">Lexique</p>
+              <p className="brand-kicker">Cartes à jouer</p>
               <h1>Cartes</h1>
             </div>
-          </button>
+          </div>
         ) : (
           <div className="brand-quiz">
-            <p className="brand-mode">
-              {tab === 'jeu' ? 'Mode Jeu' : 'Entraînement'}
+            <p className="brand-mode">Mode actuel</p>
+            <p className="brand-mode-sub">
+              {tab === 'jeu' ? 'Jeu' : 'Entraînement'}
             </p>
-            <button
-              type="button"
-              className="brand-back"
-              onClick={() => setTab('france')}
-            >
-              <span className="brand-mark" aria-hidden>
-                ◆
-              </span>
-              <span>Lexique</span>
-            </button>
           </div>
         )}
 
@@ -115,8 +101,29 @@ export default function App() {
               >
                 Imprimer
               </button>
+              <button
+                type="button"
+                className="brand-link"
+                onClick={() => setTab('jeu')}
+              >
+                <span className="brand-mark" aria-hidden>
+                  ◆
+                </span>
+                <span>Jeux</span>
+              </button>
             </div>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              className="brand-link"
+              onClick={() => setTab('france')}
+            >
+              <span className="brand-mark" aria-hidden>
+                ◆
+              </span>
+              <span>Lexique</span>
+            </button>
+          )}
         </div>
       </header>
 
