@@ -10,6 +10,7 @@ import {
   recordRun,
   statsKey,
   type AnswerMode,
+  type SessionFormatId,
 } from '../lib/storage'
 import {
   DIFFICULTY_OPTIONS,
@@ -27,12 +28,15 @@ import { WORLD_MAP_CODES } from './mapCodes'
 import { WorldMapQuiz } from './WorldMapQuiz'
 import './GameView.css'
 
-type Category = 'departements' | 'pays' | 'capitale'
+type Category = 'departements' | 'pays' | 'capitale' | 'mixte'
 
 type DeptMode = 'chiffre' | 'chefLieu' | 'blason' | 'region' | 'carte'
 type PaysMode = 'flagToName' | 'nameToFlag' | 'capitalToName' | 'capitalToFlag' | 'carte'
 type CapitaleMode = 'flagToCapital' | 'nameToCapital'
 type Mode = DeptMode | PaysMode | CapitaleMode
+
+const SESSION_LEN = 10
+const BASE_CATEGORIES: Category[] = ['departements', 'pays', 'capitale']
 
 type ChoiceKind = 'text' | 'flag' | 'saisie' | 'map'
 
@@ -77,6 +81,13 @@ const CATEGORY_LABEL: Record<Category, string> = {
   departements: 'Départements',
   pays: 'Pays',
   capitale: 'Capitales',
+  mixte: 'Mixte',
+}
+
+const FORMAT_LABEL: Record<SessionFormatId, string> = {
+  libre: 'Libre',
+  session10: '10 questions',
+  rapidite: 'Rapidité',
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -97,12 +108,14 @@ function blasonSrc(code: string): string {
 }
 
 function modesFor(cat: Category) {
+  if (cat === 'mixte') return [] as { id: Mode; label: string }[]
   if (cat === 'departements') return DEPT_MODES
   if (cat === 'pays') return PAYS_MODES
   return CAPITALE_MODES
 }
 
 function defaultMode(cat: Category): Mode {
+  if (cat === 'mixte') return 'chiffre'
   return modesFor(cat)[0]!.id
 }
 
@@ -422,6 +435,9 @@ function makeRound(
   answerMode: AnswerMode,
   includeDomTom: boolean,
 ): Round | null {
+  if (category === 'mixte') {
+    return makeMixedRound(difficulty, preferUnseen, answerMode, includeDomTom)
+  }
   if (category === 'departements') {
     return makeDeptRound(
       mode as DeptMode,
@@ -435,6 +451,23 @@ function makeRound(
     return makePaysRound(mode as PaysMode, difficulty, preferUnseen, answerMode)
   }
   return makeCapitaleRound(mode as CapitaleMode, difficulty, preferUnseen, answerMode)
+}
+
+function makeMixedRound(
+  difficulty: Difficulty,
+  preferUnseen: boolean,
+  answerMode: AnswerMode,
+  includeDomTom: boolean,
+): Round | null {
+  for (let i = 0; i < 10; i++) {
+    const cat = BASE_CATEGORIES[Math.floor(Math.random() * BASE_CATEGORIES.length)]!
+    const modes = modesFor(cat)
+    const m = modes[Math.floor(Math.random() * modes.length)]!.id
+    const am: AnswerMode = m === 'carte' ? 'map' : answerMode === 'map' ? 'qcm' : answerMode
+    const round = makeRound(cat, m, difficulty, preferUnseen, am, includeDomTom)
+    if (round) return round
+  }
+  return null
 }
 
 function PromptVisual({ round }: { round: Round }) {
@@ -556,6 +589,12 @@ function questionLabel(round: Round): string {
   return round.prompt
 }
 
+function formatDuration(totalSec: number): string {
+  const m = Math.floor(totalSec / 60)
+  const s = totalSec % 60
+  return m > 0 ? `${m} min ${s.toString().padStart(2, '0')} s` : `${s} s`
+}
+
 export function GameView({
   variant,
   mapDomTom,
@@ -570,6 +609,7 @@ export function GameView({
   const [mode, setMode] = useState<Mode>('chiffre')
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
+  const [sessionFormat, setSessionFormat] = useState<SessionFormatId>('libre')
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
@@ -580,6 +620,7 @@ export function GameView({
   const [seed, setSeed] = useState(0)
   const [typed, setTyped] = useState('')
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS.facile)
+  const [elapsedSec, setElapsedSec] = useState(0)
   const [statsTick, setStatsTick] = useState(0)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [runLog, setRunLog] = useState<RunEntry[]>([])
@@ -587,23 +628,50 @@ export function GameView({
   const [missHint, setMissHint] = useState(false)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
-  const runSnapshot = useRef({ score: 0, asked: 0, peak: 0 })
+  const runSnapshot = useRef({ score: 0, asked: 0, peak: 0, timeMs: 0 })
   const mapDomTomPrev = useRef(mapDomTom)
   const missTimer = useRef(0)
+  const sessionStartRef = useRef<number | null>(null)
 
-  const availableModes = modesFor(category)
-  const isMapMode = mode === 'carte'
-  const effectiveAnswerMode: AnswerMode = isMapMode ? 'map' : answerMode === 'map' ? 'qcm' : answerMode
+  const isMixte = category === 'mixte'
+  const isRapidite = sessionFormat === 'rapidite'
+  const isBounded = sessionFormat === 'session10' || sessionFormat === 'rapidite'
+  const availableModes = isMixte ? [] : modesFor(category)
+  const isMapMode = !isMixte && mode === 'carte'
+  const effectiveAnswerMode: AnswerMode = isMapMode
+    ? 'map'
+    : answerMode === 'map'
+      ? 'qcm'
+      : answerMode
   const maxLives = LIVES_FOR[difficulty]
   const timerMax = isMapMode ? MAP_TIMER_SECONDS[difficulty] : TIMER_SECONDS[difficulty]
-  const key = statsKey(category, mode, difficulty, effectiveAnswerMode)
+  const usePerQuestionTimer = isPlay && !isRapidite
+  const statsMode = isMixte ? 'mixte' : mode
+  const key = statsKey(
+    isMixte ? 'mixte' : category,
+    statsMode,
+    difficulty,
+    effectiveAnswerMode,
+    sessionFormat,
+  )
   const best = useMemo(() => getModeStats(key), [key, statsTick])
+  const difficultyOptions = isMixte
+    ? DIFFICULTY_OPTIONS.filter((d) => d.id !== 'facile')
+    : DIFFICULTY_OPTIONS
+  const formatOptions: SessionFormatId[] = isPlay
+    ? ['libre', 'session10', 'rapidite']
+    : ['libre', 'session10']
+  const categoryOptions: Category[] = isPlay
+    ? [...BASE_CATEGORIES, 'mixte']
+    : BASE_CATEGORIES
 
   const round = useMemo(
     () =>
       makeRound(category, mode, difficulty, isPlay, effectiveAnswerMode, mapDomTom),
     [category, mode, difficulty, seed, isPlay, effectiveAnswerMode, mapDomTom],
   )
+
+  const roundIsMap = round?.choiceKind === 'map'
 
   // Options ↔ chip Carte : même réglage, relance la question si ça change
   useEffect(() => {
@@ -639,7 +707,11 @@ export function GameView({
     setRunLog([])
     setRecapFilter('all')
     setMissHint(false)
+    setElapsedSec(0)
     timedOut.current = false
+    endAfterFeedback.current = false
+    sessionStartRef.current = Date.now()
+    runSnapshot.current = { score: 0, asked: 0, peak: 0, timeMs: 0 }
     setSecondsLeft(
       (mode === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty],
     )
@@ -647,6 +719,15 @@ export function GameView({
   }
 
   function next() {
+    if (isBounded && asked >= SESSION_LEN) {
+      const snap = runSnapshot.current
+      const timeMs =
+        sessionStartRef.current != null ? Date.now() - sessionStartRef.current : 0
+      finishRun(snap.score, snap.asked, snap.peak, timeMs)
+      setGameOver(true)
+      setPicked(null)
+      return
+    }
     setPicked(null)
     setTyped('')
     timedOut.current = false
@@ -654,40 +735,63 @@ export function GameView({
     setSeed((s) => s + 1)
   }
 
-  function finishRun(finalScore: number, finalAsked: number, peak: number) {
-    recordRun({ key, score: finalScore, asked: finalAsked, streakPeak: peak })
+  function finishRun(
+    finalScore: number,
+    finalAsked: number,
+    peak: number,
+    timeMs?: number,
+  ) {
+    recordRun({
+      key,
+      score: finalScore,
+      asked: finalAsked,
+      streakPeak: peak,
+      timeMs: isRapidite ? timeMs : undefined,
+    })
     setStatsTick((t) => t + 1)
   }
 
   useEffect(() => {
+    if (variant === 'entrainement' && category === 'mixte') {
+      setCategory('departements')
+    }
+    if (variant === 'entrainement' && sessionFormat === 'rapidite') {
+      setSessionFormat('libre')
+    }
     resetRun()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
+  // Auto-suite : Jeu toujours ; Entraînement seulement à la fin d’une session 10Q
   useEffect(() => {
-    if (!isPlay || !picked || gameOver) return
+    if (!picked || gameOver) return
+    const sessionDone = isBounded && asked >= SESSION_LEN
+    if (!isPlay && !sessionDone) return
+
     const wrong =
       picked === '__timeout__' ||
       !(picked === round?.answer || answersMatch(picked, round?.answer ?? '', 'loose'))
     const delay =
       difficulty === 'hardcore' && wrong ? AUTO_NEXT_WRONG_HARDCORE_MS : AUTO_NEXT_MS
     const t = window.setTimeout(() => {
-      if (endAfterFeedback.current) {
+      if (endAfterFeedback.current || sessionDone) {
+        const snap = runSnapshot.current
+        const timeMs =
+          sessionStartRef.current != null ? Date.now() - sessionStartRef.current : 0
+        finishRun(snap.score, snap.asked, snap.peak, timeMs)
         setGameOver(true)
         setPicked(null)
-        const snap = runSnapshot.current
-        finishRun(snap.score, snap.asked, snap.peak)
       } else {
         next()
       }
     }, delay)
     return () => window.clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [picked, isPlay, gameOver, difficulty])
+  }, [picked, isPlay, gameOver, difficulty, asked, isBounded])
 
-  // Timer countdown (Jeu only)
+  // Timer countdown par question (Jeu libre / 10Q, pas Rapidité)
   useEffect(() => {
-    if (!isPlay || gameOver || picked || !round) return
+    if (!usePerQuestionTimer || gameOver || picked || !round) return
     setSecondsLeft(timerMax)
     timedOut.current = false
     const started = Date.now()
@@ -701,14 +805,69 @@ export function GameView({
     }, 200)
     return () => window.clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seed, isPlay, gameOver, timerMax, picked])
+  }, [seed, usePerQuestionTimer, gameOver, timerMax, picked])
+
+  // Chrono session Rapidité
+  useEffect(() => {
+    if (!isRapidite || gameOver) return
+    if (sessionStartRef.current == null) sessionStartRef.current = Date.now()
+    const id = window.setInterval(() => {
+      const start = sessionStartRef.current ?? Date.now()
+      setElapsedSec(Math.floor((Date.now() - start) / 1000))
+    }, 200)
+    return () => window.clearInterval(id)
+  }, [isRapidite, gameOver, seed])
+
+  // Raccourcis clavier (PC)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (historyOpen || gameOver) {
+        if (gameOver && e.key === 'Enter') {
+          e.preventDefault()
+          resetRun()
+        }
+        return
+      }
+      const tag = (e.target as HTMLElement | null)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+
+      if (revealedRef()) {
+        if (!isPlay && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          next()
+        }
+        return
+      }
+
+      if (round?.choiceKind === 'text' || round?.choiceKind === 'flag') {
+        const n = Number(e.key)
+        if (n >= 1 && n <= 4 && round.choices[n - 1]) {
+          e.preventDefault()
+          answer(round.choices[n - 1]!)
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyOpen, gameOver, round, picked, isPlay, asked])
+
+  function revealedRef() {
+    return picked !== null
+  }
 
   function selectCategory(cat: Category) {
     setCategory(cat)
-    const nextMode = defaultMode(cat)
-    setMode(nextMode)
-    if (nextMode === 'carte') setAnswerMode('map')
-    else if (answerMode === 'map') setAnswerMode('qcm')
+    if (cat === 'mixte') {
+      if (difficulty === 'facile') setDifficulty('difficile')
+      setMode('chiffre')
+      if (answerMode === 'map') setAnswerMode('qcm')
+    } else {
+      const nextMode = defaultMode(cat)
+      setMode(nextMode)
+      if (nextMode === 'carte') setAnswerMode('map')
+      else if (answerMode === 'map') setAnswerMode('qcm')
+    }
     resetRun()
   }
 
@@ -724,11 +883,14 @@ export function GameView({
     setStreak(0)
     setStreakPeak(0)
     setRunLog([])
+    setElapsedSec(0)
+    sessionStartRef.current = Date.now()
     setSeed((s) => s + 1)
     setSecondsLeft((m === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty])
   }
 
   function selectDifficulty(d: Difficulty) {
+    if (isMixte && d === 'facile') return
     flushTrainingSession()
     setDifficulty(d)
     setLives(LIVES_FOR[d])
@@ -740,6 +902,8 @@ export function GameView({
     setPicked(null)
     setTyped('')
     setRunLog([])
+    setElapsedSec(0)
+    sessionStartRef.current = Date.now()
     setSecondsLeft((isMapMode ? MAP_TIMER_SECONDS : TIMER_SECONDS)[d])
     setSeed((s) => s + 1)
   }
@@ -747,6 +911,23 @@ export function GameView({
   function selectAnswerMode(am: AnswerMode) {
     setAnswerMode(am)
     resetRun()
+  }
+
+  function selectFormat(f: SessionFormatId) {
+    flushTrainingSession()
+    setSessionFormat(f)
+    setScore(0)
+    setAsked(0)
+    setStreak(0)
+    setStreakPeak(0)
+    setLives(LIVES_FOR[difficulty])
+    setGameOver(false)
+    setPicked(null)
+    setTyped('')
+    setRunLog([])
+    setElapsedSec(0)
+    sessionStartRef.current = Date.now()
+    setSeed((s) => s + 1)
   }
 
   function resolveAnswer(choice: string, isCorrect: boolean) {
@@ -766,6 +947,8 @@ export function GameView({
         ok: isCorrect,
       },
     ])
+    const timeMs =
+      sessionStartRef.current != null ? Date.now() - sessionStartRef.current : 0
     if (isCorrect) {
       const nextScore = score + 1
       setScore(nextScore)
@@ -776,17 +959,24 @@ export function GameView({
       noteBestStreak(key, peak)
       setStatsTick((t) => t + 1)
       endAfterFeedback.current = false
-      runSnapshot.current = { score: nextScore, asked: nextAsked, peak }
+      runSnapshot.current = { score: nextScore, asked: nextAsked, peak, timeMs }
     } else {
       setStreak(0)
-      runSnapshot.current = { score, asked: nextAsked, peak: streakPeak }
-      if (isPlay) {
+      runSnapshot.current = { score, asked: nextAsked, peak: streakPeak, timeMs }
+      if (isPlay && !isRapidite && sessionFormat === 'libre') {
         const nextLives = Math.max(0, lives - 1)
         setLives(nextLives)
         endAfterFeedback.current = nextLives <= 0
+      } else if (isPlay && sessionFormat === 'session10') {
+        const nextLives = Math.max(0, lives - 1)
+        setLives(nextLives)
+        endAfterFeedback.current = nextLives <= 0 || nextAsked >= SESSION_LEN
       } else {
         endAfterFeedback.current = false
       }
+    }
+    if (isBounded && nextAsked >= SESSION_LEN) {
+      endAfterFeedback.current = true
     }
   }
 
@@ -833,14 +1023,25 @@ export function GameView({
       recapFilter === 'all'
         ? runLog
         : runLog.filter((e) => (recapFilter === 'ok' ? e.ok : !e.ok))
+    const timeMs = runSnapshot.current.timeMs || elapsedSec * 1000
+    const timeLabel = formatDuration(Math.round(timeMs / 1000))
     return (
       <div className="game-view">
         <div className="game-board game-over">
           <p className="game-prompt">Partie terminée</p>
+          <p className="game-over-format">{FORMAT_LABEL[sessionFormat]}</p>
           <p className="game-over-score">
             Score <strong>{score}</strong> / {asked}
             <span className="game-pct"> · {pct} %</span>
           </p>
+          {isRapidite ? (
+            <p className="game-over-time">
+              Temps <strong>{timeLabel}</strong>
+              {best.bestTimeMs != null ? (
+                <> · Record {formatDuration(Math.round(best.bestTimeMs / 1000))}</>
+              ) : null}
+            </p>
+          ) : null}
           <p className="game-over-recap-sum">
             <span className="is-ok">{okCount} bonnes</span>
             {' · '}
@@ -887,7 +1088,7 @@ export function GameView({
 
           <div className="game-over-actions">
             <button type="button" className="game-next" onClick={resetRun}>
-              Rejouer
+              {isBounded ? `Rejouer (${SESSION_LEN} Q)` : 'Rejouer'}
             </button>
             <button
               type="button"
@@ -904,13 +1105,13 @@ export function GameView({
   }
 
   return (
-    <div className={`game-view ${isMapMode ? 'is-map-mode' : ''}`}>
-      <div className={`game-toolbar ${isMapMode ? 'is-compact' : ''}`}>
+    <div className={`game-view ${roundIsMap ? 'is-map-mode' : ''}`}>
+      <div className={`game-toolbar ${roundIsMap ? 'is-compact' : ''}`}>
         <div className="game-toolbar-primary">
           <div className="game-field">
             <span className="game-field-label">Catégorie</span>
             <div className="game-group game-categories" role="group" aria-label="Catégorie">
-              {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
+              {categoryOptions.map((c) => (
                 <button
                   key={c}
                   type="button"
@@ -933,20 +1134,43 @@ export function GameView({
 
         <div className="game-toolbar-secondary">
           <div className="game-field">
-            <span className="game-field-label">Sous-mode</span>
-            <div className="game-group" role="group" aria-label="Sous-mode">
-              {availableModes.map((m) => (
+            <span className="game-field-label">Format</span>
+            <div className="game-group" role="group" aria-label="Format de partie">
+              {formatOptions.map((f) => (
                 <button
-                  key={m.id}
+                  key={f}
                   type="button"
-                  className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
-                  onClick={() => selectMode(m.id)}
+                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
+                  onClick={() => selectFormat(f)}
                 >
-                  {m.label}
+                  {FORMAT_LABEL[f]}
                 </button>
               ))}
             </div>
           </div>
+
+          {!isMixte ? (
+            <div className="game-field">
+              <span className="game-field-label">Sous-mode</span>
+              <div className="game-group" role="group" aria-label="Sous-mode">
+                {availableModes.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
+                    onClick={() => selectMode(m.id)}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="game-field">
+              <span className="game-field-label">Sous-mode</span>
+              <p className="game-mixte-hint">Aléatoire (départements, pays, capitales)</p>
+            </div>
+          )}
 
           {!isMapMode ? (
             <>
@@ -973,7 +1197,7 @@ export function GameView({
             </>
           ) : null}
 
-          {isMapMode && category === 'departements' ? (
+          {isMapMode || isMixte ? (
             <>
               <div className="game-field-sep" aria-hidden />
               <div className="game-field">
@@ -1000,7 +1224,7 @@ export function GameView({
           <div className="game-field game-field-diff">
             <span className="game-field-label">Difficulté</span>
             <div className="game-group" role="group" aria-label="Difficulté">
-              {DIFFICULTY_OPTIONS.map((d) => (
+              {difficultyOptions.map((d) => (
                 <button
                   key={d.id}
                   type="button"
@@ -1021,11 +1245,16 @@ export function GameView({
       </div>
 
       <div
-        className={`game-board ${isMapMode ? 'is-map-board' : ''}`}
-        key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${seed}`}
+        className={`game-board ${roundIsMap ? 'is-map-board' : ''}`}
+        key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${sessionFormat}-${seed}`}
       >
         <div className="game-board-hud" aria-live="polite">
-          {isPlay ? (
+          {isBounded ? (
+            <span className="game-progress" aria-label={`Question ${Math.min(asked + 1, SESSION_LEN)} sur ${SESSION_LEN}`}>
+              {Math.min(asked + (revealed ? 0 : 1), SESSION_LEN)}/{SESSION_LEN}
+            </span>
+          ) : null}
+          {usePerQuestionTimer ? (
             <>
               <Lives lives={lives} max={maxLives} />
               <span
@@ -1036,11 +1265,16 @@ export function GameView({
               </span>
             </>
           ) : null}
+          {isRapidite ? (
+            <span className="game-timer" aria-label={`Temps écoulé ${elapsedSec} secondes`}>
+              {formatDuration(elapsedSec)}
+            </span>
+          ) : null}
           <span className="game-score">
             Score <strong>{score}</strong>
-            {!isPlay ? <> / {asked}</> : null}
+            {isBounded ? <> / {SESSION_LEN}</> : !isPlay ? <> / {asked}</> : null}
           </span>
-          {!isPlay ? <span className="game-pct">{pct} %</span> : null}
+          {!isPlay && !isBounded ? <span className="game-pct">{pct} %</span> : null}
           {streak >= 3 ? <span className="game-streak">×{streak}</span> : null}
         </div>
         <p className="game-prompt">{round.prompt}</p>
@@ -1094,7 +1328,7 @@ export function GameView({
 
         {round.choiceKind === 'text' || round.choiceKind === 'flag' ? (
           <div className={`game-choices ${round.choiceKind === 'flag' ? 'is-flags' : ''}`}>
-            {round.choices.map((choice) => {
+            {round.choices.map((choice, idx) => {
               let cls = 'game-choice'
               if (round.choiceKind === 'flag') cls += ' is-flag-choice'
               if (revealed) {
@@ -1114,6 +1348,9 @@ export function GameView({
                       : choice
                   }
                 >
+                  <span className="game-choice-key" aria-hidden>
+                    {idx + 1}
+                  </span>
                   {round.choiceKind === 'flag' ? <FlagChoice code={choice} /> : choice}
                 </button>
               )

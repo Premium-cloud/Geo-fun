@@ -10,8 +10,8 @@
 }
 
 .hist-panel {
-  width: min(32rem, 100%);
-  max-height: min(90vh, 40rem);
+  width: min(36rem, 100%);
+  max-height: min(90vh, 42rem);
   overflow: auto;
   background: var(--paper-elev, #fffefb);
   color: var(--ink);
@@ -55,6 +55,21 @@
   color: var(--muted);
 }
 
+.hist-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.hist-group-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .hist-list {
   list-style: none;
   margin: 0;
@@ -67,8 +82,8 @@
 .hist-row {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
+  gap: 0.85rem;
+  padding: 0.7rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: 0.7rem;
   background: rgba(255, 255, 255, 0.35);
@@ -81,16 +96,56 @@ html.is-night .hist-row {
 .hist-main {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.3rem;
   min-width: 0;
 }
 
 .hist-main strong {
-  font-size: 0.95rem;
+  font-size: 0.98rem;
 }
 
-.hist-main span,
-.hist-meta span:last-child {
+.hist-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.hist-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #ebe4d8;
+  color: var(--ink);
+}
+
+html.is-night .hist-badge {
+  background: #3a342e;
+}
+
+.hist-badge.is-facile {
+  background: #dce8e0;
+  color: #2f6b4f;
+}
+
+.hist-badge.is-difficile {
+  background: #f0e0e3;
+  color: #8c3a4b;
+}
+
+.hist-badge.is-hardcore {
+  background: #4a1f2a;
+  color: #fff;
+}
+
+.hist-badge.is-format {
+  background: #1f6f8b;
+  color: #fff;
+}
+
+.hist-plays {
   font-size: 0.78rem;
   color: var(--muted);
 }
@@ -99,13 +154,40 @@ html.is-night .hist-row {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.15rem;
-  flex: 0 0 auto;
+  gap: 0.2rem;
+  flex: 0 0 4.5rem;
+  min-width: 4.5rem;
 }
 
-.hist-streak {
+.hist-pct {
   font-family: Fraunces, Georgia, serif;
   font-weight: 800;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   color: var(--accent);
+  line-height: 1;
+}
+
+.hist-bar {
+  width: 100%;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: #e5ddd0;
+  overflow: hidden;
+}
+
+html.is-night .hist-bar {
+  background: #3a342e;
+}
+
+.hist-bar i {
+  display: block;
+  height: 100%;
+  background: #1f6f8b;
+  border-radius: inherit;
+}
+
+.hist-best {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
 }

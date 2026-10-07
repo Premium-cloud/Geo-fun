@@ -11,6 +11,8 @@ export type ModeStats = {
   plays: number
   correct: number
   asked: number
+  /** Meilleur temps (ms) pour une session Rapidité réussie au bestScore. */
+  bestTimeMs?: number
 }
 
 export type OptionsState = {
@@ -43,6 +45,8 @@ export const DEFAULT_OPTIONS: OptionsState = {
 function emptyStats(): ModeStats {
   return { bestStreak: 0, bestScore: 0, plays: 0, correct: 0, asked: 0 }
 }
+
+export type SessionFormatId = 'libre' | 'session10' | 'rapidite'
 
 function readJson<T>(key: string, fallback: T): T {
   try {
@@ -89,8 +93,10 @@ export function statsKey(
   mode: string,
   difficulty: DifficultyId,
   answerMode: AnswerMode,
+  format: SessionFormatId = 'libre',
 ): StatsKey {
-  return `${category}|${mode}|${difficulty}|${answerMode}`
+  if (format === 'libre') return `${category}|${mode}|${difficulty}|${answerMode}`
+  return `${category}|${mode}|${difficulty}|${answerMode}|${format}`
 }
 
 export function getModeStats(key: StatsKey): ModeStats {
@@ -102,15 +108,26 @@ export function recordRun(input: {
   score: number
   asked: number
   streakPeak: number
+  timeMs?: number
 }) {
   const all = loadStats()
   const cur = all[input.key] ?? emptyStats()
+  const nextScore = Math.max(cur.bestScore, input.score)
+  let bestTimeMs = cur.bestTimeMs
+  if (input.timeMs != null && input.timeMs > 0) {
+    if (input.score > cur.bestScore) bestTimeMs = input.timeMs
+    else if (input.score === nextScore) {
+      bestTimeMs =
+        bestTimeMs == null ? input.timeMs : Math.min(bestTimeMs, input.timeMs)
+    }
+  }
   all[input.key] = {
     bestStreak: Math.max(cur.bestStreak, input.streakPeak),
-    bestScore: Math.max(cur.bestScore, input.score),
+    bestScore: nextScore,
     plays: cur.plays + 1,
     correct: cur.correct + input.score,
     asked: cur.asked + input.asked,
+    bestTimeMs,
   }
   saveStats(all)
   return all[input.key]!

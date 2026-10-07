@@ -532,6 +532,75 @@ html.is-night .game-saisie-input {
   animation: board-in 0.2s ease;
 }
 
+.game-mixte-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.game-progress {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-family: Fraunces, Georgia, serif;
+  color: var(--ink);
+  min-width: 2.6rem;
+}
+
+.game-over-format {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.game-over-time {
+  margin: 0 0 0.45rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.game-over-time strong {
+  color: var(--ink);
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.25rem;
+}
+
+.game-choice {
+  position: relative;
+}
+
+.game-choice-key {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.45rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.3rem;
+  background: #ebe4d8;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+html.is-night .game-choice-key {
+  background: #3a342e;
+}
+
+.game-choice.is-flag-choice .game-choice-key {
+  z-index: 1;
+}
+
+@media (max-width: 560px) {
+  .game-choice-key {
+    display: none;
+  }
+}
+
 .game-train-end {
   margin-top: 0.85rem;
   display: flex;
