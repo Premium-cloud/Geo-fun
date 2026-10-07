@@ -3,7 +3,8 @@
 Collection de cartes à collectionner et mode jeu :
 - **France** — 108 départements / territoires (blason, chef-lieu, région)
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
-- **Mode Jeu** — Départements / Pays / Capitales, difficulté **Facile** ou **Difficile** (distracteurs ciblés)
+- **Entraînement** — quiz pour apprendre (validation manuelle)
+- **Jeu** — 3 vies, enchaînement auto, difficulté Facile / Difficile
 
 ## Lancer en local
 
