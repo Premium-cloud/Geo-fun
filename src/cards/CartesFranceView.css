@@ -25,9 +25,10 @@
 
 .back-pictos {
   position: absolute;
-  inset: 0;
+  inset: 6%;
   z-index: 0;
   pointer-events: none;
+  overflow: visible;
   color: #1f6f8b;
 }
 
@@ -35,6 +36,7 @@
   position: absolute;
   display: grid;
   place-items: center;
+  opacity: 0.14;
 }
 
 .back-picto svg {
