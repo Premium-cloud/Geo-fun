@@ -97,6 +97,27 @@ const GI_MAP = {
   plum: 'plum',
   pottery: 'amphora',
   silk: 'rolled-cloth',
+  // Blasons historiques (DEPT_PICTOS)
+  beet: 'beet',
+  spa: 'hot-surface',
+  mountain: 'mountains',
+  chestnut: 'chestnut-leaf',
+  river: 'river',
+  textile: 'rolled-cloth',
+  calisson: 'wrapped-sweet',
+  truffle: 'mushroom',
+  clock: 'pocket-watch',
+  nougat: 'cookie',
+  plane: 'airplane',
+  lentil: 'peas',
+  lace: 'sewing-needle',
+  prune: 'plum',
+  ceramic: 'porcelain-vase',
+  melon: 'watermelon',
+  banana: 'banana',
+  sugar: 'sugar-cane',
+  rum: 'drink-me',
+  rocket: 'rocket',
 }
 
 const CUSTOM = {

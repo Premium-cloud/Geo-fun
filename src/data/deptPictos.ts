@@ -1,4 +1,4 @@
-/** 3 pictos de spécialité par département (recto). */
+/** Pictos de spécialité par département (recto) — blasons historiques. */
 import type { PictoId } from '../cards/pictos'
 
 export type Specialty = { icon: PictoId; label: string }
@@ -10,538 +10,542 @@ export const DEPT_PICTOS: Record<string, Specialty[]> = {
     { icon: 'wine', label: 'Bugey' },
   ],
   '02': [
-    { icon: 'cathedral', label: 'Cathédrales' },
-    { icon: 'wheat', label: 'Blés' },
-    { icon: 'flower', label: 'Picardie' }
+    { icon: 'cathedral', label: 'Laon' },
+    { icon: 'beet', label: 'Betterave' },
+    { icon: 'wheat', label: 'Thiérache' },
   ],
   '03': [
-    { icon: 'forest', label: 'Forêts' },
-    { icon: 'cow', label: 'Élevage' },
-    { icon: 'forest', label: 'Bourbonnais' }
+    { icon: 'spa', label: 'Vichy' },
+    { icon: 'cow', label: 'Charolais' },
+    { icon: 'castle', label: 'Bourbon' },
   ],
   '04': [
     { icon: 'lavender', label: 'Lavande' },
-    { icon: 'honey', label: 'Miel' },
-    { icon: 'olive', label: 'Provence' }
+    { icon: 'olive', label: 'Olive' },
+    { icon: 'mountain', label: 'Préalpes' },
   ],
   '05': [
-    { icon: 'ski', label: 'Ski' },
-    { icon: 'sheep', label: 'Alpages' },
-    { icon: 'honey', label: 'Miel' },
+    { icon: 'ski', label: 'Écrins' },
+    { icon: 'mountain', label: 'Alpes' },
+    { icon: 'apple', label: 'Pomme' },
   ],
   '06': [
-    { icon: 'olive', label: 'Olivier' },
-    { icon: 'beach', label: 'Côte d’Azur' },
-    { icon: 'lavender', label: 'Mimosa' }
+    { icon: 'flower', label: 'Œillet de Nice' },
+    { icon: 'olive', label: 'Olive' },
+    { icon: 'sea', label: 'Baie des Anges' },
   ],
   '07': [
-    { icon: 'forest', label: 'Châtaigne' },
-    { icon: 'wine', label: 'Côtes du Rhône' },
-    { icon: 'grape', label: 'Ardèche' }
+    { icon: 'chestnut', label: 'Châtaigne' },
+    { icon: 'wine', label: 'Côtes du Vivarais' },
+    { icon: 'river', label: 'Gorges' },
   ],
   '08': [
-    { icon: 'forest', label: 'Ardennes' },
-    { icon: 'knife', label: 'Coutellerie' },
-    { icon: 'cow', label: 'Sanglier' }
+    { icon: 'forest', label: 'Ardenne' },
+    { icon: 'beer', label: 'Bières' },
+    { icon: 'castle', label: 'Sedan' },
   ],
   '09': [
-    { icon: 'cow', label: 'Fromage' },
-    { icon: 'ski', label: 'Pyrénées' },
-    { icon: 'forest', label: 'Ariège' }
+    { icon: 'castle', label: 'Foix' },
+    { icon: 'mountain', label: 'Pyrénées' },
+    { icon: 'cheese', label: 'Bethmale' },
   ],
   '10': [
-    { icon: 'knife', label: 'Coutellerie' },
     { icon: 'champagne', label: 'Champagne' },
-    { icon: 'cheese', label: 'Chaource' }
+    { icon: 'textile', label: 'Mail' },
+    { icon: 'cathedral', label: 'Troyes' },
   ],
   '11': [
-    { icon: 'castle', label: 'Cité de Carcassonne' },
+    { icon: 'castle', label: 'Cité' },
     { icon: 'wine', label: 'Corbières' },
-    { icon: 'olive', label: 'Corbières' }
+    { icon: 'olive', label: 'Olive' },
   ],
   '12': [
+    { icon: 'knife', label: 'Laguiole' },
     { icon: 'cheese', label: 'Roquefort' },
-    { icon: 'sheep', label: 'Causses' },
-    { icon: 'cow', label: 'Laguiole' }
+    { icon: 'cow', label: 'Aubrac' },
   ],
   '13': [
-    { icon: 'soap', label: 'Savon de Marseille' },
-    { icon: 'sea', label: 'Méditerranée' },
-    { icon: 'fish', label: 'Bouillabaisse' }
+    { icon: 'sea', label: 'Calanques' },
+    { icon: 'olive', label: 'Olive' },
+    { icon: 'calisson', label: 'Calisson' },
   ],
   '14': [
-    { icon: 'cheese', label: 'Camembert' },
     { icon: 'cider', label: 'Cidre' },
-    { icon: 'apple', label: 'Pommes' },
+    { icon: 'cheese', label: 'Camembert' },
+    { icon: 'sea', label: 'Côte fleurie' },
   ],
   '15': [
     { icon: 'cheese', label: 'Cantal' },
     { icon: 'cow', label: 'Salers' },
-    { icon: 'volcano', label: 'Cantal' }
+    { icon: 'mountain', label: 'Volcans' },
   ],
   '16': [
     { icon: 'barrel', label: 'Cognac' },
-    { icon: 'grape', label: 'Vignoble' },
-    { icon: 'grape', label: 'Pineau' }
+    { icon: 'wine', label: 'Pineau' },
+    { icon: 'river', label: 'Charente' },
   ],
   '17': [
-    { icon: 'oyster', label: 'Huîtres' },
-    { icon: 'sea', label: 'Atlantique' },
-    { icon: 'ship', label: 'Ré' }
+    { icon: 'oyster', label: 'Huître' },
+    { icon: 'salt', label: 'Sel' },
+    { icon: 'lighthouse', label: 'Phare' },
   ],
   '18': [
-    { icon: 'castle', label: 'Châteaux' },
-    { icon: 'wheat', label: 'Céréales' },
-    { icon: 'wine', label: 'Sancerre' }
+    { icon: 'cathedral', label: 'Bourges' },
+    { icon: 'wine', label: 'Sancerre' },
+    { icon: 'cheese', label: 'Crottin' },
   ],
   '19': [
-    { icon: 'oak', label: 'Chêne' },
-    { icon: 'cow', label: 'Élevage' },
-    { icon: 'forest', label: 'Corrèze' }
+    { icon: 'apple', label: 'Pomme du Limousin' },
+    { icon: 'cow', label: 'Veau' },
+    { icon: 'chestnut', label: 'Châtaigne' },
   ],
   '2A': [
-    { icon: 'forest', label: 'Châtaigne' },
-    { icon: 'sea', label: 'Méditerranée' },
-    { icon: 'sheep', label: 'Brocciu' }
+    { icon: 'wine', label: 'Vin corse' },
+    { icon: 'chestnut', label: 'Châtaigne' },
+    { icon: 'sea', label: 'Golfe' },
   ],
   '2B': [
-    { icon: 'wine', label: 'Patrimonio' },
-    { icon: 'sheep', label: 'Brocciu' },
-    { icon: 'sea', label: 'Cap Corse' }
+    { icon: 'chestnut', label: 'Farine' },
+    { icon: 'wine', label: 'Cap Corse' },
+    { icon: 'mountain', label: 'Monte Cinto' },
   ],
   '21': [
-    { icon: 'mustard', label: 'Moutarde' },
     { icon: 'wine', label: 'Bourgogne' },
-    { icon: 'grape', label: 'Côte-d’Or' }
+    { icon: 'mustard', label: 'Moutarde' },
+    { icon: 'grape', label: 'Clos' },
   ],
   '22': [
-    { icon: 'crepe', label: 'Galettes' },
-    { icon: 'sea', label: 'Côte' },
-    { icon: 'lighthouse', label: 'Granit' }
+    { icon: 'scallop', label: 'Coquille' },
+    { icon: 'sea', label: 'Côte de granit' },
+    { icon: 'oyster', label: 'Huître' },
   ],
   '23': [
-    { icon: 'forest', label: 'Limousin' },
-    { icon: 'cow', label: 'Élevage' },
-    { icon: 'oak', label: 'Creuse' }
+    { icon: 'textile', label: 'Tapisserie' },
+    { icon: 'forest', label: 'Forêt' },
+    { icon: 'cow', label: 'Limousin' },
   ],
   '24': [
-    { icon: 'duck', label: 'Canard' },
+    { icon: 'truffle', label: 'Truffe' },
     { icon: 'walnut', label: 'Noix' },
-    { icon: 'wine', label: 'Périgord' }
+    { icon: 'castle', label: 'Périgord' },
   ],
   '25': [
-    { icon: 'watch', label: 'Horlogerie' },
     { icon: 'cheese', label: 'Comté' },
-    { icon: 'ski', label: 'Jura' }
+    { icon: 'clock', label: 'Horlogerie' },
+    { icon: 'mountain', label: 'Doubs' },
   ],
   '26': [
+    { icon: 'nougat', label: 'Montélimar' },
+    { icon: 'olive', label: 'Olive' },
     { icon: 'wine', label: 'Hermitage' },
-    { icon: 'lavender', label: 'Drôme' },
-    { icon: 'olive', label: 'Nyons' }
   ],
   '27': [
-    { icon: 'apple', label: 'Pommes' },
-    { icon: 'butter', label: 'Produits laitiers' },
-    { icon: 'cider', label: 'Normandie' }
+    { icon: 'cider', label: 'Cidre' },
+    { icon: 'cheese', label: 'Neufchâtel' },
+    { icon: 'forest', label: 'Vexin' },
   ],
   '28': [
-    { icon: 'cathedral', label: 'Cathédrale' },
+    { icon: 'cathedral', label: 'Chartres' },
     { icon: 'wheat', label: 'Beauce' },
-    { icon: 'castle', label: 'Perche' }
+    { icon: 'honey', label: 'Miel' },
   ],
   '29': [
-    { icon: 'lighthouse', label: 'Phares' },
-    { icon: 'crepe', label: 'Crêpes' },
-    { icon: 'sea', label: 'Océan' },
+    { icon: 'lighthouse', label: 'Phare' },
+    { icon: 'crepe', label: 'Crêpe' },
+    { icon: 'fish', label: 'Pêche' },
   ],
   '30': [
-    { icon: 'olive', label: 'Olives' },
+    { icon: 'olive', label: 'Olive' },
+    { icon: 'wine', label: 'Costières' },
     { icon: 'castle', label: 'Pont du Gard' },
-    { icon: 'grape', label: 'Costières' }
   ],
   '31': [
+    { icon: 'plane', label: 'Aéronautique' },
     { icon: 'flower', label: 'Violette' },
-    { icon: 'airplane', label: 'Aérospatiale' },
-    { icon: 'duck', label: 'Cassoulet' }
+    { icon: 'duck', label: 'Cassoulet' },
   ],
   '32': [
-    { icon: 'duck', label: 'Foie gras' },
-    { icon: 'grape', label: 'Armagnac' },
-    { icon: 'wine', label: 'Madiran' }
+    { icon: 'barrel', label: 'Armagnac' },
+    { icon: 'duck', label: 'Canard' },
+    { icon: 'garlic', label: 'Ail' },
   ],
   '33': [
     { icon: 'wine', label: 'Bordeaux' },
     { icon: 'oyster', label: 'Arcachon' },
-    { icon: 'barrel', label: 'Médoc' }
+    { icon: 'sea', label: 'Bassin' },
   ],
   '34': [
-    { icon: 'wine', label: 'Languedoc' },
-    { icon: 'beach', label: 'Littoral' },
-    { icon: 'oyster', label: 'Bouzigues' }
+    { icon: 'wine', label: 'Picpoul' },
+    { icon: 'sea', label: 'Étangs' },
+    { icon: 'oyster', label: 'Bouzigues' },
   ],
   '35': [
-    { icon: 'crepe', label: 'Galettes' },
-    { icon: 'butter', label: 'Beurre' },
-    { icon: 'cider', label: 'Cidre' }
+    { icon: 'crepe', label: 'Galette' },
+    { icon: 'sea', label: 'Saint-Malo' },
+    { icon: 'cider', label: 'Cidre' },
   ],
   '36': [
-    { icon: 'castle', label: 'Châteaux' },
-    { icon: 'goat', label: 'Chèvre' },
-    { icon: 'forest', label: 'Brenne' }
+    { icon: 'cheese', label: 'Valençay' },
+    { icon: 'castle', label: 'Val de Loire' },
+    { icon: 'wheat', label: 'Brenne' },
   ],
   '37': [
+    { icon: 'castle', label: 'Châteaux' },
     { icon: 'wine', label: 'Vouvray' },
-    { icon: 'castle', label: 'Loire' },
-    { icon: 'castle', label: 'Rabelais' }
+    { icon: 'cheese', label: 'Chèvre' },
   ],
   '38': [
+    { icon: 'walnut', label: 'Noix' },
     { icon: 'ski', label: 'Alpes' },
-    { icon: 'walnut', label: 'Noix de Grenoble' },
-    { icon: 'forest', label: 'Chartreuse' }
+    { icon: 'mountain', label: 'Chartreuse' },
   ],
   '39': [
-    { icon: 'cheese', label: 'Comté' },
     { icon: 'wine', label: 'Vin jaune' },
-    { icon: 'ski', label: 'Jura' }
+    { icon: 'cheese', label: 'Comté' },
+    { icon: 'forest', label: 'Jura' },
   ],
   '40': [
-    { icon: 'forest', label: 'Landes' },
-    { icon: 'duck', label: 'Foie gras' },
-    { icon: 'beach', label: 'Dune' }
+    { icon: 'forest', label: 'Pins' },
+    { icon: 'duck', label: 'Canard' },
+    { icon: 'sea', label: "Côte d'Argent" },
   ],
   '41': [
     { icon: 'castle', label: 'Chambord' },
-    { icon: 'wine', label: 'Loire' },
-    { icon: 'forest', label: 'Sologne' }
+    { icon: 'wine', label: 'Cheverny' },
+    { icon: 'cheese', label: 'Selles-sur-Cher' },
   ],
   '42': [
-    { icon: 'ribbon', label: 'Ruban' },
-    { icon: 'coal', label: 'Mine' },
-    { icon: 'cow', label: 'Forez' }
+    { icon: 'textile', label: 'Ruban' },
+    { icon: 'coal', label: 'Bassin' },
+    { icon: 'cheese', label: 'Fourme' },
   ],
   '43': [
-    { icon: 'mustard', label: 'Lentille' },
-    { icon: 'volcano', label: 'Volcans' },
-    { icon: 'cheese', label: 'Velay' }
+    { icon: 'lentil', label: 'Lentille' },
+    { icon: 'lace', label: 'Dentelle' },
+    { icon: 'cathedral', label: 'Le Puy' },
   ],
   '44': [
     { icon: 'salt', label: 'Guérande' },
-    { icon: 'ship', label: 'Port' },
-    { icon: 'wine', label: 'Muscadet' }
+    { icon: 'river', label: 'Estuaire' },
+    { icon: 'butter', label: 'Beurre' },
   ],
   '45': [
     { icon: 'barrel', label: 'Vinaigre' },
-    { icon: 'wheat', label: 'Céréales' },
-    { icon: 'castle', label: 'Loiret' }
+    { icon: 'castle', label: 'Loire' },
+    { icon: 'flower', label: 'Rose' },
   ],
   '46': [
     { icon: 'wine', label: 'Cahors' },
-    { icon: 'mushroom', label: 'Truffe' },
-    { icon: 'goat', label: 'Rocamadour' }
+    { icon: 'truffle', label: 'Truffe' },
+    { icon: 'walnut', label: 'Noix' },
   ],
   '47': [
-    { icon: 'plum', label: 'Pruneau' },
-    { icon: 'duck', label: 'Canard' },
-    { icon: 'wine', label: 'Buzet' }
+    { icon: 'prune', label: 'Pruneau' },
+    { icon: 'strawberry', label: 'Fraise' },
+    { icon: 'wine', label: 'Côtes' },
   ],
   '48': [
-    { icon: 'sheep', label: 'Aubrac' },
-    { icon: 'forest', label: 'Cévennes' },
-    { icon: 'cow', label: 'Lozère' }
+    { icon: 'cow', label: 'Aubrac' },
+    { icon: 'cheese', label: 'Aligot' },
+    { icon: 'mountain', label: 'Causses' },
   ],
   '49': [
-    { icon: 'castle', label: 'Ardoise / châteaux' },
     { icon: 'wine', label: 'Anjou' },
-    { icon: 'castle', label: 'Ardoise' }
+    { icon: 'castle', label: 'Forteresse' },
+    { icon: 'flower', label: 'Rose' },
   ],
   '50': [
-    { icon: 'butter', label: 'Beurre' },
-    { icon: 'sea', label: 'Cotentin' },
-    { icon: 'ship', label: 'Mont-St-Michel' }
+    { icon: 'sea', label: 'Mont-Saint-Michel' },
+    { icon: 'oyster', label: 'Huître' },
+    { icon: 'cow', label: 'Normande' },
   ],
   '51': [
     { icon: 'champagne', label: 'Champagne' },
-    { icon: 'cookie', label: 'Biscuits' },
-    { icon: 'cathedral', label: 'Reims' }
+    { icon: 'cathedral', label: 'Reims' },
+    { icon: 'wheat', label: 'Craie' },
   ],
   '52': [
-    { icon: 'knife', label: 'Couteaux' },
+    { icon: 'knife', label: 'Nogent' },
     { icon: 'cheese', label: 'Langres' },
-    { icon: 'forest', label: 'Nogent' }
+    { icon: 'forest', label: 'Plateau' },
   ],
   '53': [
-    { icon: 'wheat', label: 'Lin' },
-    { icon: 'cow', label: 'Élevage' },
-    { icon: 'apple', label: 'Mayenne' }
+    { icon: 'cow', label: 'Mayenne' },
+    { icon: 'cider', label: 'Cidre' },
+    { icon: 'castle', label: 'Laval' },
   ],
   '54': [
-    { icon: 'cheese', label: 'Quiche' },
-    { icon: 'crystal', label: 'Cristal' },
-    { icon: 'fleur', label: 'Nancy' }
+    { icon: 'crystal', label: 'Baccarat' },
+    { icon: 'flower', label: 'Bergamote' },
+    { icon: 'cathedral', label: 'Nancy' },
   ],
   '55': [
-    { icon: 'sword', label: 'Mémoire' },
     { icon: 'forest', label: 'Argonne' },
-    { icon: 'sword', label: 'Verdun' }
+    { icon: 'cherry', label: 'Groseille' },
+    { icon: 'cathedral', label: 'Verdun' },
   ],
   '56': [
-    { icon: 'crepe', label: 'Crêpes' },
-    { icon: 'oyster', label: 'Huîtres' },
-    { icon: 'ship', label: 'Golfe' }
+    { icon: 'oyster', label: 'Huître' },
+    { icon: 'sea', label: 'Golfe' },
+    { icon: 'castle', label: 'Mégalithes' },
   ],
   '57': [
-    { icon: 'cherry', label: 'Mirabelle' },
     { icon: 'crystal', label: 'Cristal' },
-    { icon: 'pretzel', label: 'Moselle' }
+    { icon: 'beer', label: 'Bière' },
+    { icon: 'cathedral', label: 'Metz' },
   ],
   '58': [
-    { icon: 'pottery', label: 'Faïence' },
+    { icon: 'ceramic', label: 'Faïence' },
     { icon: 'wine', label: 'Pouilly' },
-    { icon: 'forest', label: 'Nivernais' }
+    { icon: 'river', label: 'Loire' },
   ],
   '59': [
-    { icon: 'fries', label: 'Frites' },
-    { icon: 'beer', label: 'Bières' },
-    { icon: 'wheat', label: 'Ch’ti' }
+    { icon: 'beer', label: 'Bière' },
+    { icon: 'textile', label: 'Textile' },
+    { icon: 'cheese', label: 'Maroilles' },
   ],
   '60': [
-    { icon: 'cathedral', label: 'Cathédrale' },
-    { icon: 'forest', label: 'Compiègne' },
-    { icon: 'castle', label: 'Chantilly' }
+    { icon: 'cathedral', label: 'Beauvais' },
+    { icon: 'forest', label: 'Halatte' },
+    { icon: 'ceramic', label: 'Faïence' },
   ],
   '61': [
-    { icon: 'horse', label: 'Chevaux' },
-    { icon: 'cheese', label: 'Camembert' },
-    { icon: 'apple', label: 'Perche' }
+    { icon: 'lace', label: 'Dentelle' },
+    { icon: 'cider', label: 'Cidre' },
+    { icon: 'forest', label: 'Perche' },
   ],
   '62': [
-    { icon: 'beer', label: 'Bières' },
-    { icon: 'sea', label: 'Côte d’Opale' },
-    { icon: 'lighthouse', label: 'Opale' }
+    { icon: 'sea', label: 'Opale' },
+    { icon: 'coal', label: 'Bassin' },
+    { icon: 'lighthouse', label: 'Gris-Nez' },
   ],
   '63': [
-    { icon: 'volcano', label: 'Puy de Dôme' },
+    { icon: 'volcano', label: 'Chaîne des Puys' },
     { icon: 'cheese', label: 'Saint-Nectaire' },
-    { icon: 'cow', label: 'Salers' }
+    { icon: 'river', label: 'Volvic' },
   ],
   '64': [
     { icon: 'beret', label: 'Béret' },
-    { icon: 'pepper', label: 'Piment d’Espelette' },
-    { icon: 'wine', label: 'Jurançon' }
+    { icon: 'cheese', label: 'Ossau-Iraty' },
+    { icon: 'duck', label: 'Bayonne' },
   ],
   '65': [
+    { icon: 'mountain', label: 'Pic du Midi' },
     { icon: 'ski', label: 'Pyrénées' },
-    { icon: 'pig', label: 'Noir de Bigorre' },
-    { icon: 'sheep', label: 'Bigorre' }
+    { icon: 'sheep', label: 'Barèges' },
   ],
   '66': [
     { icon: 'wine', label: 'Banyuls' },
-    { icon: 'beach', label: 'Côte Vermeille' },
-    { icon: 'olive', label: 'Catalan' }
+    { icon: 'sea', label: 'Côte vermeille' },
+    { icon: 'fish', label: 'Anchois' },
   ],
   '67': [
-    { icon: 'pretzel', label: 'Bretzel' },
+    { icon: 'cathedral', label: 'Notre-Dame' },
     { icon: 'wine', label: 'Riesling' },
-    { icon: 'beer', label: 'Strasbourg' }
+    { icon: 'beer', label: 'Bière' },
   ],
   '68': [
-    { icon: 'stork', label: 'Cigogne' },
     { icon: 'wine', label: 'Alsace' },
-    { icon: 'cheese', label: 'Munster' }
+    { icon: 'cheese', label: 'Munster' },
+    { icon: 'mountain', label: 'Vosges' },
   ],
   '69': [
-    { icon: 'silk', label: 'Soie' },
     { icon: 'wine', label: 'Beaujolais' },
-    { icon: 'coq', label: 'Lyon' },
+    { icon: 'textile', label: 'Soie' },
+    { icon: 'castle', label: 'Fourvière' },
   ],
   '70': [
-    { icon: 'cheese', label: 'Comté' },
+    { icon: 'cherry', label: 'Kirsch' },
     { icon: 'forest', label: 'Vosges' },
-    { icon: 'cow', label: 'Charolais' }
+    { icon: 'cheese', label: 'Comté' },
   ],
   '71': [
-    { icon: 'wine', label: 'Mâconnais' },
+    { icon: 'wine', label: 'Mâcon' },
     { icon: 'cow', label: 'Charolais' },
-    { icon: 'castle', label: 'Cluny' }
+    { icon: 'castle', label: 'Cluny' },
   ],
   '72': [
-    { icon: 'pig', label: 'Rillettes' },
-    { icon: 'race', label: '24 Heures' },
-    { icon: 'horse', label: 'Sarthe' }
+    { icon: 'chicken', label: 'Rillettes' },
+    { icon: 'castle', label: 'Le Mans' },
+    { icon: 'apple', label: 'Pomme' },
   ],
   '73': [
-    { icon: 'ski', label: 'Alpes' },
+    { icon: 'ski', label: 'Stations' },
     { icon: 'cheese', label: 'Beaufort' },
-    { icon: 'cow', label: 'Tarentaise' }
+    { icon: 'wine', label: 'Savoie' },
   ],
   '74': [
-    { icon: 'ski', label: 'Alpes' },
+    { icon: 'ski', label: 'Mont-Blanc' },
     { icon: 'cheese', label: 'Reblochon' },
-    { icon: 'sea', label: 'Lac' }
+    { icon: 'mountain', label: 'Lac' },
   ],
   '75': [
-    { icon: 'eiffel', label: 'Tour Eiffel' },
-    { icon: 'baguette', label: 'Baguette' },
-    { icon: 'croissant', label: 'Croissant' },
+    { icon: 'cathedral', label: 'Notre-Dame' },
+    { icon: 'textile', label: 'Mode' },
+    { icon: 'river', label: 'Seine' },
   ],
   '76': [
-    { icon: 'apple', label: 'Pommes' },
-    { icon: 'ship', label: 'Port' },
-    { icon: 'cider', label: 'Cidre' }
+    { icon: 'cider', label: 'Cidre' },
+    { icon: 'cheese', label: 'Neufchâtel' },
+    { icon: 'lighthouse', label: 'Falaises' },
   ],
   '77': [
     { icon: 'cheese', label: 'Brie' },
     { icon: 'castle', label: 'Fontainebleau' },
-    { icon: 'forest', label: 'Fontainebleau' }
+    { icon: 'wheat', label: 'Blé' },
   ],
   '78': [
     { icon: 'castle', label: 'Versailles' },
-    { icon: 'fleur', label: 'Île-de-France' },
-    { icon: 'forest', label: 'Rambouillet' }
+    { icon: 'forest', label: 'Rambouillet' },
+    { icon: 'apple', label: 'Verger' },
   ],
   '79': [
+    { icon: 'cheese', label: 'Chabichou' },
     { icon: 'butter', label: 'Beurre' },
-    { icon: 'goat', label: 'Chèvre' },
-    { icon: 'wheat', label: 'Niort' }
+    { icon: 'flower', label: 'Angélique' },
   ],
   '80': [
-    { icon: 'cathedral', label: 'Cathédrale' },
-    { icon: 'duck', label: 'Canard' },
-    { icon: 'sea', label: 'Baie' }
+    { icon: 'cathedral', label: 'Amiens' },
+    { icon: 'sea', label: 'Baie' },
+    { icon: 'duck', label: 'Hortillonnages' },
   ],
   '81': [
-    { icon: 'flower', label: 'Pastel' },
     { icon: 'cathedral', label: 'Albi' },
-    { icon: 'wine', label: 'Gaillac' }
+    { icon: 'wine', label: 'Gaillac' },
+    { icon: 'garlic', label: 'Ail' },
   ],
   '82': [
-    { icon: 'garlic', label: 'Ail rose' },
-    { icon: 'cow', label: 'Élevage' },
-    { icon: 'wine', label: 'Fronton' }
+    { icon: 'grape', label: 'Chasselas' },
+    { icon: 'garlic', label: 'Ail' },
+    { icon: 'melon', label: 'Melon' },
   ],
   '83': [
-    { icon: 'ship', label: 'Marine' },
-    { icon: 'lavender', label: 'Provence' },
-    { icon: 'olive', label: 'Olivier' },
+    { icon: 'wine', label: 'Rosé' },
+    { icon: 'sea', label: 'Rade' },
+    { icon: 'olive', label: 'Olive' },
   ],
   '84': [
-    { icon: 'lavender', label: 'Lavande' },
-    { icon: 'wine', label: 'Côtes du Rhône' },
-    { icon: 'olive', label: 'Ventoux' }
+    { icon: 'melon', label: 'Melon' },
+    { icon: 'nougat', label: 'Nougat' },
+    { icon: 'wine', label: 'Châteauneuf' },
   ],
   '85': [
-    { icon: 'salt', label: 'Marais salants' },
-    { icon: 'sea', label: 'Vendée' },
-    { icon: 'ship', label: 'Noirmoutier' }
+    { icon: 'sea', label: 'Côte' },
+    { icon: 'lentil', label: 'Mogette' },
+    { icon: 'castle', label: 'Puy du Fou' },
   ],
   '86': [
-    { icon: 'goat', label: 'Chabichou' },
-    { icon: 'atom', label: 'Futuroscope' },
-    { icon: 'castle', label: 'Poitiers' }
+    { icon: 'castle', label: 'Futuroscope' },
+    { icon: 'cheese', label: 'Chèvre' },
+    { icon: 'wine', label: 'Haut-Poitou' },
   ],
   '87': [
-    { icon: 'crystal', label: 'Porcelaine' },
+    { icon: 'ceramic', label: 'Porcelaine' },
     { icon: 'cow', label: 'Limousin' },
-    { icon: 'oak', label: 'Limoges' }
+    { icon: 'chestnut', label: 'Châtaigne' },
   ],
   '88': [
-    { icon: 'forest', label: 'Vosges' },
+    { icon: 'mountain', label: 'Ballons' },
     { icon: 'cheese', label: 'Munster' },
-    { icon: 'ski', label: 'Vosges' }
+    { icon: 'spa', label: 'Vittel' },
   ],
   '89': [
     { icon: 'wine', label: 'Chablis' },
-    { icon: 'cherry', label: 'Cerises' },
-    { icon: 'castle', label: 'Vézelay' }
+    { icon: 'cherry', label: 'Cerise' },
+    { icon: 'cathedral', label: 'Auxerre' },
   ],
   '90': [
-    { icon: 'lion', label: 'Lion' },
-    { icon: 'watch', label: 'Horlogerie' },
-    { icon: 'forest', label: 'Ballon' }
+    { icon: 'castle', label: 'Lion' },
+    { icon: 'textile', label: 'Industrie' },
+    { icon: 'forest', label: 'Vosges' },
   ],
   '91': [
-    { icon: 'atom', label: 'Recherche' },
-    { icon: 'fleur', label: 'Île-de-France' },
-    { icon: 'forest', label: 'Essonne' }
+    { icon: 'forest', label: 'Sénart' },
+    { icon: 'wheat', label: 'Plaine' },
+    { icon: 'castle', label: 'Courances' },
   ],
   '92': [
-    { icon: 'briefcase', label: 'La Défense' },
-    { icon: 'fleur', label: 'Île-de-France' },
-    { icon: 'eiffel', label: 'Paris proche' }
+    { icon: 'castle', label: 'La Défense' },
+    { icon: 'ceramic', label: 'Sèvres' },
+    { icon: 'river', label: 'Seine' },
   ],
   '93': [
-    { icon: 'film', label: 'Cinéma' },
-    { icon: 'fleur', label: 'Île-de-France' },
-    { icon: 'cathedral', label: 'Basilique' }
+    { icon: 'cathedral', label: 'Basilique' },
+    { icon: 'plane', label: 'Aéroport' },
+    { icon: 'flower', label: 'Marchés' },
   ],
   '94': [
-    { icon: 'rose', label: 'Roses' },
-    { icon: 'fleur', label: 'Île-de-France' },
-    { icon: 'castle', label: 'Vincennes' }
+    { icon: 'flower', label: 'Roses' },
+    { icon: 'river', label: 'Marne' },
+    { icon: 'castle', label: 'Vincennes' },
   ],
   '95': [
-    { icon: 'airplane', label: 'Roissy' },
-    { icon: 'castle', label: 'Châteaux' },
-    { icon: 'forest', label: 'Vexin' }
+    { icon: 'forest', label: 'Vexin' },
+    { icon: 'castle', label: 'Auvers' },
+    { icon: 'wheat', label: 'Plaine' },
   ],
   '971': [
-    { icon: 'palm', label: 'Antilles' },
-    { icon: 'barrel', label: 'Rhum' },
+    { icon: 'banana', label: 'Banane' },
+    { icon: 'sugar', label: 'Canne' },
+    { icon: 'volcano', label: 'Soufrière' },
     { icon: 'beach', label: 'Plages' },
   ],
   '972': [
-    { icon: 'palm', label: 'Antilles' },
-    { icon: 'barrel', label: 'Rhum' },
+    { icon: 'rum', label: 'Rhum' },
+    { icon: 'banana', label: 'Banane' },
     { icon: 'volcano', label: 'Pelée' },
+    { icon: 'flower', label: 'Fleurs' },
   ],
   '973': [
+    { icon: 'rocket', label: 'Spatial' },
     { icon: 'forest', label: 'Amazonie' },
-    { icon: 'gold', label: 'Or' },
-    { icon: 'ship', label: 'Fleuve' }
+    { icon: 'river', label: 'Fleuve' },
   ],
   '974': [
     { icon: 'volcano', label: 'Piton' },
     { icon: 'vanilla', label: 'Vanille' },
-    { icon: 'beach', label: 'Lagons' },
+    { icon: 'rum', label: 'Rhum' },
+    { icon: 'beach', label: 'Lagon' },
+  ],
+  '975': [
+    { icon: 'ship', label: 'Morutiers' },
+    { icon: 'fish', label: 'Pêche' },
+    { icon: 'mountain', label: 'Glace' },
   ],
   '976': [
     { icon: 'flower', label: 'Ylang-ylang' },
     { icon: 'beach', label: 'Lagon' },
-    { icon: 'palm', label: 'Récifs' }
-  ],
-  '975': [
-    { icon: 'fish', label: 'Morue' },
-    { icon: 'ship', label: 'Pêche' },
-    { icon: 'sea', label: 'Terreneuve' }
+    { icon: 'vanilla', label: 'Vanille' },
   ],
   '977': [
-    { icon: 'beach', label: 'Plages' },
-    { icon: 'pearl', label: 'Luxe' },
-    { icon: 'palm', label: 'Gustavia' }
+    { icon: 'beach', label: 'Anse' },
+    { icon: 'sea', label: 'Caraïbe' },
+    { icon: 'rum', label: 'Rhum' },
   ],
   '978': [
-    { icon: 'beach', label: 'Plages' },
-    { icon: 'sea', label: 'Caraïbes' },
-    { icon: 'palm', label: 'Lagons' }
+    { icon: 'beach', label: 'Baie' },
+    { icon: 'sea', label: 'Lagon' },
+    { icon: 'salt', label: 'Salines' },
   ],
   '984': [
-    { icon: 'penguin', label: 'Austral' },
-    { icon: 'ship', label: 'Base' },
-    { icon: 'sea', label: 'Kerguelen' }
+    { icon: 'ship', label: 'Marion Dufresne' },
+    { icon: 'mountain', label: 'Glace' },
+    { icon: 'fish', label: 'Pêche' },
   ],
   '986': [
-    { icon: 'palm', label: 'Pacifique' },
-    { icon: 'pearl', label: 'Océanie' },
-    { icon: 'beach', label: 'Uvea' }
+    { icon: 'palm', label: 'Cocotier' },
+    { icon: 'sea', label: 'Lagon' },
+    { icon: 'textile', label: 'Tapa' },
   ],
   '987': [
     { icon: 'pearl', label: 'Perle' },
-    { icon: 'palm', label: 'Polynésie' },
-    { icon: 'beach', label: 'Lagons' },
+    { icon: 'vanilla', label: 'Vanille' },
+    { icon: 'flower', label: 'Tiaré' },
+    { icon: 'beach', label: 'Lagon' },
   ],
   '988': [
-    { icon: 'metal', label: 'Nickel' },
-    { icon: 'palm', label: 'Pacifique' },
-    { icon: 'beach', label: 'Nouméa' }
+    { icon: 'beach', label: 'Lagon' },
+    { icon: 'palm', label: 'Pins colonnaires' },
+    { icon: 'ship', label: 'Nickel' },
   ],
 }
