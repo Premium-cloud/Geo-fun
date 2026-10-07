@@ -21,6 +21,20 @@
   align-items: center;
   gap: 0.65rem;
   min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.brand:hover .brand-mark {
+  transform: translateY(-1px);
+}
+
+.brand:hover h1 {
+  color: #1f6f8b;
 }
 
 .brand-mark {
@@ -33,6 +47,7 @@
   background: #1f6f8b;
   color: #fff;
   font-size: 0.8rem;
+  transition: transform 0.15s ease;
 }
 
 .brand-kicker {
@@ -49,6 +64,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.1;
+  transition: color 0.15s ease;
 }
 
 .tabs {

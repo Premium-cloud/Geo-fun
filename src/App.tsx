@@ -23,7 +23,12 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar no-print">
-        <div className="brand">
+        <button
+          type="button"
+          className="brand"
+          onClick={() => setTab('france')}
+          aria-label="Retour au lexique France"
+        >
           <span className="brand-mark" aria-hidden>
             ◆
           </span>
@@ -31,7 +36,7 @@ export default function App() {
             <p className="brand-kicker">{isLexique(tab) ? 'Lexique' : 'Quiz'}</p>
             <h1>Cartes</h1>
           </div>
-        </div>
+        </button>
 
         <nav className="tabs" aria-label="Sections">
           <div className="tabs-group" role="presentation">
@@ -71,7 +76,7 @@ export default function App() {
                 className="btn-pdf btn-pdf-primary"
                 onClick={() => window.print()}
               >
-                Imprimer recto-verso
+                Imprimer
               </button>
               {tab === 'monde' ? (
                 <>

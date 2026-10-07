@@ -437,59 +437,73 @@ export function GameView({ variant }: { variant: PlayVariant }) {
 
   return (
     <div className="game-view">
+      <p className="game-session">
+        {isPlay ? 'Mode Jeu · 3 vies' : 'Entraînement'}
+      </p>
+
       <div className="game-toolbar">
-        <div className="game-toolbar-row">
-          <div className="game-group" role="group" aria-label="Catégorie">
+        <div className="game-toolbar-primary">
+          <div className="game-group game-categories" role="group" aria-label="Catégorie">
             {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
               <button
                 key={c}
                 type="button"
-                className={`game-chip ${category === c ? 'is-active' : ''}`}
+                className={`game-chip game-chip-cat ${category === c ? 'is-active' : ''}`}
                 onClick={() => selectCategory(c)}
               >
                 {CATEGORY_LABEL[c]}
               </button>
             ))}
           </div>
-          <div className="game-group game-difficulty" role="group" aria-label="Difficulté">
-            {DIFFICULTY_OPTIONS.map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} ${d.id === 'difficile' ? 'is-hard' : 'is-easy'}`}
-                onClick={() => selectDifficulty(d.id)}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
-          <div className="game-score" aria-live="polite">
-            {isPlay ? <Lives lives={lives} /> : null}
-            <span>
-              Score <strong>{score}</strong>
-              {!isPlay ? <> / {asked}</> : null}
-            </span>
-            {!isPlay ? <span className="game-pct">{pct} %</span> : null}
-            {streak >= 3 ? <span className="game-streak">×{streak}</span> : null}
-          </div>
         </div>
-        <div className="game-toolbar-row game-toolbar-modes">
-          <div className="game-group" role="group" aria-label="Mode">
-            {availableModes.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
-                onClick={() => selectMode(m.id)}
-              >
-                {m.label}
-              </button>
-            ))}
+
+        <div className="game-toolbar-secondary">
+          <div className="game-field">
+            <span className="game-field-label">Sous-mode</span>
+            <div className="game-group" role="group" aria-label="Sous-mode">
+              {availableModes.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
+                  onClick={() => selectMode(m.id)}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="game-field-sep" aria-hidden />
+
+          <div className="game-field game-field-diff">
+            <span className="game-field-label">Difficulté</span>
+            <div className="game-group" role="group" aria-label="Difficulté">
+              {DIFFICULTY_OPTIONS.map((d) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} ${d.id === 'difficile' ? 'is-hard' : 'is-easy'}`}
+                  onClick={() => selectDifficulty(d.id)}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       <div className="game-board" key={`${variant}-${category}-${mode}-${difficulty}-${seed}`}>
+        <div className="game-board-hud" aria-live="polite">
+          {isPlay ? <Lives lives={lives} /> : null}
+          <span className="game-score">
+            Score <strong>{score}</strong>
+            {!isPlay ? <> / {asked}</> : null}
+          </span>
+          {!isPlay ? <span className="game-pct">{pct} %</span> : null}
+          {streak >= 3 ? <span className="game-streak">×{streak}</span> : null}
+        </div>
         <p className="game-prompt">{round.prompt}</p>
         <PromptVisual round={round} />
 
