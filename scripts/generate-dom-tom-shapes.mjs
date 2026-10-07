@@ -1,25 +1,14 @@
 /**
- * Silhouettes DOM-TOM fidèles → public/maps/dom-tom-shapes.json
- * Sources : france-geojson (971–976) + Nominatim (TOM).
+ * Silhouettes DOM-TOM → public/maps/dom-tom-shapes.json
+ * DOM (971–976) : france-geojson + Mercator fitExtent sur la feature.
+ * TOM : silhouettes dessinées (lisibles à petite taille).
  */
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
 import { geoMercator, geoPath } from 'd3-geo'
 
 const SIZE = 120
 const PAD = 8
-const CACHE = '/tmp/dom-tom-geo-cache'
-mkdirSync(CACHE, { recursive: true })
 mkdirSync('public/maps', { recursive: true })
-
-const NOMINATIM = {
-  '975': 'Saint-Pierre-et-Miquelon, France',
-  '977': 'Saint-Barthélemy, France',
-  '978': 'Collectivité de Saint-Martin, France',
-  '984': 'Terres australes et antarctiques françaises',
-  '986': 'Wallis-et-Futuna, France',
-  '987': 'Polynésie française',
-  '988': 'Nouvelle-Calédonie, France',
-}
 
 function ringArea(ring) {
   let a = 0
@@ -38,24 +27,6 @@ function walkCoords(geom, out = []) {
       for (const ring of poly) for (const p of ring) out.push(p)
   }
   return out
-}
-
-function manualBounds(feature) {
-  const pts = walkCoords(feature.geometry)
-  let minX = Infinity
-  let maxX = -Infinity
-  let minY = Infinity
-  let maxY = -Infinity
-  for (const [x, y] of pts) {
-    minX = Math.min(minX, x)
-    maxX = Math.max(maxX, x)
-    minY = Math.min(minY, y)
-    maxY = Math.max(maxY, y)
-  }
-  return [
-    [minX, minY],
-    [maxX, maxY],
-  ]
 }
 
 function focusLargest(feature, maxParts, clusterDeg = 10) {
@@ -113,8 +84,7 @@ function toPath(feature) {
   const pts = walkCoords(feat.geometry)
   const stride = pts.length > 8000 ? 4 : pts.length > 2500 ? 3 : 2
   feat = { ...feat, geometry: simplify(feat.geometry, stride) }
-  // fitExtent sur la feature elle-même (pas une bbox polygon) —
-  // sinon Mercator sous-échelle les DOM france-geojson (~0.2×0.2 dans 120).
+  // fitExtent sur la feature (pas une bbox polygon) pour un rendu à l’échelle.
   const proj = geoMercator().fitExtent(
     [
       [PAD, PAD],
@@ -122,26 +92,9 @@ function toPath(feature) {
     ],
     feat,
   )
-  const d = geoPath(proj)(feat)
-  return d
+  return geoPath(proj)(feat)
 }
 
-async function fetchNominatim(code, q) {
-  const cache = `${CACHE}/${code}.geojson`
-  if (existsSync(cache)) return JSON.parse(readFileSync(cache, 'utf8'))
-  console.log('fetch', code, q)
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=geojson&polygon_geojson=1&limit=1`
-  const r = await fetch(url, {
-    headers: { 'User-Agent': 'cartes-lexique/1.0 (DOM-TOM silhouettes)' },
-  })
-  if (!r.ok) throw new Error(`HTTP ${r.status} ${code}`)
-  const j = await r.json()
-  writeFileSync(cache, JSON.stringify(j))
-  await new Promise((res) => setTimeout(res, 1100))
-  return j
-}
-
-// france-geojson outre-mer
 if (!existsSync('/tmp/fr-outre.geojson')) {
   const r = await fetch(
     'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-avec-outre-mer.geojson',
@@ -167,27 +120,19 @@ for (const code of ['971', '972', '973', '974', '976']) {
   }
 }
 
-// TOM : silhouettes dessinées (Nominatim renvoie souvent une enveloppe pleine
-// illisible à 3–4 rem). Formes reconnaissables, viewBox 0 0 120 120.
+// TOM : silhouettes dessinées (lisibles à ~3–4 rem).
 const HANDMADE_TOM = {
-  // Saint-Pierre-et-Miquelon : deux îles
   '975':
     'M28 38c8-14 22-16 34-8 8 6 10 18 4 28l-18 22c-8 8-22 6-28-4-8-12-4-26 8-38zm52 18c10-6 24-2 28 10 4 12-2 24-14 28-10 4-22-2-26-12-4-12 2-22 12-26z',
-  // Saint-Barthélemy
   '977':
     'M22 58c6-18 28-28 48-22 18 6 28 24 22 42-4 12-16 20-30 22-18 2-32-8-38-22-4-10-4-16-2-20z',
-  // Saint-Martin
   '978': 'M30 40l50-8 18 28-12 36-42 8-22-24z',
-  // TAAF — archipel
   '984':
     'M24 30c8-6 18-4 22 4 4 8-2 16-10 18-8 2-16-4-16-12 0-4 2-8 4-10zm40 8c10-8 24-6 28 6 4 10-4 20-14 22-12 2-22-8-20-18 0-4 2-8 6-10zm-18 40c12-4 22 4 24 14 2 12-8 20-18 18-12-2-18-14-12-24 2-4 4-6 6-8zm38 6c8-6 18-2 20 8 2 8-4 14-12 14-8 0-14-8-12-16 0-2 2-4 4-6z',
-  // Wallis-et-Futuna : 3 îles
   '986':
     'M24 36c10-8 22-6 26 4 4 10-4 20-14 22-12 2-20-8-18-18 0-4 2-6 6-8zm40-8c8-4 18 0 20 10 2 10-6 16-14 14-10-2-14-12-10-20 2-2 2-4 4-4zm8 40c12-6 24 0 26 12 2 12-8 20-18 18-12-2-18-14-14-24 2-4 4-6 6-6z',
-  // Polynésie — Tahiti + Moorea
   '987':
     'M48 28c18-10 40-4 48 16 8 18 0 40-18 50-16 10-38 6-48-12-10-16-4-36 10-46 2-2 6-6 8-8zm-22 8c6-4 12-2 14 4 2 6-2 10-8 10s-10-6-6-14z',
-  // Nouvelle-Calédonie + Loyauté
   '988':
     'M18 70c8-28 28-48 52-52 14-2 28 6 34 20 6 14 2 30-10 40-14 12-34 14-50 6-14-6-24-8-26-14zM92 28c6-2 12 2 12 8s-6 10-12 8-8-6-6-12c2-2 4-4 6-4zm8 22c4-2 10 0 10 6s-4 8-8 6-6-6-4-10c0-2 2-2 2-2zm4 20c4 0 8 4 6 8s-8 4-10 0 0-8 4-8z',
 }
