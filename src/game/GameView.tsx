@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react'
 import { DEPT_CARDS, type DeptCard } from '../cards/CartesFranceView'
 import { COUNTRIES, type Country } from '../data/countries'
+import {
+  DIFFICULTY_OPTIONS,
+  pickCountryDistractors,
+  pickDeptDistractors,
+  pickRegionDistractors,
+  type Difficulty,
+} from './difficulty'
 import './GameView.css'
 
 type Category = 'departements' | 'pays' | 'capitale'
@@ -57,10 +64,6 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-function pickN<T>(arr: T[], n: number): T[] {
-  return shuffle(arr).slice(0, n)
-}
-
 function flagUrl(code: string): string {
   return `/flags/${code.toLowerCase()}.svg`
 }
@@ -79,15 +82,22 @@ function defaultMode(cat: Category): Mode {
   return modesFor(cat)[0]!.id
 }
 
-function uniqueRegions(except: string): string[] {
-  const set = new Set(DEPT_CARDS.map((d) => d.region).filter((r) => r !== except))
-  return [...set]
+function allRegions(): string[] {
+  return [...new Set(DEPT_CARDS.map((d) => d.region))]
 }
 
-function makeDeptRound(mode: DeptMode): Round | null {
+function pickDeptCard(): DeptCard {
+  return shuffle(DEPT_CARDS)[0]!
+}
+
+function pickCountry(): Country {
+  return shuffle(COUNTRIES)[0]!
+}
+
+function makeDeptRound(mode: DeptMode, difficulty: Difficulty): Round | null {
   if (DEPT_CARDS.length < 4) return null
-  const [card, ...rest] = shuffle(DEPT_CARDS) as [DeptCard, ...DeptCard[]]
-  const distractors = pickN(rest, 3)
+  const card = pickDeptCard()
+  const distractors = pickDeptDistractors(card, DEPT_CARDS, difficulty)
 
   if (mode === 'chiffre') {
     const answer = card.name
@@ -128,26 +138,25 @@ function makeDeptRound(mode: DeptMode): Round | null {
     }
   }
 
-  // région : on montre le département, il faut trouver la région
   const answer = card.region
-  const regionPool = uniqueRegions(answer)
-  if (regionPool.length < 3) return null
+  const regionChoices = pickRegionDistractors(answer, allRegions(), difficulty)
+  if (regionChoices.length < 3) return null
   return {
     prompt: 'Quelle région ?',
     show: 'deptName',
     showValue: card.name,
     showCode: card.code,
     answer,
-    choices: shuffle([answer, ...pickN(regionPool, 3)]),
+    choices: shuffle([answer, ...regionChoices]),
     choiceKind: 'text',
     answerLabel: answer,
   }
 }
 
-function makePaysRound(mode: PaysMode): Round | null {
+function makePaysRound(mode: PaysMode, difficulty: Difficulty): Round | null {
   if (COUNTRIES.length < 4) return null
-  const [card, ...rest] = shuffle(COUNTRIES) as [Country, ...Country[]]
-  const distractors = pickN(rest, 3)
+  const card = pickCountry()
+  const distractors = pickCountryDistractors(card, COUNTRIES, difficulty)
 
   if (mode === 'flagToName') {
     const answer = card.name
@@ -200,10 +209,10 @@ function makePaysRound(mode: PaysMode): Round | null {
   }
 }
 
-function makeCapitaleRound(mode: CapitaleMode): Round | null {
+function makeCapitaleRound(mode: CapitaleMode, difficulty: Difficulty): Round | null {
   if (COUNTRIES.length < 4) return null
-  const [card, ...rest] = shuffle(COUNTRIES) as [Country, ...Country[]]
-  const distractors = pickN(rest, 3)
+  const card = pickCountry()
+  const distractors = pickCountryDistractors(card, COUNTRIES, difficulty)
   const answer = card.capital
 
   if (mode === 'flagToCapital') {
@@ -229,10 +238,14 @@ function makeCapitaleRound(mode: CapitaleMode): Round | null {
   }
 }
 
-function makeRound(category: Category, mode: Mode): Round | null {
-  if (category === 'departements') return makeDeptRound(mode as DeptMode)
-  if (category === 'pays') return makePaysRound(mode as PaysMode)
-  return makeCapitaleRound(mode as CapitaleMode)
+function makeRound(
+  category: Category,
+  mode: Mode,
+  difficulty: Difficulty,
+): Round | null {
+  if (category === 'departements') return makeDeptRound(mode as DeptMode, difficulty)
+  if (category === 'pays') return makePaysRound(mode as PaysMode, difficulty)
+  return makeCapitaleRound(mode as CapitaleMode, difficulty)
 }
 
 function PromptVisual({ round }: { round: Round }) {
@@ -286,6 +299,7 @@ function FlagChoice({ code }: { code: string }) {
 export function GameView() {
   const [category, setCategory] = useState<Category>('departements')
   const [mode, setMode] = useState<Mode>('chiffre')
+  const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
@@ -294,7 +308,10 @@ export function GameView() {
 
   const availableModes = modesFor(category)
 
-  const round = useMemo(() => makeRound(category, mode), [category, mode, seed])
+  const round = useMemo(
+    () => makeRound(category, mode, difficulty),
+    [category, mode, difficulty, seed],
+  )
 
   function next() {
     setPicked(null)
@@ -313,6 +330,15 @@ export function GameView() {
 
   function selectMode(m: Mode) {
     setMode(m)
+    setPicked(null)
+    setSeed((s) => s + 1)
+  }
+
+  function selectDifficulty(d: Difficulty) {
+    setDifficulty(d)
+    setScore(0)
+    setAsked(0)
+    setStreak(0)
     setPicked(null)
     setSeed((s) => s + 1)
   }
@@ -357,6 +383,18 @@ export function GameView() {
               </button>
             ))}
           </div>
+          <div className="game-group game-difficulty" role="group" aria-label="Difficulté">
+            {DIFFICULTY_OPTIONS.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} ${d.id === 'difficile' ? 'is-hard' : 'is-easy'}`}
+                onClick={() => selectDifficulty(d.id)}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
           <div className="game-score" aria-live="polite">
             <span>
               Score <strong>{score}</strong> / {asked}
@@ -381,7 +419,7 @@ export function GameView() {
         </div>
       </div>
 
-      <div className="game-board" key={`${category}-${mode}-${seed}`}>
+      <div className="game-board" key={`${category}-${mode}-${difficulty}-${seed}`}>
         <p className="game-prompt">{round.prompt}</p>
         <PromptVisual round={round} />
 

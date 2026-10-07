@@ -45,8 +45,20 @@
   color: #fff;
 }
 
+.game-chip-diff.is-easy.is-active {
+  background: #2f6b4f;
+}
+
+.game-chip-diff.is-hard.is-active {
+  background: #8c3a4b;
+}
+
 .game-chip:hover {
   transform: translateY(-1px);
+}
+
+.game-difficulty {
+  margin-left: 0.25rem;
 }
 
 .game-score {
