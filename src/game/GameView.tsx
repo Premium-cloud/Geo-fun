@@ -61,10 +61,10 @@ const DEPT_MODES: { id: DeptMode; label: string }[] = [
 ]
 
 const PAYS_MODES: { id: PaysMode; label: string }[] = [
-  { id: 'flagToName', label: 'Drapeau → nom' },
-  { id: 'nameToFlag', label: 'Nom → drapeau' },
-  { id: 'capitalToName', label: 'Capitale → pays' },
-  { id: 'capitalToFlag', label: 'Capitale → drapeau' },
+  { id: 'flagToName', label: 'Par drapeau' },
+  { id: 'nameToFlag', label: 'Par nom' },
+  { id: 'capitalToName', label: 'Par capitale' },
+  { id: 'capitalToFlag', label: 'Par capitale (drapeau)' },
   { id: 'carte', label: 'Carte' },
 ]
 
@@ -72,8 +72,8 @@ const MAP_COUNTRIES = COUNTRIES.filter((c) => WORLD_MAP_CODES.has(c.code))
 const METRO_DEPTS = DEPT_CARDS.filter((d) => d.group === 'metro')
 
 const CAPITALE_MODES: { id: CapitaleMode; label: string }[] = [
-  { id: 'flagToCapital', label: 'Drapeau → capitale' },
-  { id: 'nameToCapital', label: 'Nom → capitale' },
+  { id: 'flagToCapital', label: 'Par drapeau' },
+  { id: 'nameToCapital', label: 'Par nom' },
 ]
 
 const CATEGORY_LABEL: Record<Category, string> = {
@@ -1201,9 +1201,7 @@ export function GameView({
           ) : (
             <div className="game-field">
               <span className="game-field-label">Sous-mode</span>
-              <p className="game-mixte-hint">
-                Drapeau → pays · Nom → capitale · Chiffre → département
-              </p>
+              <p className="game-mixte-hint">(Drapeau·Nom de capitale·Chiffre)</p>
             </div>
           )}
 
