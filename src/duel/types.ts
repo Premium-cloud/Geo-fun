@@ -45,5 +45,5 @@ export const DEFAULT_DUEL_CONFIG: DuelConfig = {
   timerSec: 15,
 }
 
-/** Split portrait : largeur mini pour proposer l’option. */
-export const SPLIT_MIN_WIDTH = 720
+/** Au-dessus : Split côte à côte (PC). En dessous : Split miroir téléphone. */
+export const SPLIT_WIDE_WIDTH = 720

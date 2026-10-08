@@ -25,7 +25,7 @@ L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
 Onglet **Jeux → Duel** :
 
-- **Même écran** : Battle royale (premier faux = perdu), Chacun son tour (question différente par joueur), Split (même question — PC : J1 = 1–2–3–4, J2 = A–Z–E–R)
+- **Même écran** : Battle royale (premier faux = perdu), Chacun son tour (question différente par joueur), Split (même question — téléphone miroir moitié/moitié ; PC : J1 = 1–2–3–4, J2 = A–Z–E–R)
 - **En ligne** : salon + lien d’invitation (PeerJS) ; l’hôte synchronise timer, scores et question (1 pt par bonne réponse, timer → 5 s dès qu’un trouve)
 - Catégories : Départements (n°) · Pays (drapeau) · Capitales · Mixte — QCM ou saisie, pas de carte
 

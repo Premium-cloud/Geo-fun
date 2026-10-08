@@ -15,7 +15,7 @@ import {
 import {
   DEFAULT_DUEL_CONFIG,
   DUEL_CATEGORY_LABEL,
-  SPLIT_MIN_WIDTH,
+  SPLIT_WIDE_WIDTH,
   type DuelAnswerMode,
   type DuelCategory,
   type DuelConfig,
@@ -30,10 +30,10 @@ const PLAYER = ['Joueur 1', 'Joueur 2'] as const
 
 function useWideEnough() {
   const [ok, setOk] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth >= SPLIT_MIN_WIDTH,
+    () => typeof window !== 'undefined' && window.innerWidth >= SPLIT_WIDE_WIDTH,
   )
   useEffect(() => {
-    const onResize = () => setOk(window.innerWidth >= SPLIT_MIN_WIDTH)
+    const onResize = () => setOk(window.innerWidth >= SPLIT_WIDE_WIDTH)
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
@@ -85,7 +85,8 @@ export function DuelView() {
   function patchConfig(partial: Partial<DuelConfig>) {
     setConfig((c) => {
       const next = { ...c, ...partial }
-      if (partial.localFormat === 'split' && !wide) next.localFormat = 'battleroyal'
+      // Téléphone : Split miroir → QCM plus confortable au tactile
+      if (partial.localFormat === 'split' && !wide) next.answerMode = 'qcm'
       return next
     })
   }
@@ -244,12 +245,10 @@ export function DuelView() {
                 </button>
                 <button
                   type="button"
-                  className={`duel-chip ${config.localFormat === 'split' ? 'is-active' : ''} ${!wide ? 'is-disabled' : ''}`}
-                  disabled={!wide}
-                  title={!wide ? `Écran trop étroit (< ${SPLIT_MIN_WIDTH}px)` : undefined}
+                  className={`duel-chip ${config.localFormat === 'split' ? 'is-active' : ''}`}
                   onClick={() => patchConfig({ localFormat: 'split' })}
                 >
-                  Split{!wide ? ' (tablette/PC)' : ''}
+                  Split{wide ? '' : ' (téléphone)'}
                 </button>
               </div>
               <p className="duel-hint">
@@ -257,8 +256,9 @@ export function DuelView() {
                   ? 'Premier qui se trompe a perdu. Bonne réponse → ça passe à l’autre.'
                   : config.localFormat === 'tours'
                     ? 'Chacun sa question (pas la même). 1 point si correct.'
-                    : 'Course simultanée, même question — 1 pt par bonne réponse. PC : J1 = 1–2–3–4, J2 = A–Z–E–R. Timer → 5 s dès qu’un trouve.'}
-              </p>
+                    : wide
+                      ? 'Course simultanée — 1 pt par bonne réponse. PC : J1 = 1–2–3–4, J2 = A–Z–E–R. Timer → 5 s dès qu’un trouve.'
+                      : 'Téléphone au milieu : moitié d’écran chacun, J2 en haut (miroir). 1 pt par bonne réponse.'}
             </div>
           ) : (
             <p className="duel-hint">
@@ -503,6 +503,7 @@ export function DuelView() {
       total={deck.length}
       online={false}
       split
+      mirror={!wide}
       conn={null}
       onScore={(p, pts) => addScore(p, pts)}
       onCombo={bumpCombo}
@@ -690,6 +691,7 @@ function RacePlay({
   total,
   online,
   split,
+  mirror,
   conn,
   onScore,
   onCombo,
@@ -708,6 +710,8 @@ function RacePlay({
   total: number
   online: boolean
   split?: boolean
+  /** Téléphone : deux moitiés, J2 en haut retourné à 180°. */
+  mirror?: boolean
   conn: DataConnection | null
   onScore: (p: 0 | 1, pts: number) => void
   onCombo: (p: 0 | 1, ok: boolean) => void
@@ -825,9 +829,9 @@ function RacePlay({
     }
   }
 
-  // Split PC : J1 = 1–2–3–4, J2 = A–Z–E–R (QCM)
+  // Split PC (pas miroir) : J1 = 1–2–3–4, J2 = A–Z–E–R (QCM)
   useEffect(() => {
-    if (!split || config.answerMode !== 'qcm') return
+    if (!split || mirror || config.answerMode !== 'qcm') return
     const j1 = ['1', '2', '3', '4']
     const j2 = ['a', 'z', 'e', 'r']
     const onKey = (e: KeyboardEvent) => {
@@ -853,7 +857,7 @@ function RacePlay({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [split, round.id, config.answerMode])
+  }, [split, mirror, round.id, config.answerMode])
 
   function endRound() {
     if (ended.current) return
@@ -898,6 +902,8 @@ function RacePlay({
     }, 900)
   }
 
+  const showKeys = Boolean(split && !mirror && config.answerMode === 'qcm')
+
   const panel = (player: 0 | 1) => {
     const mine = online ? me === player : true
     const disabled = !mine || locked[player] || ended.current
@@ -912,9 +918,7 @@ function RacePlay({
           {combos[player] > 1 ? (
             <span className="duel-combo"> ×{combos[player]}</span>
           ) : null}
-          {split && config.answerMode === 'qcm' ? (
-            <span className="duel-keys-hint"> {keys.join(' ')}</span>
-          ) : null}
+          {showKeys ? <span className="duel-keys-hint"> {keys.join(' ')}</span> : null}
         </p>
         {mine ? (
           <AnswerBlock
@@ -930,7 +934,7 @@ function RacePlay({
             }
             onPick={(v) => tryAnswer(player, v)}
             disabled={disabled}
-            keyLabels={split && config.answerMode === 'qcm' ? [...keys] : undefined}
+            keyLabels={showKeys ? [...keys] : undefined}
           />
         ) : (
           <p className="duel-hint">
@@ -941,6 +945,37 @@ function RacePlay({
               : 'En train de jouer…'}
           </p>
         )}
+      </div>
+    )
+  }
+
+  if (split && mirror) {
+    return (
+      <div className="duel-view duel-race is-split is-mirror">
+        <section className="duel-mirror-half is-p1 is-flipped" aria-label="Joueur 2">
+          <div className="duel-mirror-inner">
+            <p className="duel-mirror-meta">
+              {idx + 1}/{total}
+            </p>
+            <DuelPrompt round={round} />
+            {panel(1)}
+          </div>
+        </section>
+        <div className="duel-mirror-bar">
+          <button type="button" className="duel-back" onClick={onQuit}>
+            Quitter
+          </button>
+          <Scoreboard scores={scores} combos={combos} timeLeft={timeLeft} />
+        </div>
+        <section className="duel-mirror-half is-p0" aria-label="Joueur 1">
+          <div className="duel-mirror-inner">
+            <p className="duel-mirror-meta">
+              {idx + 1}/{total}
+            </p>
+            <DuelPrompt round={round} />
+            {panel(0)}
+          </div>
+        </section>
       </div>
     )
   }

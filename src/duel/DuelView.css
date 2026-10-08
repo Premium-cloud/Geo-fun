@@ -402,6 +402,159 @@
   }
 }
 
+/* ——— Split miroir téléphone (tel au milieu) ——— */
+.duel-race.is-mirror {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper, #f7f4ef);
+}
+
+.duel-mirror-half {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.35rem 0.55rem 0.5rem;
+}
+
+.duel-mirror-half.is-flipped {
+  transform: rotate(180deg);
+}
+
+.duel-mirror-half.is-p0 {
+  background: linear-gradient(180deg, var(--duel-p0-soft) 0%, transparent 55%);
+}
+
+.duel-mirror-half.is-p1 {
+  background: linear-gradient(180deg, var(--duel-p1-soft) 0%, transparent 55%);
+}
+
+.duel-mirror-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 100%;
+}
+
+.duel-mirror-meta {
+  margin: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.duel-mirror-bar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.65rem;
+  padding: 0.35rem 0.5rem;
+  border-top: 2px solid #111;
+  border-bottom: 2px solid #111;
+  background: #fff;
+  z-index: 1;
+}
+
+.duel-mirror-bar .duel-back {
+  font-size: 0.8rem;
+  padding: 0.15rem 0.35rem;
+}
+
+.duel-mirror-bar .duel-scoreboard {
+  margin: 0;
+  gap: 0.35rem;
+}
+
+.duel-mirror-bar .duel-score-pill {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.duel-mirror-bar .duel-score-pts {
+  font-size: 1rem;
+}
+
+.duel-mirror-bar .duel-timer {
+  font-size: 0.95rem;
+}
+
+.duel-race.is-mirror .duel-prompt {
+  margin-bottom: 0.35rem;
+}
+
+.duel-race.is-mirror .duel-prompt-q {
+  font-size: 0.78rem;
+  margin-bottom: 0.15rem;
+}
+
+.duel-race.is-mirror .duel-prompt-big {
+  font-size: 2.1rem;
+}
+
+.duel-race.is-mirror .duel-prompt-name {
+  font-size: 1.2rem;
+}
+
+.duel-race.is-mirror .duel-prompt-flag {
+  width: min(110px, 36vw);
+}
+
+.duel-race.is-mirror .duel-race-panel {
+  flex: 1;
+  border-radius: 0.75rem;
+  padding: 0.45rem 0.5rem 0.55rem;
+  box-shadow: none;
+}
+
+.duel-race.is-mirror .duel-race-name {
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.duel-race.is-mirror .duel-choices {
+  gap: 0.35rem;
+}
+
+.duel-race.is-mirror .duel-choice {
+  padding: 0.55rem 0.65rem;
+  font-size: 0.92rem;
+  border-radius: 0.65rem;
+  min-height: 2.6rem;
+}
+
+.duel-race.is-mirror .duel-choice-n {
+  width: 1.35rem;
+  height: 1.35rem;
+  font-size: 0.75rem;
+}
+
+html.is-night .duel-race.is-mirror {
+  background: var(--paper);
+}
+
+html.is-night .duel-mirror-bar {
+  background: #2a2622;
+  border-color: #f3efe8;
+}
+
+html.is-night .duel-mirror-half.is-p0 {
+  background: linear-gradient(180deg, #1e3a5f 0%, transparent 55%);
+}
+
+html.is-night .duel-mirror-half.is-p1 {
+  background: linear-gradient(180deg, #5f1e1e 0%, transparent 55%);
+}
+
 .duel-race-panel {
   background: #fff;
   border: 2px solid var(--line);
