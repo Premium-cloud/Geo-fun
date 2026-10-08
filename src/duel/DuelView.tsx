@@ -45,6 +45,10 @@ function checkAnswer(value: string, round: DuelRound, mode: DuelAnswerMode) {
   return answersMatch(value, round.answer, 'loose')
 }
 
+function roundPromptKey(round: DuelRound) {
+  return `${round.kind}|${round.show}|${round.showValue ?? ''}|${round.showCode ?? ''}|${round.answer}`
+}
+
 export function DuelView() {
   const wide = useWideEnough()
   const [phase, setPhase] = useState<Phase>('setup')
@@ -252,8 +256,8 @@ export function DuelView() {
                 {config.localFormat === 'battleroyal'
                   ? 'Premier qui se trompe a perdu. Bonne réponse → ça passe à l’autre.'
                   : config.localFormat === 'tours'
-                    ? 'Même question, J1 puis J2. 1 point si correct.'
-                    : 'Course simultanée. 1er juste = 2 pts, 2ᵉ = 1 pt. Timer → 5 s dès qu’un trouve.'}
+                    ? 'Chacun sa question (pas la même). 1 point si correct.'
+                    : 'Course simultanée, même question. PC : J1 = 1–2–3–4, J2 = A–Z–E–R. Timer → 5 s dès qu’un trouve.'}
               </p>
             </div>
           ) : (
@@ -421,7 +425,32 @@ export function DuelView() {
     )
   }
 
-  // play
+  // play — modes autonomes d’abord (pas besoin du deck parent)
+  if (config.venue === 'local' && config.localFormat === 'battleroyal') {
+    return (
+      <BattleRoyalePlay
+        config={config}
+        category={config.category}
+        onOver={finish}
+        onQuit={() => setPhase('setup')}
+      />
+    )
+  }
+
+  if (config.venue === 'local' && config.localFormat === 'tours') {
+    return (
+      <TurnsPlay
+        config={config}
+        scores={scores}
+        combos={combos}
+        onScore={(p, pts) => addScore(p, pts)}
+        onCombo={bumpCombo}
+        onOver={finish}
+        onQuit={() => setPhase('setup')}
+      />
+    )
+  }
+
   if (!round) {
     finish()
     return null
@@ -452,52 +481,21 @@ export function DuelView() {
     )
   }
 
-  if (config.localFormat === 'battleroyal') {
-    return (
-      <BattleRoyalePlay
-        config={config}
-        category={config.category}
-        onOver={finish}
-        onQuit={() => setPhase('setup')}
-      />
-    )
-  }
-
-  if (config.localFormat === 'split') {
-    return (
-      <RacePlay
-        key={round.id}
-        label="Split"
-        me={null}
-        round={round}
-        config={config}
-        scores={scores}
-        combos={combos}
-        idx={idx}
-        total={deck.length}
-        online={false}
-        split
-        conn={null}
-        onScore={(p, pts) => addScore(p, pts)}
-        onCombo={bumpCombo}
-        onNext={() => {
-          if (idx + 1 >= deck.length) finish()
-          else setIdx((i) => i + 1)
-        }}
-        onQuit={() => setPhase('setup')}
-      />
-    )
-  }
-
+  // split
   return (
-    <TurnsPlay
+    <RacePlay
       key={round.id}
+      label="Split"
+      me={null}
       round={round}
       config={config}
       scores={scores}
       combos={combos}
       idx={idx}
       total={deck.length}
+      online={false}
+      split
+      conn={null}
       onScore={(p, pts) => addScore(p, pts)}
       onCombo={bumpCombo}
       onNext={() => {
@@ -796,6 +794,36 @@ function RacePlay({
     }
   }
 
+  // Split PC : J1 = 1–2–3–4, J2 = A–Z–E–R (QCM)
+  useEffect(() => {
+    if (!split || config.answerMode !== 'qcm') return
+    const j1 = ['1', '2', '3', '4']
+    const j2 = ['a', 'z', 'e', 'r']
+    const onKey = (e: KeyboardEvent) => {
+      if (ended.current) return
+      const tag = (e.target as HTMLElement | null)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      const key = e.key.toLowerCase()
+      let player: 0 | 1 | null = null
+      let choiceIdx = -1
+      if (j1.includes(key)) {
+        player = 0
+        choiceIdx = j1.indexOf(key)
+      } else if (j2.includes(key)) {
+        player = 1
+        choiceIdx = j2.indexOf(key)
+      }
+      if (player == null || choiceIdx < 0) return
+      const choice = round.choices[choiceIdx]
+      if (!choice) return
+      e.preventDefault()
+      tryAnswer(player, choice)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [split, round.id, config.answerMode])
+
   function endRound() {
     if (ended.current) return
     ended.current = true
@@ -821,6 +849,7 @@ function RacePlay({
   const panel = (player: 0 | 1) => {
     const mine = online ? me === player : true
     const disabled = !mine || locked[player] || ended.current
+    const keys = player === 0 ? (['1', '2', '3', '4'] as const) : (['A', 'Z', 'E', 'R'] as const)
     return (
       <div
         className={`duel-race-panel is-p${player} ${locked[player] ? 'is-done' : ''} ${correctAt[player] != null ? 'is-ok' : locked[player] ? 'is-ko' : ''}`}
@@ -830,6 +859,9 @@ function RacePlay({
           {online && me === player ? ' (toi)' : ''}
           {combos[player] > 1 ? (
             <span className="duel-combo"> ×{combos[player]}</span>
+          ) : null}
+          {split && config.answerMode === 'qcm' ? (
+            <span className="duel-keys-hint"> {keys.join(' ')}</span>
           ) : null}
         </p>
         {mine ? (
@@ -846,6 +878,7 @@ function RacePlay({
             }
             onPick={(v) => tryAnswer(player, v)}
             disabled={disabled}
+            keyLabels={split && config.answerMode === 'qcm' ? [...keys] : undefined}
           />
         ) : (
           <p className="duel-hint">
@@ -886,43 +919,48 @@ function RacePlay({
   )
 }
 
-/* ——— CHACUN SON TOUR ——— */
+/* ——— CHACUN SON TOUR (question différente par joueur) ——— */
 function TurnsPlay({
-  round,
   config,
   scores,
   combos,
-  idx,
-  total,
   onScore,
   onCombo,
-  onNext,
+  onOver,
   onQuit,
 }: {
-  round: DuelRound
   config: DuelConfig
   scores: [number, number]
   combos: [number, number]
-  idx: number
-  total: number
   onScore: (p: 0 | 1, pts: number) => void
   onCombo: (p: 0 | 1, ok: boolean) => void
-  onNext: () => void
+  onOver: () => void
   onQuit: () => void
 }) {
+  const [manche, setManche] = useState(0)
   const [turn, setTurn] = useState<0 | 1>(0)
+  const [round, setRound] = useState(() =>
+    makeDuelDeck(config.category, config.answerMode, 1)[0]!,
+  )
   const [timeLeft, setTimeLeft] = useState(config.timerSec)
   const [input, setInput] = useState('')
   const [msg, setMsg] = useState<string | null>(null)
   const results = useRef<[boolean | null, boolean | null]>([null, null])
+  const lastPromptKey = useRef(roundPromptKey(round))
 
-  useEffect(() => {
-    setTurn(0)
-    setTimeLeft(config.timerSec)
-    setInput('')
-    setMsg(null)
-    results.current = [null, null]
-  }, [round.id, config.timerSec])
+  function freshRound(): DuelRound {
+    for (let i = 0; i < 16; i++) {
+      const next = makeDuelDeck(config.category, config.answerMode, 1)[0]!
+      const key = roundPromptKey(next)
+      if (key !== lastPromptKey.current) {
+        lastPromptKey.current = key
+        return next
+      }
+    }
+    const next = makeDuelDeck(config.category, config.answerMode, 1)[0]!
+    lastPromptKey.current = roundPromptKey(next)
+    return next
+  }
 
   useEffect(() => {
     if (msg) return
@@ -947,14 +985,25 @@ function TurnsPlay({
     window.setTimeout(() => {
       setMsg(null)
       if (turn === 0) {
+        // Nouvelle question pour J2 — pas la même
         setTurn(1)
+        setRound(freshRound())
         setTimeLeft(config.timerSec)
         setInput('')
       } else {
         const [a, b] = results.current
         if (a) onScore(0, 1)
         if (b) onScore(1, 1)
-        onNext()
+        results.current = [null, null]
+        if (manche + 1 >= config.rounds) {
+          onOver()
+        } else {
+          setManche((m) => m + 1)
+          setTurn(0)
+          setRound(freshRound())
+          setTimeLeft(config.timerSec)
+          setInput('')
+        }
       }
     }, 800)
   }
@@ -971,7 +1020,7 @@ function TurnsPlay({
           ← Quitter
         </button>
         <h2>
-          Tours · {idx + 1}/{total}
+          Tours · {manche + 1}/{config.rounds}
         </h2>
       </header>
       <Scoreboard scores={scores} combos={combos} timeLeft={timeLeft} />
@@ -997,6 +1046,7 @@ function AnswerBlock({
   setInput,
   onPick,
   disabled,
+  keyLabels,
 }: {
   round: DuelRound
   mode: DuelAnswerMode
@@ -1004,6 +1054,7 @@ function AnswerBlock({
   setInput: (v: string) => void
   onPick: (v: string) => void
   disabled?: boolean
+  keyLabels?: string[]
 }) {
   if (mode === 'qcm') {
     return (
@@ -1016,7 +1067,7 @@ function AnswerBlock({
             disabled={disabled}
             onClick={() => onPick(c)}
           >
-            <span className="duel-choice-n">{i + 1}</span>
+            <span className="duel-choice-n">{keyLabels?.[i] ?? i + 1}</span>
             {c}
           </button>
         ))}

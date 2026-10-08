@@ -444,6 +444,15 @@
   color: var(--duel-p1);
 }
 
+.duel-keys-hint {
+  margin-left: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  opacity: 0.9;
+}
+
 .duel-turn-banner {
   text-align: center;
   font-weight: 800;
