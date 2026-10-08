@@ -2,7 +2,7 @@ export type DuelCategory = 'departements' | 'pays' | 'capitale' | 'mixte'
 export type DuelAnswerMode = 'qcm' | 'saisie'
 export type DuelVenue = 'local' | 'online'
 /** Formats écran local. Online = toujours course. */
-export type DuelLocalFormat = 'bombe' | 'split' | 'tours'
+export type DuelLocalFormat = 'battleroyal' | 'split' | 'tours'
 
 export type DuelKind = 'chiffre' | 'flagToName' | 'nameToCapital'
 
@@ -40,7 +40,7 @@ export const DEFAULT_DUEL_CONFIG: DuelConfig = {
   category: 'mixte',
   answerMode: 'qcm',
   venue: 'local',
-  localFormat: 'bombe',
+  localFormat: 'battleroyal',
   rounds: 10,
   timerSec: 15,
 }

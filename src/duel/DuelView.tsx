@@ -45,7 +45,7 @@ function checkAnswer(value: string, round: DuelRound, mode: DuelAnswerMode) {
   return answersMatch(value, round.answer, 'loose')
 }
 
-export function DuelView({ onBack }: { onBack: () => void }) {
+export function DuelView() {
   const wide = useWideEnough()
   const [phase, setPhase] = useState<Phase>('setup')
   const [config, setConfig] = useState<DuelConfig>(DEFAULT_DUEL_CONFIG)
@@ -81,7 +81,7 @@ export function DuelView({ onBack }: { onBack: () => void }) {
   function patchConfig(partial: Partial<DuelConfig>) {
     setConfig((c) => {
       const next = { ...c, ...partial }
-      if (partial.localFormat === 'split' && !wide) next.localFormat = 'bombe'
+      if (partial.localFormat === 'split' && !wide) next.localFormat = 'battleroyal'
       return next
     })
   }
@@ -195,9 +195,6 @@ export function DuelView({ onBack }: { onBack: () => void }) {
     return (
       <div className="duel-view">
         <header className="duel-head">
-          <button type="button" className="duel-back" onClick={onBack}>
-            ← Retour
-          </button>
           <h2>Duel</h2>
         </header>
 
@@ -229,10 +226,10 @@ export function DuelView({ onBack }: { onBack: () => void }) {
               <div className="duel-chips">
                 <button
                   type="button"
-                  className={`duel-chip ${config.localFormat === 'bombe' ? 'is-active' : ''}`}
-                  onClick={() => patchConfig({ localFormat: 'bombe' })}
+                  className={`duel-chip ${config.localFormat === 'battleroyal' ? 'is-active' : ''}`}
+                  onClick={() => patchConfig({ localFormat: 'battleroyal' })}
                 >
-                  Bombe
+                  Battle royale
                 </button>
                 <button
                   type="button"
@@ -252,8 +249,8 @@ export function DuelView({ onBack }: { onBack: () => void }) {
                 </button>
               </div>
               <p className="duel-hint">
-                {config.localFormat === 'bombe'
-                  ? 'Patate chaude : la bombe chauffe en secret. Bonne réponse → ça passe. Explosion = tu perds.'
+                {config.localFormat === 'battleroyal'
+                  ? 'Premier qui se trompe a perdu. Bonne réponse → ça passe à l’autre.'
                   : config.localFormat === 'tours'
                     ? 'Même question, J1 puis J2. 1 point si correct.'
                     : 'Course simultanée. 1er juste = 2 pts, 2ᵉ = 1 pt. Timer → 5 s dès qu’un trouve.'}
@@ -385,8 +382,9 @@ export function DuelView({ onBack }: { onBack: () => void }) {
 
   if (phase === 'over') {
     const [a, b] = scores
-    const isBomb = overTitle.includes('💥') || overTitle.toLowerCase().includes('bombe')
-    const winner = isBomb
+    const isBattle =
+      overTitle.includes('💥') || overTitle.toLowerCase().includes('battle')
+    const winner = isBattle
       ? overTitle
       : a === b
         ? 'Égalité !'
@@ -396,9 +394,9 @@ export function DuelView({ onBack }: { onBack: () => void }) {
     return (
       <div className="duel-view">
         <div className="duel-over">
-          <h2>{isBomb ? 'Bombe' : 'Fin du duel'}</h2>
+          <h2>{isBattle ? 'Battle royale' : 'Fin du duel'}</h2>
           <p className="duel-over-winner">{winner}</p>
-          {!isBomb ? (
+          {!isBattle ? (
             <div className="duel-scoreboard">
               <div className="duel-score-pill is-p0">
                 <span className="duel-score-name">{PLAYER[0]}</span>
@@ -414,7 +412,7 @@ export function DuelView({ onBack }: { onBack: () => void }) {
             <button type="button" className="duel-btn-primary" onClick={() => setPhase('setup')}>
               Nouveau duel
             </button>
-            <button type="button" className="duel-chip" onClick={onBack}>
+            <button type="button" className="duel-chip" onClick={() => setPhase('setup')}>
               Quitter
             </button>
           </div>
@@ -454,9 +452,9 @@ export function DuelView({ onBack }: { onBack: () => void }) {
     )
   }
 
-  if (config.localFormat === 'bombe') {
+  if (config.localFormat === 'battleroyal') {
     return (
-      <BombPlay
+      <BattleRoyalePlay
         config={config}
         category={config.category}
         onOver={finish}
@@ -542,13 +540,13 @@ function JoinForm({ onJoin }: { onJoin: (id: string) => void }) {
   )
 }
 
-/* ——— BOMBE ——— */
-/** PV secrets : drain invisible, explosion = défaite du porteur. */
-function rollBombHp() {
+/* ——— BATTLE ROYALE ——— */
+/** PV secrets : drain invisible, premier faux (ou timeout) = défaite du porteur. */
+function rollBattleHp() {
   return 8 + Math.floor(Math.random() * 13) // 8–20 s
 }
 
-function BombPlay({
+function BattleRoyalePlay({
   config,
   category,
   onOver,
@@ -563,7 +561,7 @@ function BombPlay({
   const [round, setRound] = useState(() =>
     makeDuelDeck(category, config.answerMode, 1)[0]!,
   )
-  const [hpMax, setHpMax] = useState(rollBombHp)
+  const [hpMax, setHpMax] = useState(rollBattleHp)
   const [hp, setHp] = useState(hpMax)
   const [flash, setFlash] = useState<string | null>(null)
   const [input, setInput] = useState('')
@@ -588,15 +586,15 @@ function BombPlay({
     dead.current = true
     const victim = holder
     const winner = (1 - victim) as 0 | 1
-    setFlash(`💥 ${PLAYER[victim]} — bombe !`)
+    setFlash(`💥 ${PLAYER[victim]} éliminé`)
     window.setTimeout(() => {
-      onOver(`💥 ${PLAYER[winner]} gagne — ${PLAYER[victim]} a explosé`)
+      onOver(`💥 ${PLAYER[winner]} gagne — ${PLAYER[victim]} éliminé`)
     }, 1100)
   }, [hp, holder, flash, onOver])
 
-  function passBomb() {
+  function passTurn() {
     const next = (1 - holder) as 0 | 1
-    const nextHp = rollBombHp()
+    const nextHp = rollBattleHp()
     setFlash(`✓ Passe à ${PLAYER[next]}`)
     window.setTimeout(() => {
       setFlash(null)
@@ -611,7 +609,7 @@ function BombPlay({
   function submit(value: string) {
     if (flash || dead.current || hp <= 0) return
     const ok = checkAnswer(value, round, config.answerMode)
-    if (ok) passBomb()
+    if (ok) passTurn()
     else setHp(0)
   }
 
@@ -625,8 +623,8 @@ function BombPlay({
         <button type="button" className="duel-back" onClick={onQuit}>
           ← Quitter
         </button>
-        <h2>Bombe</h2>
-        <p className="duel-scoreline duel-bomb-rule">Explosion = tu perds</p>
+        <h2>Battle royale</h2>
+        <p className="duel-scoreline duel-bomb-rule">Premier faux = perdu</p>
       </header>
 
       <div className={`duel-bomb-card is-p${holder}`}>

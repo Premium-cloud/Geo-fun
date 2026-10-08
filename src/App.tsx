@@ -188,7 +188,7 @@ export default function App() {
             onMapDomTomChange={setMapDomTom}
           />
         ) : null}
-        {tab === 'duel' ? <DuelView onBack={() => setTab('jeu')} /> : null}
+        {tab === 'duel' ? <DuelView /> : null}
       </main>
 
       <OptionsModal
