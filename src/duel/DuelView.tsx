@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import type { DataConnection } from 'peerjs'
 import { answersMatch } from '../lib/answerMatch'
 import { DuelPrompt } from './DuelPrompt'
@@ -47,6 +47,15 @@ function checkAnswer(value: string, round: DuelRound, mode: DuelAnswerMode) {
 
 function roundPromptKey(round: DuelRound) {
   return `${round.kind}|${round.show}|${round.showValue ?? ''}|${round.showCode ?? ''}|${round.answer}`
+}
+
+function shuffleChoices(list: string[]): string[] {
+  const a = [...list]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
 }
 
 export function DuelView() {
@@ -830,6 +839,19 @@ function RacePlay({
     }
   }
 
+  /** Split : ordres QCM différents pour que « 1 » ne soit pas la même réponse. */
+  const choiceOrders = useMemo((): [string[], string[]] => {
+    if (!split || config.answerMode !== 'qcm' || round.choices.length < 2) {
+      return [round.choices, round.choices]
+    }
+    const a = shuffleChoices(round.choices)
+    let b = shuffleChoices(round.choices)
+    for (let i = 0; i < 12 && a.join('\0') === b.join('\0'); i++) {
+      b = shuffleChoices(round.choices)
+    }
+    return [a, b]
+  }, [split, config.answerMode, round.id, round.choices])
+
   // Split PC (pas miroir) : J1 = 1–2–3–4, J2 = A–Z–E–R (QCM)
   useEffect(() => {
     if (!split || mirror || config.answerMode !== 'qcm') return
@@ -850,7 +872,7 @@ function RacePlay({
         choiceIdx = j2.indexOf(key)
       }
       if (player == null || choiceIdx < 0) return
-      const choice = round.choices[choiceIdx]
+      const choice = choiceOrders[player][choiceIdx]
       if (!choice) return
       e.preventDefault()
       tryAnswer(player, choice)
@@ -858,7 +880,7 @@ function RacePlay({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [split, mirror, round.id, config.answerMode])
+  }, [split, mirror, round.id, config.answerMode, choiceOrders])
 
   function endRound() {
     if (ended.current) return
@@ -925,6 +947,7 @@ function RacePlay({
           <AnswerBlock
             round={round}
             mode={config.answerMode}
+            choices={split ? choiceOrders[player] : undefined}
             input={inputs[player]}
             setInput={(v) =>
               setInputs((prev) => {
@@ -1130,6 +1153,7 @@ function TurnsPlay({
 function AnswerBlock({
   round,
   mode,
+  choices,
   input,
   setInput,
   onPick,
@@ -1138,6 +1162,8 @@ function AnswerBlock({
 }: {
   round: DuelRound
   mode: DuelAnswerMode
+  /** Ordre d’affichage QCM (ex. shuffle par joueur en split). */
+  choices?: string[]
   input: string
   setInput: (v: string) => void
   onPick: (v: string) => void
@@ -1145,9 +1171,10 @@ function AnswerBlock({
   keyLabels?: string[]
 }) {
   if (mode === 'qcm') {
+    const list = choices ?? round.choices
     return (
       <div className="duel-choices">
-        {round.choices.map((c, i) => (
+        {list.map((c, i) => (
           <button
             key={c}
             type="button"
