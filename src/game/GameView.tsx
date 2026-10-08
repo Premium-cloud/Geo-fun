@@ -1207,32 +1207,27 @@ export function GameView({
 
           <div className="game-field-sep" aria-hidden />
 
-          <div className="game-field game-field-diff">
-            <span className="game-field-label">Difficulté</span>
-            <div className="game-group" role="group" aria-label="Difficulté">
-              {difficultyOptions.map((d) => (
+          <div className="game-field">
+            <span className="game-field-label">Format</span>
+            <div className="game-group" role="group" aria-label="Format de partie">
+              {formatOptions.map((f) => (
                 <button
-                  key={d.id}
+                  key={f}
                   type="button"
-                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} is-${d.id}`}
-                  onClick={() => selectDifficulty(d.id)}
+                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
+                  onClick={() => selectFormat(f)}
                 >
-                  {d.label}
+                  {FORMAT_LABEL[f]}
                 </button>
               ))}
             </div>
-            {best.bestStreak > 0 ? (
-              <p className="game-record">Record ×{best.bestStreak}</p>
-            ) : (
-              <p className="game-record is-empty">Pas encore de record</p>
-            )}
           </div>
 
           {!isMapMode ? (
             <>
               <div className="game-field-sep" aria-hidden />
               <div className="game-field">
-                <span className="game-field-label">Réponse</span>
+                <span className="game-field-label">Type</span>
                 <div className="game-group" role="group" aria-label="Type de réponse">
                   <button
                     type="button"
@@ -1246,7 +1241,7 @@ export function GameView({
                     className={`game-chip ${effectiveAnswerMode === 'saisie' ? 'is-active' : ''}`}
                     onClick={() => selectAnswerMode('saisie')}
                   >
-                    Réponse unique
+                    Réponse écrite
                   </button>
                 </div>
               </div>
@@ -1277,20 +1272,25 @@ export function GameView({
 
           <div className="game-field-sep" aria-hidden />
 
-          <div className="game-field">
-            <span className="game-field-label">Format</span>
-            <div className="game-group" role="group" aria-label="Format de partie">
-              {formatOptions.map((f) => (
+          <div className="game-field game-field-diff">
+            <span className="game-field-label">Difficulté</span>
+            <div className="game-group" role="group" aria-label="Difficulté">
+              {difficultyOptions.map((d) => (
                 <button
-                  key={f}
+                  key={d.id}
                   type="button"
-                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
-                  onClick={() => selectFormat(f)}
+                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} is-${d.id}`}
+                  onClick={() => selectDifficulty(d.id)}
                 >
-                  {FORMAT_LABEL[f]}
+                  {d.label}
                 </button>
               ))}
             </div>
+            {best.bestStreak > 0 ? (
+              <p className="game-record">Record ×{best.bestStreak}</p>
+            ) : (
+              <p className="game-record is-empty">Pas encore de record</p>
+            )}
           </div>
         </div>
       </div>
@@ -1301,10 +1301,12 @@ export function GameView({
       >
         {isPlay && !runActive ? (
           <div className="game-idle">
-            <p className="game-idle-title">Prêt ?</p>
-            <p className="game-idle-hint">
-              Règle tes options ci-dessus, puis lance — le chrono ne démarre qu’après.
-            </p>
+            <p className="game-idle-title">Prêt</p>
+            {isRapidite ? (
+              <p className="game-idle-hint">
+                10 questions - Réponds le plus rapidement possible !
+              </p>
+            ) : null}
             <button
               type="button"
               className="game-next game-lancer"
