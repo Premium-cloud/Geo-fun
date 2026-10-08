@@ -52,6 +52,8 @@ export function DuelView({ onBack }: { onBack: () => void }) {
   const [deck, setDeck] = useState<DuelRound[]>([])
   const [idx, setIdx] = useState(0)
   const [scores, setScores] = useState<[number, number]>([0, 0])
+  const [combos, setCombos] = useState<[number, number]>([0, 0])
+  const [overTitle, setOverTitle] = useState('Fin du duel')
   const [status, setStatus] = useState('')
   const [inviteId, setInviteId] = useState<string | null>(null)
   const [inviteUrl, setInviteUrl] = useState('')
@@ -138,6 +140,8 @@ export function DuelView({ onBack }: { onBack: () => void }) {
     if (msg.type === 'start') {
       setIdx(0)
       setScores([0, 0])
+      setCombos([0, 0])
+      setOverTitle('Fin du duel')
       setPhase('play')
     }
   }
@@ -147,6 +151,8 @@ export function DuelView({ onBack }: { onBack: () => void }) {
     setDeck(nextDeck)
     setIdx(0)
     setScores([0, 0])
+    setCombos([0, 0])
+    setOverTitle('Fin du duel')
     setPhase('play')
   }
 
@@ -159,10 +165,13 @@ export function DuelView({ onBack }: { onBack: () => void }) {
     send(connRef.current, { type: 'start' })
     setIdx(0)
     setScores([0, 0])
+    setCombos([0, 0])
+    setOverTitle('Fin du duel')
     setPhase('play')
   }
 
-  function finish() {
+  function finish(title = 'Fin du duel') {
+    setOverTitle(title)
     setPhase('over')
   }
 
@@ -170,6 +179,14 @@ export function DuelView({ onBack }: { onBack: () => void }) {
     setScores((s) => {
       const next: [number, number] = [...s]
       next[player] += pts
+      return next
+    })
+  }
+
+  function bumpCombo(player: 0 | 1, ok: boolean) {
+    setCombos((c) => {
+      const next: [number, number] = [...c]
+      next[player] = ok ? next[player] + 1 : 0
       return next
     })
   }
@@ -236,7 +253,7 @@ export function DuelView({ onBack }: { onBack: () => void }) {
               </div>
               <p className="duel-hint">
                 {config.localFormat === 'bombe'
-                  ? 'Patate chaude : bonne réponse → ça passe. Explosion = point pour l’autre.'
+                  ? 'Patate chaude : la bombe chauffe en secret. Bonne réponse → ça passe. Explosion = tu perds.'
                   : config.localFormat === 'tours'
                     ? 'Même question, J1 puis J2. 1 point si correct.'
                     : 'Course simultanée. 1er juste = 2 pts, 2ᵉ = 1 pt. Timer → 5 s dès qu’un trouve.'}
@@ -368,15 +385,31 @@ export function DuelView({ onBack }: { onBack: () => void }) {
 
   if (phase === 'over') {
     const [a, b] = scores
-    const winner = a === b ? 'Égalité !' : a > b ? `${PLAYER[0]} gagne` : `${PLAYER[1]} gagne`
+    const isBomb = overTitle.includes('💥') || overTitle.toLowerCase().includes('bombe')
+    const winner = isBomb
+      ? overTitle
+      : a === b
+        ? 'Égalité !'
+        : a > b
+          ? `${PLAYER[0]} gagne`
+          : `${PLAYER[1]} gagne`
     return (
       <div className="duel-view">
         <div className="duel-over">
-          <h2>Fin du duel</h2>
+          <h2>{isBomb ? 'Bombe' : 'Fin du duel'}</h2>
           <p className="duel-over-winner">{winner}</p>
-          <p className="duel-scoreline">
-            {PLAYER[0]} {a} — {b} {PLAYER[1]}
-          </p>
+          {!isBomb ? (
+            <div className="duel-scoreboard">
+              <div className="duel-score-pill is-p0">
+                <span className="duel-score-name">{PLAYER[0]}</span>
+                <span className="duel-score-pts">{a}</span>
+              </div>
+              <div className="duel-score-pill is-p1">
+                <span className="duel-score-name">{PLAYER[1]}</span>
+                <span className="duel-score-pts">{b}</span>
+              </div>
+            </div>
+          ) : null}
           <div className="duel-actions">
             <button type="button" className="duel-btn-primary" onClick={() => setPhase('setup')}>
               Nouveau duel
@@ -405,11 +438,13 @@ export function DuelView({ onBack }: { onBack: () => void }) {
         round={round}
         config={config}
         scores={scores}
+        combos={combos}
         idx={idx}
         total={deck.length}
         online
         conn={connRef.current}
         onScore={(p, pts) => addScore(p, pts)}
+        onCombo={bumpCombo}
         onNext={() => {
           if (idx + 1 >= deck.length) finish()
           else setIdx((i) => i + 1)
@@ -424,8 +459,6 @@ export function DuelView({ onBack }: { onBack: () => void }) {
       <BombPlay
         config={config}
         category={config.category}
-        scores={scores}
-        onScore={(p, pts) => addScore(p, pts)}
         onOver={finish}
         onQuit={onBack}
       />
@@ -441,12 +474,14 @@ export function DuelView({ onBack }: { onBack: () => void }) {
         round={round}
         config={config}
         scores={scores}
+        combos={combos}
         idx={idx}
         total={deck.length}
         online={false}
         split
         conn={null}
         onScore={(p, pts) => addScore(p, pts)}
+        onCombo={bumpCombo}
         onNext={() => {
           if (idx + 1 >= deck.length) finish()
           else setIdx((i) => i + 1)
@@ -462,9 +497,11 @@ export function DuelView({ onBack }: { onBack: () => void }) {
       round={round}
       config={config}
       scores={scores}
+      combos={combos}
       idx={idx}
       total={deck.length}
       onScore={(p, pts) => addScore(p, pts)}
+      onCombo={bumpCombo}
       onNext={() => {
         if (idx + 1 >= deck.length) finish()
         else setIdx((i) => i + 1)
@@ -506,104 +543,98 @@ function JoinForm({ onJoin }: { onJoin: (id: string) => void }) {
 }
 
 /* ——— BOMBE ——— */
+/** PV secrets : drain invisible, explosion = défaite du porteur. */
+function rollBombHp() {
+  return 8 + Math.floor(Math.random() * 13) // 8–20 s
+}
+
 function BombPlay({
   config,
   category,
-  scores,
-  onScore,
   onOver,
   onQuit,
 }: {
   config: DuelConfig
   category: DuelConfig['category']
-  scores: [number, number]
-  onScore: (p: 0 | 1, pts: number) => void
-  onOver: () => void
+  onOver: (title?: string) => void
   onQuit: () => void
 }) {
   const [holder, setHolder] = useState<0 | 1>(0)
   const [round, setRound] = useState(() =>
     makeDuelDeck(category, config.answerMode, 1)[0]!,
   )
-  const [fuse, setFuse] = useState(config.timerSec)
+  const [hpMax, setHpMax] = useState(rollBombHp)
+  const [hp, setHp] = useState(hpMax)
   const [flash, setFlash] = useState<string | null>(null)
   const [input, setInput] = useState('')
-  const fuseRef = useRef(fuse)
-  fuseRef.current = fuse
+  const dead = useRef(false)
 
   useEffect(() => {
-    if (scores[0] >= config.bombTarget || scores[1] >= config.bombTarget) {
-      onOver()
-    }
-  }, [scores, config.bombTarget, onOver])
-
-  useEffect(() => {
+    if (flash || dead.current) return
     const t = window.setInterval(() => {
-      setFuse((f) => {
-        if (f <= 1) {
+      setHp((h) => {
+        if (h <= 1) {
           window.clearInterval(t)
           return 0
         }
-        return f - 1
+        return h - 1
       })
     }, 1000)
     return () => window.clearInterval(t)
-  }, [round.id, holder])
+  }, [round.id, holder, flash])
 
   useEffect(() => {
-    if (fuse !== 0) return
-    // Explosion
+    if (hp !== 0 || dead.current || flash) return
+    dead.current = true
     const victim = holder
     const winner = (1 - victim) as 0 | 1
-    onScore(winner, 1)
     setFlash(`💥 ${PLAYER[victim]} — bombe !`)
-    const t = window.setTimeout(() => {
-      setFlash(null)
-      setHolder(winner)
-      setRound(makeDuelDeck(category, config.answerMode, 1)[0]!)
-      setFuse(config.timerSec)
-      setInput('')
-    }, 1200)
-    return () => window.clearTimeout(t)
-  }, [fuse, holder, onScore, category, config.answerMode, config.timerSec])
+    window.setTimeout(() => {
+      onOver(`💥 ${PLAYER[winner]} gagne — ${PLAYER[victim]} a explosé`)
+    }, 1100)
+  }, [hp, holder, flash, onOver])
 
-  function submit(value: string) {
-    if (flash || fuse <= 0) return
-    const ok = checkAnswer(value, round, config.answerMode)
-    if (ok) {
-      setFlash(`✓ Passe à ${PLAYER[1 - holder]}`)
-      const next = (1 - holder) as 0 | 1
-      const keep = fuseRef.current
-      window.setTimeout(() => {
-        setFlash(null)
-        setHolder(next)
-        setRound(makeDuelDeck(category, config.answerMode, 1)[0]!)
-        setFuse(Math.max(8, Math.min(config.timerSec, keep + 2)))
-        setInput('')
-      }, 700)
-    } else {
-      // Mauvaise réponse = explosion sur le porteur
-      setFuse(0)
-    }
+  function passBomb() {
+    const next = (1 - holder) as 0 | 1
+    const nextHp = rollBombHp()
+    setFlash(`✓ Passe à ${PLAYER[next]}`)
+    window.setTimeout(() => {
+      setFlash(null)
+      setHolder(next)
+      setRound(makeDuelDeck(category, config.answerMode, 1)[0]!)
+      setHpMax(nextHp)
+      setHp(nextHp)
+      setInput('')
+    }, 700)
   }
 
-  const heat = 1 - fuse / config.timerSec
+  function submit(value: string) {
+    if (flash || dead.current || hp <= 0) return
+    const ok = checkAnswer(value, round, config.answerMode)
+    if (ok) passBomb()
+    else setHp(0)
+  }
+
+  const heat = 1 - hp / Math.max(1, hpMax)
 
   return (
-    <div className={`duel-view duel-bomb ${heat > 0.66 ? 'is-hot' : heat > 0.33 ? 'is-warm' : ''}`}>
+    <div
+      className={`duel-view duel-bomb is-p${holder} ${heat > 0.66 ? 'is-hot' : heat > 0.33 ? 'is-warm' : ''}`}
+    >
       <header className="duel-head">
         <button type="button" className="duel-back" onClick={onQuit}>
           ← Quitter
         </button>
         <h2>Bombe</h2>
-        <p className="duel-scoreline">
-          {PLAYER[0]} {scores[0]} — {scores[1]} {PLAYER[1]} · premier à {config.bombTarget}
-        </p>
+        <p className="duel-scoreline duel-bomb-rule">Explosion = tu perds</p>
       </header>
 
-      <div className="duel-bomb-card">
-        <p className="duel-bomb-holder">
-          À {PLAYER[holder]} <span className="duel-fuse">{fuse}s</span>
+      <div className={`duel-bomb-card is-p${holder}`}>
+        <p className={`duel-bomb-holder is-p${holder}`}>
+          À {PLAYER[holder]}
+          <span className="duel-fuse" aria-hidden="true">
+            ●
+          </span>
         </p>
         {flash ? <p className="duel-flash">{flash}</p> : <DuelPrompt round={round} />}
         {!flash ? (
@@ -620,6 +651,29 @@ function BombPlay({
   )
 }
 
+function Scoreboard({
+  scores,
+  combos,
+  timeLeft,
+}: {
+  scores: [number, number]
+  combos: [number, number]
+  timeLeft?: number
+}) {
+  return (
+    <div className="duel-scoreboard">
+      {([0, 1] as const).map((p) => (
+        <div key={p} className={`duel-score-pill is-p${p}`}>
+          <span className="duel-score-name">{PLAYER[p]}</span>
+          <span className="duel-score-pts">{scores[p]}</span>
+          {combos[p] > 1 ? <span className="duel-combo">×{combos[p]}</span> : null}
+        </div>
+      ))}
+      {timeLeft != null ? <span className="duel-timer">⏱ {timeLeft}s</span> : null}
+    </div>
+  )
+}
+
 /* ——— COURSE (split / online) ——— */
 function RacePlay({
   label,
@@ -627,12 +681,14 @@ function RacePlay({
   round,
   config,
   scores,
+  combos,
   idx,
   total,
   online,
   split,
   conn,
   onScore,
+  onCombo,
   onNext,
   onQuit,
 }: {
@@ -641,12 +697,14 @@ function RacePlay({
   round: DuelRound
   config: DuelConfig
   scores: [number, number]
+  combos: [number, number]
   idx: number
   total: number
   online: boolean
   split?: boolean
   conn: DataConnection | null
   onScore: (p: 0 | 1, pts: number) => void
+  onCombo: (p: 0 | 1, ok: boolean) => void
   onNext: () => void
   onQuit: () => void
 }) {
@@ -685,7 +743,6 @@ function RacePlay({
     if (nextLocked[0] && nextLocked[1]) endRound()
   }
 
-  // Sync answers from peer
   useEffect(() => {
     if (!conn) return
     const handler = (raw: unknown) => {
@@ -757,6 +814,8 @@ function RacePlay({
         onScore(valid[0]!.i, 2)
         onScore(valid[1]!.i, 1)
       }
+      onCombo(0, times[0] != null)
+      onCombo(1, times[1] != null)
     }
     window.setTimeout(onNext, 900)
   }
@@ -766,11 +825,14 @@ function RacePlay({
     const disabled = !mine || locked[player] || ended.current
     return (
       <div
-        className={`duel-race-panel p${player} ${locked[player] ? 'is-done' : ''} ${correctAt[player] != null ? 'is-ok' : locked[player] ? 'is-ko' : ''}`}
+        className={`duel-race-panel is-p${player} ${locked[player] ? 'is-done' : ''} ${correctAt[player] != null ? 'is-ok' : locked[player] ? 'is-ko' : ''}`}
       >
-        <p className="duel-race-name">
+        <p className={`duel-race-name is-p${player}`}>
           {PLAYER[player]}
           {online && me === player ? ' (toi)' : ''}
+          {combos[player] > 1 ? (
+            <span className="duel-combo"> ×{combos[player]}</span>
+          ) : null}
         </p>
         {mine ? (
           <AnswerBlock
@@ -809,10 +871,8 @@ function RacePlay({
         <h2>
           {label} · {idx + 1}/{total}
         </h2>
-        <p className="duel-scoreline">
-          {PLAYER[0]} {scores[0]} — {scores[1]} {PLAYER[1]} · ⏱ {timeLeft}s
-        </p>
       </header>
+      <Scoreboard scores={scores} combos={combos} timeLeft={timeLeft} />
       <DuelPrompt round={round} />
       <div className={`duel-race-grid ${split ? 'cols-2' : 'cols-1'}`}>
         {split ? (
@@ -833,18 +893,22 @@ function TurnsPlay({
   round,
   config,
   scores,
+  combos,
   idx,
   total,
   onScore,
+  onCombo,
   onNext,
   onQuit,
 }: {
   round: DuelRound
   config: DuelConfig
   scores: [number, number]
+  combos: [number, number]
   idx: number
   total: number
   onScore: (p: 0 | 1, pts: number) => void
+  onCombo: (p: 0 | 1, ok: boolean) => void
   onNext: () => void
   onQuit: () => void
 }) {
@@ -880,6 +944,7 @@ function TurnsPlay({
 
   function resolveTurn(ok: boolean) {
     results.current[turn] = ok
+    onCombo(turn, ok)
     setMsg(ok ? `✓ ${PLAYER[turn]}` : `✗ ${PLAYER[turn]}`)
     window.setTimeout(() => {
       setMsg(null)
@@ -902,7 +967,7 @@ function TurnsPlay({
   }
 
   return (
-    <div className="duel-view duel-turns">
+    <div className={`duel-view duel-turns is-turn-${turn}`}>
       <header className="duel-head">
         <button type="button" className="duel-back" onClick={onQuit}>
           ← Quitter
@@ -910,11 +975,9 @@ function TurnsPlay({
         <h2>
           Tours · {idx + 1}/{total}
         </h2>
-        <p className="duel-scoreline">
-          {PLAYER[0]} {scores[0]} — {scores[1]} {PLAYER[1]} · ⏱ {timeLeft}s
-        </p>
       </header>
-      <p className="duel-bomb-holder">Tour de {PLAYER[turn]}</p>
+      <Scoreboard scores={scores} combos={combos} timeLeft={timeLeft} />
+      <p className={`duel-turn-banner is-p${turn}`}>Tour de {PLAYER[turn]}</p>
       {msg ? <p className="duel-flash">{msg}</p> : <DuelPrompt round={round} />}
       {!msg ? (
         <AnswerBlock

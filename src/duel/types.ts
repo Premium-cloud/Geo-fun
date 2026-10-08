@@ -25,9 +25,7 @@ export type DuelConfig = {
   localFormat: DuelLocalFormat
   /** Questions par manche (course / tours). */
   rounds: number
-  /** Explosions pour gagner en mode bombe. */
-  bombTarget: number
-  /** Secondes de base (course / tours / fuse bombe). */
+  /** Secondes de base (course / tours). */
   timerSec: number
 }
 
@@ -44,7 +42,6 @@ export const DEFAULT_DUEL_CONFIG: DuelConfig = {
   venue: 'local',
   localFormat: 'bombe',
   rounds: 10,
-  bombTarget: 5,
   timerSec: 15,
 }
 
