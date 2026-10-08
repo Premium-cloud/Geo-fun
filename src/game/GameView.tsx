@@ -617,7 +617,8 @@ export function GameView({
   onMapDomTomChange: (on: boolean) => void
 }) {
   const isPlay = variant === 'jeu'
-  const [category, setCategory] = useState<Category>('departements')
+  /** null = pas encore choisi → on n’affiche pas Format / Réponse / Difficulté */
+  const [category, setCategory] = useState<Category | null>(null)
   const [mode, setMode] = useState<Mode>('chiffre')
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
@@ -647,11 +648,12 @@ export function GameView({
   const missTimer = useRef(0)
   const sessionStartRef = useRef<number | null>(null)
 
+  const setupReady = category != null
   const isMixte = category === 'mixte'
   const isRapidite = sessionFormat === 'rapidite'
   const isBounded = sessionFormat === 'session10' || sessionFormat === 'rapidite'
-  const availableModes = isMixte ? [] : modesFor(category)
-  const isMapMode = !isMixte && mode === 'carte'
+  const availableModes = !category || isMixte ? [] : modesFor(category)
+  const isMapMode = Boolean(category && !isMixte && mode === 'carte')
   const effectiveAnswerMode: AnswerMode = isMapMode
     ? 'map'
     : answerMode === 'map'
@@ -662,7 +664,7 @@ export function GameView({
   const usePerQuestionTimer = isPlay && !isRapidite
   const statsMode = isMixte ? 'mixte' : mode
   const key = statsKey(
-    isMixte ? 'mixte' : category,
+    isMixte ? 'mixte' : (category ?? 'departements'),
     statsMode,
     difficulty,
     effectiveAnswerMode,
@@ -681,7 +683,9 @@ export function GameView({
 
   const round = useMemo(
     () =>
-      makeRound(category, mode, difficulty, isPlay, effectiveAnswerMode, mapDomTom),
+      category
+        ? makeRound(category, mode, difficulty, isPlay, effectiveAnswerMode, mapDomTom)
+        : null,
     [category, mode, difficulty, seed, isPlay, effectiveAnswerMode, mapDomTom],
   )
 
@@ -768,14 +772,12 @@ export function GameView({
   }
 
   useEffect(() => {
-    if (variant === 'entrainement' && category === 'mixte') {
-      setCategory('departements')
-    }
     if (variant === 'entrainement' && sessionFormat === 'rapidite') {
       setSessionFormat('libre')
     }
-    // Jeu : écran prêt (pas de timer) ; Entraînement : prêt tout de suite
-    resetRun({ start: variant !== 'jeu' })
+    // Nouveau mode → on recommence par le choix de catégorie
+    setCategory(null)
+    resetRun({ start: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
@@ -808,7 +810,7 @@ export function GameView({
 
   // Timer countdown par question (Jeu libre / 10Q, pas Rapidité) — seulement après Lancer
   useEffect(() => {
-    if (!runActive || !usePerQuestionTimer || gameOver || picked || !round) return
+    if (!setupReady || !runActive || !usePerQuestionTimer || gameOver || picked || !round) return
     setSecondsLeft(timerMax)
     timedOut.current = false
     const started = Date.now()
@@ -822,18 +824,18 @@ export function GameView({
     }, 200)
     return () => window.clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seed, usePerQuestionTimer, gameOver, timerMax, picked, runActive])
+  }, [seed, usePerQuestionTimer, gameOver, timerMax, picked, runActive, setupReady])
 
   // Chrono session Rapidité — seulement après Lancer
   useEffect(() => {
-    if (!runActive || !isRapidite || gameOver) return
+    if (!setupReady || !runActive || !isRapidite || gameOver) return
     if (sessionStartRef.current == null) sessionStartRef.current = Date.now()
     const id = window.setInterval(() => {
       const start = sessionStartRef.current ?? Date.now()
       setElapsedSec(Math.floor((Date.now() - start) / 1000))
     }, 200)
     return () => window.clearInterval(id)
-  }, [isRapidite, gameOver, seed, runActive])
+  }, [isRapidite, gameOver, seed, runActive, setupReady])
 
   // Raccourcis clavier (PC)
   useEffect(() => {
@@ -1030,6 +1032,52 @@ export function GameView({
     resolveAnswer(typed || '—', ok)
   }
 
+  const categoryToolbar = (
+    <div className="game-toolbar-primary">
+      <div className="game-field">
+        <span className="game-field-label">Catégorie</span>
+        <div className="game-group game-categories" role="group" aria-label="Catégorie">
+          {categoryOptions.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className={`game-chip game-chip-cat ${category === c ? 'is-active' : ''}`}
+              onClick={() => selectCategory(c)}
+            >
+              {CATEGORY_LABEL[c]}
+            </button>
+          ))}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="game-chip game-hist-btn"
+        onClick={() => setHistoryOpen(true)}
+      >
+        Historique
+      </button>
+    </div>
+  )
+
+  if (!setupReady || !category) {
+    return (
+      <div className="game-view">
+        <div className="game-toolbar is-compact">
+          {categoryToolbar}
+        </div>
+        <div className="game-board is-idle">
+          <div className="game-idle">
+            <p className="game-idle-title">Choisis une catégorie</p>
+            <p className="game-idle-hint">
+              Ensuite tu régleras le format, le type de réponse et la difficulté.
+            </p>
+          </div>
+        </div>
+        {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
+      </div>
+    )
+  }
+
   if (!round) {
     return (
       <div className="game-view">
@@ -1140,48 +1188,9 @@ export function GameView({
   return (
     <div className={`game-view ${roundIsMap ? 'is-map-mode' : ''}`}>
       <div className={`game-toolbar ${roundIsMap ? 'is-compact' : ''}`}>
-        <div className="game-toolbar-primary">
-          <div className="game-field">
-            <span className="game-field-label">Catégorie</span>
-            <div className="game-group game-categories" role="group" aria-label="Catégorie">
-              {categoryOptions.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`game-chip game-chip-cat ${category === c ? 'is-active' : ''}`}
-                  onClick={() => selectCategory(c)}
-                >
-                  {CATEGORY_LABEL[c]}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="game-chip game-hist-btn"
-            onClick={() => setHistoryOpen(true)}
-          >
-            Historique
-          </button>
-        </div>
+        {categoryToolbar}
 
         <div className="game-toolbar-secondary">
-          <div className="game-field">
-            <span className="game-field-label">Format</span>
-            <div className="game-group" role="group" aria-label="Format de partie">
-              {formatOptions.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
-                  onClick={() => selectFormat(f)}
-                >
-                  {FORMAT_LABEL[f]}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {!isMixte ? (
             <div className="game-field">
               <span className="game-field-label">Sous-mode</span>
@@ -1206,6 +1215,24 @@ export function GameView({
               </p>
             </div>
           )}
+
+          <div className="game-field-sep" aria-hidden />
+
+          <div className="game-field">
+            <span className="game-field-label">Format</span>
+            <div className="game-group" role="group" aria-label="Format de partie">
+              {formatOptions.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
+                  onClick={() => selectFormat(f)}
+                >
+                  {FORMAT_LABEL[f]}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {!isMapMode ? (
             <>
