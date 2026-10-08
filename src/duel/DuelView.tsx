@@ -257,13 +257,13 @@ export function DuelView() {
                   ? 'Premier qui se trompe a perdu. Bonne réponse → ça passe à l’autre.'
                   : config.localFormat === 'tours'
                     ? 'Chacun sa question (pas la même). 1 point si correct.'
-                    : 'Course simultanée, même question. PC : J1 = 1–2–3–4, J2 = A–Z–E–R. Timer → 5 s dès qu’un trouve.'}
+                    : 'Course simultanée, même question — 1 pt par bonne réponse. PC : J1 = 1–2–3–4, J2 = A–Z–E–R. Timer → 5 s dès qu’un trouve.'}
               </p>
             </div>
           ) : (
             <p className="duel-hint">
-              Course en ligne : lien d’invitation, 1er juste = 2 pts, 2ᵉ = 1 pt. Timer → 5 s dès
-              qu’un trouve.
+              Course en ligne : lien d’invitation, 1 pt par bonne réponse. Timer → 5 s dès qu’un
+              trouve.
             </p>
           )}
 
@@ -867,19 +867,12 @@ function RacePlay({
     if (!scored.current) {
       scored.current = true
       const times = correctRef.current
-      const valid = times
-        .map((t, i) => (t != null ? { i: i as 0 | 1, t } : null))
-        .filter(Boolean) as { i: 0 | 1; t: number }[]
-      valid.sort((x, y) => x.t - y.t)
-      if (valid.length === 1) {
-        nextScores[valid[0]!.i] += 2
-        onScore(valid[0]!.i, 2)
-      } else if (valid.length >= 2) {
-        nextScores[valid[0]!.i] += 2
-        nextScores[valid[1]!.i] += 1
-        onScore(valid[0]!.i, 2)
-        onScore(valid[1]!.i, 1)
-      }
+      ;([0, 1] as const).forEach((p) => {
+        if (times[p] != null) {
+          nextScores[p] += 1
+          onScore(p, 1)
+        }
+      })
       nextCombos = [
         times[0] != null ? nextCombos[0] + 1 : 0,
         times[1] != null ? nextCombos[1] + 1 : 0,
