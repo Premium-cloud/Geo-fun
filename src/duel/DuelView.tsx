@@ -449,7 +449,7 @@ export function DuelView({ onBack }: { onBack: () => void }) {
           if (idx + 1 >= deck.length) finish()
           else setIdx((i) => i + 1)
         }}
-        onQuit={onBack}
+        onQuit={() => setPhase('setup')}
       />
     )
   }
@@ -460,7 +460,7 @@ export function DuelView({ onBack }: { onBack: () => void }) {
         config={config}
         category={config.category}
         onOver={finish}
-        onQuit={onBack}
+        onQuit={() => setPhase('setup')}
       />
     )
   }
@@ -486,7 +486,7 @@ export function DuelView({ onBack }: { onBack: () => void }) {
           if (idx + 1 >= deck.length) finish()
           else setIdx((i) => i + 1)
         }}
-        onQuit={onBack}
+        onQuit={() => setPhase('setup')}
       />
     )
   }
@@ -506,7 +506,7 @@ export function DuelView({ onBack }: { onBack: () => void }) {
         if (idx + 1 >= deck.length) finish()
         else setIdx((i) => i + 1)
       }}
-      onQuit={onBack}
+      onQuit={() => setPhase('setup')}
     />
   )
 }
