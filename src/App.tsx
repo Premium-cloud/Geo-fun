@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
+import { DuelView } from './duel/DuelView'
 import { GameView, type PlayVariant } from './game/GameView'
 import {
   applyNightClass,
@@ -11,13 +12,14 @@ import {
 import { OptionsModal } from './options/OptionsModal'
 import './App.css'
 
-type Tab = 'france' | 'monde' | 'entrainement' | 'jeu'
+type Tab = 'france' | 'monde' | 'entrainement' | 'jeu' | 'duel'
 
 const TAB_LABEL: Record<Tab, string> = {
   france: 'Départements',
   monde: 'Pays',
   entrainement: 'Entraînement',
   jeu: 'Jeu',
+  duel: 'Duel',
 }
 
 function isLexique(tab: Tab): boolean {
@@ -54,7 +56,13 @@ function CardPicto({ className }: { className?: string }) {
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('france')
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window !== 'undefined') {
+      const duel = new URL(window.location.href).searchParams.get('duel')
+      if (duel) return 'duel'
+    }
+    return 'france'
+  })
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [options, setOptions] = useState<OptionsState>(() => loadOptions())
   const lexique = isLexique(tab)
@@ -97,7 +105,7 @@ export default function App() {
           <div className="brand-quiz">
             <p className="brand-mode">Mode actuel</p>
             <p className="brand-mode-sub">
-              {tab === 'jeu' ? 'Jeu' : 'Entraînement'}
+              {tab === 'jeu' ? 'Jeu' : tab === 'duel' ? 'Duel' : 'Entraînement'}
             </p>
           </div>
         )}
@@ -119,11 +127,11 @@ export default function App() {
             </div>
           ) : (
             <div className="tabs-group" role="presentation">
-              {(['entrainement', 'jeu'] as const).map((t) => (
+              {(['entrainement', 'jeu', 'duel'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
-                  className={`tab ${tab === t ? 'is-active' : ''} ${t === 'jeu' ? 'tab-play' : ''}`}
+                  className={`tab ${tab === t ? 'is-active' : ''} ${t === 'jeu' || t === 'duel' ? 'tab-play' : ''}`}
                   onClick={() => setTab(t)}
                   aria-current={tab === t ? 'page' : undefined}
                 >
@@ -180,6 +188,7 @@ export default function App() {
             onMapDomTomChange={setMapDomTom}
           />
         ) : null}
+        {tab === 'duel' ? <DuelView onBack={() => setTab('jeu')} /> : null}
       </main>
 
       <OptionsModal

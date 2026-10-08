@@ -21,6 +21,14 @@ npm run dev
 
 L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
+## Duel
+
+Onglet **Jeux → Duel** :
+
+- **Même écran** : Bombe (patate chaude), Chacun son tour, Split (si largeur ≥ 720px)
+- **En ligne** : salon + lien d’invitation (PeerJS), course 2 pts / 1 pt, timer → 5 s dès qu’un trouve
+- Catégories : Départements (n°) · Pays (drapeau) · Capitales · Mixte — QCM ou saisie, pas de carte
+
 ## Déploiement Vercel (prod stable)
 
 Ne pas utiliser `vercel deploy --temporary` ni les déploiements anonymes « prebuilt » : ils ne se redéploient pas correctement.

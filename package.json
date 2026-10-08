@@ -13,6 +13,7 @@
     "maps:dom": "node scripts/generate-dom-tom-shapes.mjs"
   },
   "dependencies": {
+    "peerjs": "^1.5.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
