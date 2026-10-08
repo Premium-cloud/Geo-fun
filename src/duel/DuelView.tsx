@@ -472,9 +472,17 @@ export function DuelView() {
         conn={connRef.current}
         onScore={(p, pts) => addScore(p, pts)}
         onCombo={bumpCombo}
+        onApplyState={(next) => {
+          setScores(next.scores)
+          setCombos(next.combos)
+        }}
         onNext={() => {
           if (idx + 1 >= deck.length) finish()
           else setIdx((i) => i + 1)
+        }}
+        onGoToIdx={(nextIdx) => {
+          if (nextIdx >= deck.length) finish()
+          else setIdx(nextIdx)
         }}
         onQuit={() => setPhase('setup')}
       />
@@ -685,7 +693,9 @@ function RacePlay({
   conn,
   onScore,
   onCombo,
+  onApplyState,
   onNext,
+  onGoToIdx,
   onQuit,
 }: {
   label: string
@@ -701,9 +711,12 @@ function RacePlay({
   conn: DataConnection | null
   onScore: (p: 0 | 1, pts: number) => void
   onCombo: (p: 0 | 1, ok: boolean) => void
+  onApplyState?: (next: { scores: [number, number]; combos: [number, number] }) => void
   onNext: () => void
+  onGoToIdx?: (nextIdx: number) => void
   onQuit: () => void
 }) {
+  const isHost = !online || me === 0
   const [timeLeft, setTimeLeft] = useState(config.timerSec)
   const [locked, setLocked] = useState<[boolean, boolean]>([false, false])
   const [correctAt, setCorrectAt] = useState<[number | null, number | null]>([
@@ -715,11 +728,18 @@ function RacePlay({
   const scored = useRef(false)
   const lockedRef = useRef(locked)
   const correctRef = useRef(correctAt)
+  const scoresRef = useRef(scores)
+  const combosRef = useRef(combos)
   lockedRef.current = locked
   correctRef.current = correctAt
+  scoresRef.current = scores
+  combosRef.current = combos
 
   function clampTimer() {
     setTimeLeft((t) => (t > 5 ? 5 : t))
+    if (online && isHost) {
+      send(conn, { type: 'clamp', roundId: round.id, timeLeft: 5 })
+    }
   }
 
   function markAnswer(player: 0 | 1, value: string, at: number) {
@@ -736,7 +756,8 @@ function RacePlay({
       setCorrectAt(nextCorrect)
       clampTimer()
     }
-    if (nextLocked[0] && nextLocked[1]) endRound()
+    // En ligne : seul l’hôte clôt la manche
+    if (nextLocked[0] && nextLocked[1] && isHost) endRound()
   }
 
   useEffect(() => {
@@ -746,8 +767,17 @@ function RacePlay({
       if (msg.type === 'answer' && msg.roundId === round.id) {
         markAnswer(msg.player, msg.value, msg.at)
       }
-      if (msg.type === 'round-end' && msg.roundId === round.id) {
-        endRound()
+      if (msg.type === 'clamp' && msg.roundId === round.id && !isHost) {
+        setTimeLeft((t) => (t > msg.timeLeft ? msg.timeLeft : t))
+      }
+      if (msg.type === 'round-result' && msg.roundId === round.id && !isHost) {
+        if (ended.current) return
+        ended.current = true
+        scored.current = true
+        onApplyState?.({ scores: msg.scores, combos: msg.combos })
+        window.setTimeout(() => {
+          onGoToIdx?.(msg.nextIdx)
+        }, 900)
       }
     }
     conn.on('data', handler)
@@ -755,7 +785,7 @@ function RacePlay({
       conn.off('data', handler)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conn, round.id])
+  }, [conn, round.id, isHost])
 
   useEffect(() => {
     ended.current = false
@@ -768,13 +798,14 @@ function RacePlay({
     setInputs(['', ''])
   }, [round.id, config.timerSec])
 
+  // Timer : l’hôte (ou split local) décide la fin ; le guest affiche seulement
   useEffect(() => {
     if (ended.current) return
     const t = window.setInterval(() => {
       setTimeLeft((s) => {
         if (s <= 1) {
           window.clearInterval(t)
-          endRound()
+          if (isHost) endRound()
           return 0
         }
         return s - 1
@@ -782,7 +813,7 @@ function RacePlay({
     }, 1000)
     return () => window.clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [round.id])
+  }, [round.id, isHost])
 
   function tryAnswer(player: 0 | 1, value: string) {
     if (ended.current || lockedRef.current[player]) return
@@ -826,8 +857,13 @@ function RacePlay({
 
   function endRound() {
     if (ended.current) return
+    // Guest online : n’avance jamais tout seul
+    if (online && !isHost) return
     ended.current = true
-    if (online && me === 0) send(conn, { type: 'round-end', roundId: round.id })
+
+    let nextScores: [number, number] = [...scoresRef.current]
+    let nextCombos: [number, number] = [...combosRef.current]
+
     if (!scored.current) {
       scored.current = true
       const times = correctRef.current
@@ -835,15 +871,38 @@ function RacePlay({
         .map((t, i) => (t != null ? { i: i as 0 | 1, t } : null))
         .filter(Boolean) as { i: 0 | 1; t: number }[]
       valid.sort((x, y) => x.t - y.t)
-      if (valid.length === 1) onScore(valid[0]!.i, 2)
-      else if (valid.length >= 2) {
+      if (valid.length === 1) {
+        nextScores[valid[0]!.i] += 2
+        onScore(valid[0]!.i, 2)
+      } else if (valid.length >= 2) {
+        nextScores[valid[0]!.i] += 2
+        nextScores[valid[1]!.i] += 1
         onScore(valid[0]!.i, 2)
         onScore(valid[1]!.i, 1)
       }
+      nextCombos = [
+        times[0] != null ? nextCombos[0] + 1 : 0,
+        times[1] != null ? nextCombos[1] + 1 : 0,
+      ]
       onCombo(0, times[0] != null)
       onCombo(1, times[1] != null)
     }
-    window.setTimeout(onNext, 900)
+
+    const nextIdx = idx + 1
+    if (online && isHost) {
+      send(conn, {
+        type: 'round-result',
+        roundId: round.id,
+        scores: nextScores,
+        combos: nextCombos,
+        nextIdx,
+      })
+    }
+
+    window.setTimeout(() => {
+      if (online && onGoToIdx) onGoToIdx(nextIdx)
+      else onNext()
+    }, 900)
   }
 
   const panel = (player: 0 | 1) => {

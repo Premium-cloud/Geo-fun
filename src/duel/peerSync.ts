@@ -7,7 +7,13 @@ export type NetMsg =
   | { type: 'ready' }
   | { type: 'start' }
   | { type: 'answer'; roundId: string; player: 0 | 1; value: string; at: number }
-  | { type: 'round-end'; roundId: string }
+  /** Host → guest : aligne le timer (ex. clamp 5 s). */
+  | { type: 'clamp'; roundId: string; timeLeft: number }
+  /**
+   * Host → guest : fin de manche autoritaire (scores + index suivant).
+   * nextIdx === total ⇒ partie terminée.
+   */
+  | { type: 'round-result'; roundId: string; scores: [number, number]; combos: [number, number]; nextIdx: number }
   | { type: 'ping' }
 
 export function createHostPeer(): Promise<{ peer: Peer; id: string }> {
