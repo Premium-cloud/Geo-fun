@@ -25,7 +25,7 @@ L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
 Onglet **Jeux → Duel** :
 
-- **Même écran** : Bombe (patate chaude), Chacun son tour, Split (si largeur ≥ 720px)
+- **Même écran** : Bombe (PV secrets, explosion = défaite, pas de points), Chacun son tour, Split (si largeur ≥ 720px — J1 bleu / J2 rouge, combos)
 - **En ligne** : salon + lien d’invitation (PeerJS), course 2 pts / 1 pt, timer → 5 s dès qu’un trouve
 - Catégories : Départements (n°) · Pays (drapeau) · Capitales · Mixte — QCM ou saisie, pas de carte
 
