@@ -3,6 +3,7 @@ import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { DuelView } from './duel/DuelView'
 import { GameView, type PlayVariant } from './game/GameView'
+import { HistoryPanel } from './game/HistoryPanel'
 import {
   applyNightClass,
   loadOptions,
@@ -64,8 +65,10 @@ export default function App() {
     return 'france'
   })
   const [optionsOpen, setOptionsOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [options, setOptions] = useState<OptionsState>(() => loadOptions())
   const lexique = isLexique(tab)
+  const showHistoryBtn = tab === 'entrainement' || tab === 'jeu'
 
   useEffect(() => {
     applyNightClass(options.night)
@@ -143,6 +146,15 @@ export default function App() {
         </nav>
 
         <div className="topbar-right">
+          {showHistoryBtn ? (
+            <button
+              type="button"
+              className="btn-history"
+              onClick={() => setHistoryOpen(true)}
+            >
+              Historique
+            </button>
+          ) : null}
           <button
             type="button"
             className="btn-options"
@@ -186,6 +198,7 @@ export default function App() {
             variant={tab as PlayVariant}
             mapDomTom={options.mapDomTom}
             onMapDomTomChange={setMapDomTom}
+            onOpenHistory={() => setHistoryOpen(true)}
           />
         ) : null}
         {tab === 'duel' ? <DuelView /> : null}
@@ -196,6 +209,7 @@ export default function App() {
         onClose={() => setOptionsOpen(false)}
         onOptionsChange={handleOptionsChange}
       />
+      {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
     </div>
   )
 }

@@ -23,7 +23,6 @@ import {
   type Difficulty,
 } from './difficulty'
 import { FranceMapQuiz } from './FranceMapQuiz'
-import { HistoryPanel } from './HistoryPanel'
 import { WORLD_MAP_CODES } from './mapCodes'
 import { WorldMapQuiz } from './WorldMapQuiz'
 import './GameView.css'
@@ -611,10 +610,12 @@ export function GameView({
   variant,
   mapDomTom,
   onMapDomTomChange,
+  onOpenHistory,
 }: {
   variant: PlayVariant
   mapDomTom: boolean
   onMapDomTomChange: (on: boolean) => void
+  onOpenHistory?: () => void
 }) {
   const isPlay = variant === 'jeu'
   /** null = pas encore choisi → on n’affiche pas Format / Réponse / Difficulté */
@@ -637,7 +638,6 @@ export function GameView({
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS.facile)
   const [elapsedSec, setElapsedSec] = useState(0)
   const [statsTick, setStatsTick] = useState(0)
-  const [historyOpen, setHistoryOpen] = useState(false)
   const [runLog, setRunLog] = useState<RunEntry[]>([])
   const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
   const [missHint, setMissHint] = useState(false)
@@ -840,8 +840,8 @@ export function GameView({
   // Raccourcis clavier (PC)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (historyOpen || gameOver) {
-        if (gameOver && e.key === 'Enter') {
+      if (gameOver) {
+        if (e.key === 'Enter') {
           e.preventDefault()
           resetRun({ start: true })
         }
@@ -877,7 +877,7 @@ export function GameView({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyOpen, gameOver, round, picked, isPlay, asked, runActive])
+  }, [gameOver, round, picked, isPlay, asked, runActive])
 
   function revealedRef() {
     return picked !== null
@@ -1049,13 +1049,6 @@ export function GameView({
           ))}
         </div>
       </div>
-      <button
-        type="button"
-        className="game-chip game-hist-btn"
-        onClick={() => setHistoryOpen(true)}
-      >
-        Historique
-      </button>
     </div>
   )
 
@@ -1069,11 +1062,10 @@ export function GameView({
           <div className="game-idle">
             <p className="game-idle-title">Choisis une catégorie</p>
             <p className="game-idle-hint">
-              Ensuite tu régleras le format, le type de réponse et la difficulté.
+              Ensuite tu régleras la difficulté, le type de réponse et le format.
             </p>
           </div>
         </div>
-        {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
       </div>
     )
   }
@@ -1174,13 +1166,12 @@ export function GameView({
             <button
               type="button"
               className="game-next game-next-quiet"
-              onClick={() => setHistoryOpen(true)}
+              onClick={() => onOpenHistory?.()}
             >
               Voir l’historique
             </button>
           </div>
         </div>
-        {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
       </div>
     )
   }
@@ -1218,20 +1209,25 @@ export function GameView({
 
           <div className="game-field-sep" aria-hidden />
 
-          <div className="game-field">
-            <span className="game-field-label">Format</span>
-            <div className="game-group" role="group" aria-label="Format de partie">
-              {formatOptions.map((f) => (
+          <div className="game-field game-field-diff">
+            <span className="game-field-label">Difficulté</span>
+            <div className="game-group" role="group" aria-label="Difficulté">
+              {difficultyOptions.map((d) => (
                 <button
-                  key={f}
+                  key={d.id}
                   type="button"
-                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
-                  onClick={() => selectFormat(f)}
+                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} is-${d.id}`}
+                  onClick={() => selectDifficulty(d.id)}
                 >
-                  {FORMAT_LABEL[f]}
+                  {d.label}
                 </button>
               ))}
             </div>
+            {best.bestStreak > 0 ? (
+              <p className="game-record">Record ×{best.bestStreak}</p>
+            ) : (
+              <p className="game-record is-empty">Pas encore de record</p>
+            )}
           </div>
 
           {!isMapMode ? (
@@ -1283,25 +1279,20 @@ export function GameView({
 
           <div className="game-field-sep" aria-hidden />
 
-          <div className="game-field game-field-diff">
-            <span className="game-field-label">Difficulté</span>
-            <div className="game-group" role="group" aria-label="Difficulté">
-              {difficultyOptions.map((d) => (
+          <div className="game-field">
+            <span className="game-field-label">Format</span>
+            <div className="game-group" role="group" aria-label="Format de partie">
+              {formatOptions.map((f) => (
                 <button
-                  key={d.id}
+                  key={f}
                   type="button"
-                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} is-${d.id}`}
-                  onClick={() => selectDifficulty(d.id)}
+                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
+                  onClick={() => selectFormat(f)}
                 >
-                  {d.label}
+                  {FORMAT_LABEL[f]}
                 </button>
               ))}
             </div>
-            {best.bestStreak > 0 ? (
-              <p className="game-record">Record ×{best.bestStreak}</p>
-            ) : (
-              <p className="game-record is-empty">Pas encore de record</p>
-            )}
           </div>
         </div>
       </div>
@@ -1472,7 +1463,6 @@ export function GameView({
         )}
       </div>
 
-      {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
     </div>
   )
 }
