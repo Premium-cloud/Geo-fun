@@ -259,6 +259,7 @@ export function DuelView() {
                     : wide
                       ? 'Course simultanée — 1 pt par bonne réponse. PC : J1 = 1–2–3–4, J2 = A–Z–E–R. Timer → 5 s dès qu’un trouve.'
                       : 'Téléphone au milieu : moitié d’écran chacun, J2 en haut (miroir). 1 pt par bonne réponse.'}
+              </p>
             </div>
           ) : (
             <p className="duel-hint">
