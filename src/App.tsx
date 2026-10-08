@@ -156,7 +156,7 @@ export default function App() {
             <button
               type="button"
               className="brand-link brand-link-jeux"
-              onClick={() => setTab('jeu')}
+              onClick={() => setTab('entrainement')}
             >
               <span className="brand-mark" aria-hidden>
                 ◆

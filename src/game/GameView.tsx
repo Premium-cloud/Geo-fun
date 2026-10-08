@@ -622,6 +622,8 @@ export function GameView({
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
   const [sessionFormat, setSessionFormat] = useState<SessionFormatId>('libre')
+  /** Jeu : false jusqu’au clic « Lancer » (pas de timer avant). */
+  const [runActive, setRunActive] = useState(() => variant !== 'jeu')
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
@@ -706,7 +708,7 @@ export function GameView({
     setStatsTick((t) => t + 1)
   }
 
-  function resetRun() {
+  function resetRun(opts?: { start?: boolean }) {
     flushTrainingSession()
     setScore(0)
     setAsked(0)
@@ -722,11 +724,13 @@ export function GameView({
     setElapsedSec(0)
     timedOut.current = false
     endAfterFeedback.current = false
-    sessionStartRef.current = Date.now()
     runSnapshot.current = { score: 0, asked: 0, peak: 0, timeMs: 0 }
     setSecondsLeft(
       (mode === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty],
     )
+    const start = isPlay ? Boolean(opts?.start) : true
+    setRunActive(start)
+    sessionStartRef.current = start ? Date.now() : null
     setSeed((s) => s + 1)
   }
 
@@ -770,7 +774,8 @@ export function GameView({
     if (variant === 'entrainement' && sessionFormat === 'rapidite') {
       setSessionFormat('libre')
     }
-    resetRun()
+    // Jeu : écran prêt (pas de timer) ; Entraînement : prêt tout de suite
+    resetRun({ start: variant !== 'jeu' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
@@ -801,9 +806,9 @@ export function GameView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [picked, isPlay, gameOver, difficulty, asked, isBounded])
 
-  // Timer countdown par question (Jeu libre / 10Q, pas Rapidité)
+  // Timer countdown par question (Jeu libre / 10Q, pas Rapidité) — seulement après Lancer
   useEffect(() => {
-    if (!usePerQuestionTimer || gameOver || picked || !round) return
+    if (!runActive || !usePerQuestionTimer || gameOver || picked || !round) return
     setSecondsLeft(timerMax)
     timedOut.current = false
     const started = Date.now()
@@ -817,18 +822,18 @@ export function GameView({
     }, 200)
     return () => window.clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seed, usePerQuestionTimer, gameOver, timerMax, picked])
+  }, [seed, usePerQuestionTimer, gameOver, timerMax, picked, runActive])
 
-  // Chrono session Rapidité
+  // Chrono session Rapidité — seulement après Lancer
   useEffect(() => {
-    if (!isRapidite || gameOver) return
+    if (!runActive || !isRapidite || gameOver) return
     if (sessionStartRef.current == null) sessionStartRef.current = Date.now()
     const id = window.setInterval(() => {
       const start = sessionStartRef.current ?? Date.now()
       setElapsedSec(Math.floor((Date.now() - start) / 1000))
     }, 200)
     return () => window.clearInterval(id)
-  }, [isRapidite, gameOver, seed])
+  }, [isRapidite, gameOver, seed, runActive])
 
   // Raccourcis clavier (PC)
   useEffect(() => {
@@ -836,12 +841,20 @@ export function GameView({
       if (historyOpen || gameOver) {
         if (gameOver && e.key === 'Enter') {
           e.preventDefault()
-          resetRun()
+          resetRun({ start: true })
         }
         return
       }
       const tag = (e.target as HTMLElement | null)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
+
+      if (isPlay && !runActive) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          resetRun({ start: true })
+        }
+        return
+      }
 
       if (revealedRef()) {
         if (!isPlay && (e.key === 'Enter' || e.key === ' ')) {
@@ -862,7 +875,7 @@ export function GameView({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyOpen, gameOver, round, picked, isPlay, asked])
+  }, [historyOpen, gameOver, round, picked, isPlay, asked, runActive])
 
   function revealedRef() {
     return picked !== null
@@ -880,7 +893,7 @@ export function GameView({
       if (nextMode === 'carte') setAnswerMode('map')
       else if (answerMode === 'map') setAnswerMode('qcm')
     }
-    resetRun()
+    resetRun({ start: !isPlay })
   }
 
   function selectMode(m: Mode) {
@@ -896,7 +909,9 @@ export function GameView({
     setStreakPeak(0)
     setRunLog([])
     setElapsedSec(0)
-    sessionStartRef.current = Date.now()
+    setGameOver(false)
+    if (isPlay) setRunActive(false)
+    sessionStartRef.current = isPlay ? null : Date.now()
     setSeed((s) => s + 1)
     setSecondsLeft((m === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty])
   }
@@ -915,14 +930,15 @@ export function GameView({
     setTyped('')
     setRunLog([])
     setElapsedSec(0)
-    sessionStartRef.current = Date.now()
+    if (isPlay) setRunActive(false)
+    sessionStartRef.current = isPlay ? null : Date.now()
     setSecondsLeft((isMapMode ? MAP_TIMER_SECONDS : TIMER_SECONDS)[d])
     setSeed((s) => s + 1)
   }
 
   function selectAnswerMode(am: AnswerMode) {
     setAnswerMode(am)
-    resetRun()
+    resetRun({ start: !isPlay })
   }
 
   function selectFormat(f: SessionFormatId) {
@@ -938,12 +954,13 @@ export function GameView({
     setTyped('')
     setRunLog([])
     setElapsedSec(0)
-    sessionStartRef.current = Date.now()
+    if (isPlay) setRunActive(false)
+    sessionStartRef.current = isPlay ? null : Date.now()
     setSeed((s) => s + 1)
   }
 
   function resolveAnswer(choice: string, isCorrect: boolean) {
-    if (!round || picked || gameOver) return
+    if (!round || picked || gameOver || (isPlay && !runActive)) return
     setMissHint(false)
     setPicked(choice)
     const nextAsked = asked + 1
@@ -1099,7 +1116,11 @@ export function GameView({
           </ul>
 
           <div className="game-over-actions">
-            <button type="button" className="game-next" onClick={resetRun}>
+            <button
+              type="button"
+              className="game-next"
+              onClick={() => resetRun({ start: true })}
+            >
               {isBounded ? `Rejouer (${SESSION_LEN} Q)` : 'Rejouer'}
             </button>
             <button
@@ -1259,9 +1280,25 @@ export function GameView({
       </div>
 
       <div
-        className={`game-board ${roundIsMap ? 'is-map-board' : ''}`}
-        key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${sessionFormat}-${seed}`}
+        className={`game-board ${roundIsMap ? 'is-map-board' : ''} ${isPlay && !runActive ? 'is-idle' : ''}`}
+        key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${sessionFormat}-${seed}-${runActive ? 'on' : 'off'}`}
       >
+        {isPlay && !runActive ? (
+          <div className="game-idle">
+            <p className="game-idle-title">Prêt ?</p>
+            <p className="game-idle-hint">
+              Règle tes options ci-dessus, puis lance — le chrono ne démarre qu’après.
+            </p>
+            <button
+              type="button"
+              className="game-next game-lancer"
+              onClick={() => resetRun({ start: true })}
+            >
+              Lancer
+            </button>
+          </div>
+        ) : (
+          <>
         <div className="game-board-hud" aria-live="polite">
           {isBounded ? (
             <span className="game-progress" aria-label={`Question ${Math.min(asked + 1, SESSION_LEN)} sur ${SESSION_LEN}`}>
@@ -1404,6 +1441,8 @@ export function GameView({
             </button>
           </div>
         ) : null}
+          </>
+        )}
       </div>
 
       {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}

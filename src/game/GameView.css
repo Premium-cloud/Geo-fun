@@ -313,6 +313,39 @@ html.is-night .game-saisie-input {
   animation: board-in 0.35s ease;
 }
 
+.game-idle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0.5rem 1rem;
+}
+
+.game-idle-title {
+  margin: 0;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.game-idle-hint {
+  margin: 0;
+  max-width: 22rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.game-lancer {
+  margin-top: 0.35rem;
+  min-width: 10rem;
+}
+
+html.is-night .game-idle-title {
+  color: #fff;
+}
+
 @keyframes board-in {
   from {
     opacity: 0;
