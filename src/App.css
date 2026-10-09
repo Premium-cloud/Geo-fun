@@ -132,7 +132,7 @@
 
 .lexique-switch {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0;
   background: #e4e7ec;
   border-bottom: 1px solid var(--line);

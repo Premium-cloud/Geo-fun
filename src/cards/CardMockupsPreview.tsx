@@ -150,11 +150,11 @@ export function CardMockupsPreview() {
   return (
     <div className="mockups-page">
       <div className="mockups-banner">
-        <p className="mockups-kicker">Aperçu local — pas déployé</p>
+        <p className="mockups-kicker">Aperçu maquettes</p>
         <h1>Maquettes cartes Territoires</h1>
         <p className="mockups-lead">
-          France inchangée. {total} zones — emblèmes Wikimedia + pictos documentés par pack (voir{' '}
-          <code>territories/SOURCES.md</code>).
+          Aussi dans Lexique → Territoires. {total} zones — emblèmes Wikimedia + pictos documentés
+          (voir <code>territories/SOURCES.md</code>).
         </p>
       </div>
 

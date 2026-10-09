@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { CardMockupsPreview } from './cards/CardMockupsPreview'
 import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
+import { CartesTerritoiresView } from './cards/CartesTerritoiresView'
 import { DuelView } from './duel/DuelView'
 import { GameView, type PlayVariant } from './game/GameView'
 import { HistoryPanel } from './game/HistoryPanel'
@@ -14,10 +15,10 @@ import {
 import { OptionsModal } from './options/OptionsModal'
 import './App.css'
 
-type Tab = 'france' | 'monde' | 'entrainement' | 'jeu' | 'duel'
+type Tab = 'france' | 'territoires' | 'monde' | 'entrainement' | 'jeu' | 'duel'
 
 function isLexique(tab: Tab): boolean {
-  return tab === 'france' || tab === 'monde'
+  return tab === 'france' || tab === 'territoires' || tab === 'monde'
 }
 
 /** M stylisé dans le carré bleu (logo provisoire). */
@@ -213,15 +214,31 @@ export default function App() {
               <button
                 type="button"
                 role="tab"
+                className={`lexique-switch-tab ${tab === 'territoires' ? 'is-active' : ''}`}
+                aria-selected={tab === 'territoires'}
+                onClick={() => setTab('territoires')}
+              >
+                <strong>Territoires</strong>
+                <span>CH · ES · US…</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
                 className={`lexique-switch-tab ${tab === 'monde' ? 'is-active' : ''}`}
                 aria-selected={tab === 'monde'}
                 onClick={() => setTab('monde')}
               >
-                <strong>Pays</strong>
+                <strong>Monde</strong>
                 <span>Drapeaux</span>
               </button>
             </div>
-            {tab === 'france' ? <CartesFranceView /> : <CartesMondeView />}
+            {tab === 'france' ? (
+              <CartesFranceView />
+            ) : tab === 'territoires' ? (
+              <CartesTerritoiresView />
+            ) : (
+              <CartesMondeView />
+            )}
           </div>
         ) : null}
         {tab === 'entrainement' || tab === 'jeu' ? (
