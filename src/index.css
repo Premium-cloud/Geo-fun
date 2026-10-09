@@ -72,12 +72,6 @@ html.is-night .btn-pdf-primary {
   color: #141210;
 }
 
-html.is-night .topbar.is-lexique .tab.is-active {
-  background: var(--accent);
-  border-color: transparent;
-  color: #141210;
-}
-
 html.is-night .brand h1,
 html.is-night .brand-mode-sub,
 html.is-night .brand-link,

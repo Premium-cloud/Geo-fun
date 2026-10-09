@@ -14,14 +14,15 @@
   width: min(22rem, 100vw - 2.5rem);
   border: 1px solid var(--line);
   background: #fff;
-  border-radius: 999px;
+  border-radius: 0.55rem;
   padding: 0.55rem 1rem;
   outline: none;
+  font-family: var(--font-display);
 }
 
 .search input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.15);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.22);
 }
 
 .chips {
@@ -34,9 +35,11 @@
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink);
-  border-radius: 999px;
+  border-radius: 0.45rem;
   padding: 0.35rem 0.7rem;
+  font-family: var(--font-display);
   font-size: 0.85rem;
+  font-weight: 600;
   transition: transform 0.15s ease, background 0.15s ease;
 }
 
@@ -168,13 +171,14 @@
   font-weight: 800;
   font-size: 1.4rem;
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
 }
 
 .dept {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.8rem;
+  letter-spacing: -0.01em;
   line-height: 1.12;
   max-width: 100%;
   padding: 0 0.1rem;

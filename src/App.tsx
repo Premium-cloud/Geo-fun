@@ -27,32 +27,17 @@ function isLexique(tab: Tab): boolean {
   return tab === 'france' || tab === 'monde'
 }
 
-function CardPicto({ className }: { className?: string }) {
+/** M stylisé dans le carré bleu (logo provisoire). */
+function BrandMark({ className }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <rect
-        x="7"
-        y="3"
-        width="18"
-        height="26"
-        rx="2.2"
-        fill="currentColor"
-        opacity="0.22"
-        transform="rotate(-8 16 16)"
-      />
-      <rect x="8" y="4" width="16" height="24" rx="2" fill="currentColor" />
-      <circle cx="12.2" cy="9.2" r="1.35" fill="#fff" />
-      <path
-        d="M16 12.2c1.7 1.7 2.9 3.3 2.9 5.1 0 1.55-1.2 2.7-2.9 2.7s-2.9-1.15-2.9-2.7c0-1.8 1.2-3.4 2.9-5.1z"
-        fill="#fff"
-      />
-      <circle cx="19.8" cy="22.6" r="1.35" fill="#fff" />
-    </svg>
+    <span className={`brand-mark ${className ?? ''}`.trim()} aria-hidden>
+      <svg className="brand-m" viewBox="0 0 32 32" focusable="false">
+        <path
+          d="M5.2 25.2V7.4c0-.7.8-1.1 1.35-.7l7.55 5.55c.35.26.85.26 1.2 0L23.45 6.7c.55-.4 1.35 0 1.35.7v17.8c0 .55-.45 1-1 1h-2.15c-.55 0-1-.45-1-1V14.6c0-.55-.65-.85-1.1-.5l-3.85 2.95c-.5.38-1.2.38-1.7 0l-3.85-2.95c-.45-.35-1.1-.05-1.1.5v9.6c0 .55-.45 1-1 1H6.2c-.55 0-1-.45-1-1z"
+          fill="currentColor"
+        />
+      </svg>
+    </span>
   )
 }
 
@@ -91,9 +76,7 @@ export default function App() {
         {lexique ? (
           <div className="brand-stack">
             <div className="brand brand-static">
-              <span className="brand-mark brand-mark-card" aria-hidden>
-                <CardPicto className="brand-card-icon" />
-              </span>
+              <BrandMark />
               <h1>Cartes à jouer</h1>
             </div>
             <button
@@ -106,7 +89,7 @@ export default function App() {
           </div>
         ) : (
           <div className="brand-quiz">
-            <span className="brand-quiz-mark" aria-hidden />
+            <BrandMark className="brand-mark-lg" />
             <div className="brand-quiz-copy">
               <p className="brand-mode">Mode actuel</p>
               <p className="brand-mode-sub">
@@ -173,9 +156,7 @@ export default function App() {
               className="brand-link brand-link-jeux"
               onClick={() => setTab('entrainement')}
             >
-              <span className="brand-mark" aria-hidden>
-                ◆
-              </span>
+              <BrandMark className="brand-mark-sm" />
               <span>Jeux</span>
             </button>
           ) : (
@@ -184,9 +165,7 @@ export default function App() {
               className="brand-link"
               onClick={() => setTab('france')}
             >
-              <span className="brand-mark brand-mark-card" aria-hidden>
-                <CardPicto className="brand-card-icon" />
-              </span>
+              <BrandMark className="brand-mark-sm" />
               <span>Lexique</span>
             </button>
           )}
