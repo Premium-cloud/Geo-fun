@@ -1,8 +1,17 @@
 .mockups-page {
   padding: 1.25rem 1.35rem 3rem;
-  background: var(--paper);
+  background: #f0f2f5;
+  color: #1a1d23;
   font-family: var(--font-display);
   min-height: calc(100vh - 4rem);
+  color-scheme: light;
+}
+
+/* Aperçu : cartes toujours en rendu jour */
+.mockups-page .mock-face,
+.mockups-page .face,
+.mockups-page .france-pair-preview {
+  color-scheme: light;
 }
 
 .mockups-banner {

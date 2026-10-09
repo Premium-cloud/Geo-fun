@@ -236,6 +236,7 @@
 .face-front {
   background: linear-gradient(180deg, #fffefb 0%, #f7f2e8 100%);
   color: #1a1a1a;
+  color-scheme: light;
 }
 
 .face-back {

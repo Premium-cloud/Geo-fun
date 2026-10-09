@@ -123,37 +123,87 @@ html.is-night .opt-panel {
   color: var(--ink);
 }
 
-html.is-night .face-front {
-  background: linear-gradient(180deg, #2c2824 0%, #221e1a 100%);
-  color: var(--ink);
-  border-color: rgba(255, 255, 255, 0.08);
+/* Les cartes (recto/verso) n’ont PAS de mode nuit — toujours rendu jour */
+html.is-night .empty {
+  color: var(--muted);
+}
+
+.face,
+.face-front,
+.face-back,
+.back-face,
+.back-face-fr,
+.back-face-monde,
+.mock-face {
+  color-scheme: light;
+}
+
+html.is-night .face-front,
+html.is-night .cartes-france .face-front {
+  background: linear-gradient(180deg, #fffefb 0%, #f7f2e8 100%) !important;
+  color: #1a1a1a !important;
+  border-color: rgba(40, 28, 12, 0.12) !important;
 }
 
 html.is-night .back-face,
 html.is-night .back-face-fr,
-html.is-night .back-face-monde {
-  background: #26221e;
+html.is-night .back-face-monde,
+html.is-night .cartes-france .face-back,
+html.is-night .cartes-france .back-face-fr {
+  background: #fff !important;
+  color: #1c140c !important;
 }
 
-html.is-night .back-mark {
-  color: var(--ink);
+html.is-night .back-mark,
+html.is-night .back-face-fr .back-title,
+html.is-night .back-face-fr .back-sub,
+html.is-night .back-face-monde .back-mark {
+  color: #1c140c !important;
+  text-shadow:
+    0 0 0.35rem #fff,
+    0 0 0.55rem #fff,
+    0 0 0.8rem #fff;
 }
 
-html.is-night .chef,
-html.is-night .chef-k,
-html.is-night .meta,
-html.is-night .code,
-html.is-night .dept {
-  color: var(--ink);
+html.is-night .face .chef,
+html.is-night .face .chef-k,
+html.is-night .face .meta,
+html.is-night .face .code,
+html.is-night .face .dept,
+html.is-night .face-front .chef,
+html.is-night .face-front .chef-k,
+html.is-night .face-front .meta,
+html.is-night .face-front .code,
+html.is-night .face-front .dept {
+  color: inherit;
 }
 
-html.is-night .chef-k,
-html.is-night .meta {
-  color: var(--muted);
+html.is-night .face .chef-k,
+html.is-night .face .meta,
+html.is-night .face-front .chef-k,
+html.is-night .face-front .meta {
+  color: #6a6358 !important;
 }
 
-html.is-night .empty {
-  color: var(--muted);
+html.is-night .face .dept,
+html.is-night .face-front .dept {
+  color: #1a1a1a !important;
+}
+
+html.is-night .back-pictos,
+html.is-night .front-pictos {
+  color: #1c140c !important;
+}
+
+html.is-night .mock-face-front {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.9), transparent 55%),
+    linear-gradient(180deg, #fffdf8 0%, #f3ebe0 100%) !important;
+  color: #1a1a1a !important;
+}
+
+html.is-night .mock-face-back {
+  background: #fbfaf7 !important;
 }
 
 html.is-night .game-choice.is-correct {

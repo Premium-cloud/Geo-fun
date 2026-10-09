@@ -145,21 +145,25 @@ export default function App() {
           </div>
         </div>
 
-        <nav className="tabs" aria-label="Sections">
-          <div className="tabs-group" role="presentation">
-            {(['entrainement', 'jeu', 'duel'] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={`tab ${!lexique && tab === t ? 'is-active' : ''}`}
-                onClick={() => setTab(t)}
-                aria-current={!lexique && tab === t ? 'page' : undefined}
-              >
-                {t === 'entrainement' ? 'Entraînement' : t === 'jeu' ? 'Jeu' : 'Duel'}
-              </button>
-            ))}
-          </div>
-        </nav>
+        {!lexique ? (
+          <nav className="tabs" aria-label="Sections">
+            <div className="tabs-group" role="presentation">
+              {(['entrainement', 'jeu', 'duel'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`tab ${tab === t ? 'is-active' : ''}`}
+                  onClick={() => setTab(t)}
+                  aria-current={tab === t ? 'page' : undefined}
+                >
+                  {t === 'entrainement' ? 'Entraînement' : t === 'jeu' ? 'Jeu' : 'Duel'}
+                </button>
+              ))}
+            </div>
+          </nav>
+        ) : (
+          <div className="tabs" aria-hidden />
+        )}
 
         <div className="topbar-right">
           {showHistoryBtn ? (
