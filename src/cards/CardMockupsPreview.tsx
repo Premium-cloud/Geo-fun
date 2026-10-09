@@ -1,150 +1,26 @@
 import { buildBackScatter, type BackScatterItem } from './backScatterSlots'
 import { FranceCardPairPreview } from './CartesFranceView'
-import { Picto, type PictoId } from './pictos'
+import { Picto } from './pictos'
 import {
-  getUnitPictos,
+  TERRITORY_PACK_ORDER,
   TERRITORY_PACKS,
-  type TerritoryPackId,
+  type TerritoryPack,
+  type TerritoryUnit,
 } from '../data/territoryPictos'
 import './CartesMondeView.css'
 import './CartesFranceView.css'
 import './CardMockupsPreview.css'
 
-type MockCard = {
-  id: TerritoryPackId
-  country: string
-  note: string
-  ribbon: string
-  ribbonBg: string
-  accent: string
-  code: string
-  name: string
-  subLabel: string
-  subValue: string
-  emblemSrc: string
-  emblemKind: 'blason' | 'flag'
-  foot: { id: PictoId; label: string }[]
-  backTitle: string
-  backSub: string
-  backScatter: BackScatterItem[]
+/** Emblèmes disponibles en local (sinon fallback code). */
+const EMBLEM_SRC: Partial<Record<string, string>> = {
+  'ch:VD': '/mockups/emblems/vaud.png',
+  'us:CA': '/mockups/emblems/california.png',
+  'es:AN': '/mockups/emblems/andalucia.png',
+  'de:BY': '/mockups/emblems/bayern.png',
+  'jp:13': '/mockups/emblems/tokyo.png',
+  'ca:QC': '/mockups/emblems/quebec.png',
+  'br:SP': '/mockups/emblems/saopaulo.png',
 }
-
-type MockMeta = {
-  id: TerritoryPackId
-  ribbon: string
-  ribbonBg: string
-  accent: string
-  code: string
-  name: string
-  subLabel: string
-  subValue: string
-  emblemSrc: string
-  emblemKind: 'blason' | 'flag'
-}
-
-/** Unités d’exemple — méta carte ; pictos = TERRITORY_PACKS. */
-const MOCK_META: MockMeta[] = [
-  {
-    id: 'ch',
-    ribbon: 'Suisse',
-    ribbonBg: '#c8102e',
-    accent: '#c8102e',
-    code: 'VD',
-    name: 'Vaud',
-    subLabel: 'Chef-lieu',
-    subValue: 'Lausanne',
-    emblemSrc: '/mockups/emblems/vaud.png',
-    emblemKind: 'blason',
-  },
-  {
-    id: 'us',
-    ribbon: 'West',
-    ribbonBg: '#1d3557',
-    accent: '#1d3557',
-    code: 'CA',
-    name: 'California',
-    subLabel: 'Capital',
-    subValue: 'Sacramento',
-    emblemSrc: '/mockups/emblems/california.png',
-    emblemKind: 'flag',
-  },
-  {
-    id: 'es',
-    ribbon: 'España',
-    ribbonBg: '#aa151b',
-    accent: '#aa151b',
-    code: 'AN',
-    name: 'Andalucía',
-    subLabel: 'Capital',
-    subValue: 'Sevilla',
-    emblemSrc: '/mockups/emblems/andalucia.png',
-    emblemKind: 'flag',
-  },
-  {
-    id: 'de',
-    ribbon: 'Deutschland',
-    ribbonBg: '#111111',
-    accent: '#111111',
-    code: 'BY',
-    name: 'Bayern',
-    subLabel: 'Capital',
-    subValue: 'München',
-    emblemSrc: '/mockups/emblems/bayern.png',
-    emblemKind: 'blason',
-  },
-  {
-    id: 'jp',
-    ribbon: '日本',
-    ribbonBg: '#bc002d',
-    accent: '#bc002d',
-    code: '13',
-    name: 'Tōkyō',
-    subLabel: 'Chef-lieu',
-    subValue: 'Tōkyō',
-    emblemSrc: '/mockups/emblems/tokyo.png',
-    emblemKind: 'flag',
-  },
-  {
-    id: 'ca',
-    ribbon: 'Canada',
-    ribbonBg: '#0b3d91',
-    accent: '#0b3d91',
-    code: 'QC',
-    name: 'Québec',
-    subLabel: 'Capital',
-    subValue: 'Québec',
-    emblemSrc: '/mockups/emblems/quebec.png',
-    emblemKind: 'flag',
-  },
-  {
-    id: 'br',
-    ribbon: 'Brasil',
-    ribbonBg: '#009c3b',
-    accent: '#002776',
-    code: 'SP',
-    name: 'São Paulo',
-    subLabel: 'Capital',
-    subValue: 'São Paulo',
-    emblemSrc: '/mockups/emblems/saopaulo.png',
-    emblemKind: 'flag',
-  },
-]
-
-function buildMock(meta: MockMeta): MockCard {
-  const pack = TERRITORY_PACKS[meta.id]
-  const specialties = getUnitPictos(meta.id, meta.code)
-  return {
-    ...meta,
-    country: `${pack.country} — ${pack.unitKind}`,
-    note: 'Même positions verso que la France · pictos curés (territoryPictos)',
-    foot: specialties.map((s) => ({ id: s.icon, label: s.label })),
-    backTitle: pack.backTitle,
-    backSub: pack.backSub,
-    backScatter: buildBackScatter(pack.backIds),
-  }
-}
-
-const MOCKS: MockCard[] = MOCK_META.map(buildMock)
 
 function MockBackPictos({ items }: { items: BackScatterItem[] }) {
   return (
@@ -168,74 +44,108 @@ function MockBackPictos({ items }: { items: BackScatterItem[] }) {
   )
 }
 
-function MockPlayingCard({ card }: { card: MockCard }) {
+function MockRecto({
+  pack,
+  unit,
+}: {
+  pack: TerritoryPack
+  unit: TerritoryUnit
+}) {
+  const emblemKey = `${pack.id}:${unit.code}`
+  const emblemSrc = EMBLEM_SRC[emblemKey]
   return (
-    <article className="mock-pair">
-      <header className="mock-pair-head">
-        <h2>{card.country}</h2>
-        <p>{card.note}</p>
-      </header>
-      <div className="mock-pair-cards">
-        <div className="mock-card">
-          <span className="mock-face-tag">Recto</span>
-          <div className={`mock-face mock-face-front is-${card.emblemKind}`}>
-            <div className="mock-ribbon" style={{ background: card.ribbonBg }}>
-              {card.ribbon}
-            </div>
-            <div className="mock-identity">
-              <div className="mock-code" style={{ color: card.accent }}>
-                {card.code}
-              </div>
-              <div className="mock-name">{card.name}</div>
-              <div className="mock-sub">
-                <span>{card.subLabel}</span> {card.subValue}
-              </div>
-            </div>
-            <div className={`mock-emblem has-pictos is-${card.emblemKind}`}>
-              <img src={card.emblemSrc} alt="" />
-            </div>
-            <span className="front-pictos" aria-label="Spécialités">
-              {card.foot.map((f) => (
-                <span key={f.label} className="front-picto" title={f.label}>
-                  <Picto id={f.id} />
-                  <span className="front-picto-label">{f.label}</span>
-                </span>
-              ))}
+    <div className="mock-card">
+      <span className="mock-face-tag">{unit.code}</span>
+      <div className={`mock-face mock-face-front is-${pack.emblemKind}`}>
+        <div className="mock-ribbon" style={{ background: pack.ribbonBg }}>
+          {pack.country}
+        </div>
+        <div className="mock-identity">
+          <div className="mock-code" style={{ color: pack.accent }}>
+            {unit.code}
+          </div>
+          <div className="mock-name">{unit.name}</div>
+          <div className="mock-sub">
+            <span>{pack.subLabel}</span> {unit.capital}
+          </div>
+        </div>
+        <div className={`mock-emblem has-pictos is-${pack.emblemKind}`}>
+          {emblemSrc ? (
+            <img src={emblemSrc} alt="" />
+          ) : (
+            <span className="mock-emblem-fallback" aria-hidden>
+              {unit.code}
             </span>
-          </div>
+          )}
         </div>
+        <span className="front-pictos" aria-label="Spécialités">
+          {unit.pictos.map((f) => (
+            <span key={f.label} className="front-picto" title={f.label}>
+              <Picto id={f.icon} />
+              <span className="front-picto-label">{f.label}</span>
+            </span>
+          ))}
+        </span>
+      </div>
+    </div>
+  )
+}
 
+function PackSection({ pack }: { pack: TerritoryPack }) {
+  const backScatter = buildBackScatter(pack.backIds)
+  return (
+    <article className="mock-pair mock-pack">
+      <header className="mock-pair-head">
+        <h2>
+          {pack.country} — {pack.unitKind}
+        </h2>
+        <p>
+          {pack.units.length} zones · recto par unité · verso unique (40 slots France)
+        </p>
+      </header>
+
+      <div className="mock-pack-verso">
         <div className="mock-card">
-          <span className="mock-face-tag">Verso</span>
+          <span className="mock-face-tag">Verso (pack)</span>
           <div className="mock-face mock-face-back">
-            <MockBackPictos items={card.backScatter} />
+            <MockBackPictos items={backScatter} />
             <div className="mock-back-title">
-              <strong>{card.backTitle}</strong>
-              <span>{card.backSub}</span>
+              <strong>{pack.backTitle}</strong>
+              <span>{pack.backSub}</span>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mock-pack-rectos">
+        {pack.units.map((unit) => (
+          <MockRecto key={unit.code} pack={pack} unit={unit} />
+        ))}
       </div>
     </article>
   )
 }
 
 export function CardMockupsPreview() {
+  const total = TERRITORY_PACK_ORDER.reduce(
+    (n, id) => n + TERRITORY_PACKS[id].units.length,
+    0,
+  )
   return (
     <div className="mockups-page">
       <div className="mockups-banner">
         <p className="mockups-kicker">Aperçu local — pas déployé</p>
         <h1>Maquettes cartes Territoires</h1>
         <p className="mockups-lead">
-          France inchangée. Autres pays : mêmes positions verso (40 slots), pictos curés par pack
-          dans <code>territoryPictos</code>.
+          France inchangée. Autres packs : {total} cartes — pictos recto par zone, verso partagé
+          (mêmes positions que la France).
         </p>
       </div>
 
       <article className="mock-pair is-france">
         <header className="mock-pair-head">
           <h2>France — Département</h2>
-          <p>Design actuel gardé (recto blason + pictos · verso pictos)</p>
+          <p>Référence (recto blason + pictos · verso pictos)</p>
         </header>
         <div className="mock-pair-cards france-real-wrap">
           <div className="mock-card">
@@ -246,8 +156,8 @@ export function CardMockupsPreview() {
       </article>
 
       <div className="mockups-grid">
-        {MOCKS.map((card) => (
-          <MockPlayingCard key={card.id} card={card} />
+        {TERRITORY_PACK_ORDER.map((id) => (
+          <PackSection key={id} pack={TERRITORY_PACKS[id]} />
         ))}
       </div>
     </div>
