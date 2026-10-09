@@ -34,7 +34,7 @@ export const CH_PACK: TerritoryPack = {
       { icon: 'textile', label: 'Broderie' }, { icon: 'cheese', label: 'Appenzeller' }, { icon: 'cow', label: 'Alpage' },
     ]},
     { code: 'BE', name: 'Bern', capital: 'Bern', pictos: [
-      { icon: 'cheese', label: 'Emmental' }, { icon: 'cow', label: 'Tête Moine' }, { icon: 'mountain', label: 'Oberland' },
+      { icon: 'cheese', label: 'Emmental' }, { icon: 'ski', label: 'Oberland' }, { icon: 'mountain', label: 'Alpes' },
     ]},
     { code: 'BL', name: 'Basel-Landschaft', capital: 'Liestal', pictos: [
       { icon: 'factory', label: 'Chimie' }, { icon: 'grape', label: 'Vignoble' }, { icon: 'river', label: 'Rhin' },
@@ -43,13 +43,13 @@ export const CH_PACK: TerritoryPack = {
       { icon: 'factory', label: 'Pharma' }, { icon: 'river', label: 'Rhin' }, { icon: 'cathedral', label: 'Münster' },
     ]},
     { code: 'FR', name: 'Fribourg', capital: 'Fribourg', pictos: [
-      { icon: 'cheese', label: 'Gruyère' }, { icon: 'cheese', label: 'Vacherin' }, { icon: 'cow', label: 'Pré-alpes' },
+      { icon: 'cheese', label: 'Gruyère' }, { icon: 'butter', label: 'Vacherin' }, { icon: 'cow', label: 'Pré-alpes' },
     ]},
     { code: 'GE', name: 'Genève', capital: 'Genève', pictos: [
-      { icon: 'watch', label: 'Horlogerie' }, { icon: 'briefcase', label: 'ONU' }, { icon: 'spa', label: 'Jet d’eau' },
+      { icon: 'watch', label: 'Horlogerie' }, { icon: 'briefcase', label: 'ONU' }, { icon: 'sea', label: 'Léman' },
     ]},
     { code: 'GL', name: 'Glarus', capital: 'Glarus', pictos: [
-      { icon: 'mountain', label: 'Alpes' }, { icon: 'textile', label: 'Textile' }, { icon: 'cheese', label: 'Glarner' },
+      { icon: 'mountain', label: 'Alpes' }, { icon: 'textile', label: 'Textile' }, { icon: 'cheese', label: 'Schabziger' },
     ]},
     { code: 'GR', name: 'Graubünden', capital: 'Chur', pictos: [
       { icon: 'ski', label: 'Engadine' }, { icon: 'mountain', label: 'Alpes' }, { icon: 'spa', label: 'Thermal' },
@@ -79,7 +79,7 @@ export const CH_PACK: TerritoryPack = {
       { icon: 'cathedral', label: 'St-Ours' }, { icon: 'watch', label: 'Horlogerie' }, { icon: 'river', label: 'Aar' },
     ]},
     { code: 'SZ', name: 'Schwyz', capital: 'Schwyz', pictos: [
-      { icon: 'mountain', label: 'Mythen' }, { icon: 'cheese', label: 'Fromage' }, { icon: 'sword', label: 'Schwyz' },
+      { icon: 'mountain', label: 'Mythen' }, { icon: 'cheese', label: 'Fromage' }, { icon: 'forest', label: 'Waldstätten' },
     ]},
     { code: 'TG', name: 'Thurgau', capital: 'Frauenfeld', pictos: [
       { icon: 'apple', label: 'Cidre' }, { icon: 'grape', label: 'Vignoble' }, { icon: 'wheat', label: 'Cultures' },

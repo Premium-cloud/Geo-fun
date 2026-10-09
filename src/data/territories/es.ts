@@ -25,7 +25,7 @@ export const ES_PACK: TerritoryPack = {
   ],
   units: [
     { code: 'AN', name: 'Andalucía', capital: 'Sevilla', pictos: [
-      { icon: 'olive', label: 'Huile' }, { icon: 'grape', label: 'Jerez' }, { icon: 'cathedral', label: 'Alcázar' },
+      { icon: 'olive', label: 'Huile' }, { icon: 'grape', label: 'Jerez' }, { icon: 'castle', label: 'Alcázar' },
     ]},
     { code: 'AR', name: 'Aragón', capital: 'Zaragoza', pictos: [
       { icon: 'wine', label: 'Cariñena' }, { icon: 'mountain', label: 'Pyrénées' }, { icon: 'castle', label: 'Mudéjar' },
@@ -34,7 +34,7 @@ export const ES_PACK: TerritoryPack = {
       { icon: 'apple', label: 'Sidra' }, { icon: 'coal', label: 'Mine' }, { icon: 'sea', label: 'Côte' },
     ]},
     { code: 'CB', name: 'Cantabria', capital: 'Santander', pictos: [
-      { icon: 'sea', label: 'Côte' }, { icon: 'cow', label: 'Élevage' }, { icon: 'crystal', label: 'Altamira' },
+      { icon: 'sea', label: 'Côte' }, { icon: 'cow', label: 'Élevage' }, { icon: 'pottery', label: 'Altamira' },
     ]},
     { code: 'CL', name: 'Castilla y León', capital: 'Valladolid', pictos: [
       { icon: 'wine', label: 'Ribera' }, { icon: 'castle', label: 'Châteaux' }, { icon: 'wheat', label: 'Meseta' },
@@ -61,10 +61,10 @@ export const ES_PACK: TerritoryPack = {
       { icon: 'pepper', label: 'Pimentón' }, { icon: 'melon', label: 'Melon' }, { icon: 'sea', label: 'Mar Menor' },
     ]},
     { code: 'MD', name: 'Madrid', capital: 'Madrid', pictos: [
-      { icon: 'briefcase', label: 'Capitale' }, { icon: 'castle', label: 'Royal' }, { icon: 'film', label: 'Culture' },
+      { icon: 'briefcase', label: 'Capitale' }, { icon: 'castle', label: 'Royal' }, { icon: 'rose', label: 'Prado' },
     ]},
     { code: 'NC', name: 'Navarra', capital: 'Pamplona', pictos: [
-      { icon: 'wine', label: 'Navarra' }, { icon: 'horse', label: 'Sanfermines' }, { icon: 'forest', label: 'Pyrénées' },
+      { icon: 'wine', label: 'Navarra' }, { icon: 'cow', label: 'Encierro' }, { icon: 'forest', label: 'Pyrénées' },
     ]},
     { code: 'PV', name: 'País Vasco', capital: 'Vitoria', pictos: [
       { icon: 'fish', label: 'Pintxos' }, { icon: 'factory', label: 'Industrie' }, { icon: 'sea', label: 'Golfe' },
