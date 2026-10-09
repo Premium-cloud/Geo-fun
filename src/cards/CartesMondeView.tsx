@@ -28,7 +28,7 @@ function nameSizeClass(name: string): string {
   return ''
 }
 
-function CardFront({ card }: { card: Country }) {
+function CardFront({ card, eager = false }: { card: Country; eager?: boolean }) {
   const color = CONTINENT_COLOR[card.continent]
   const ink = inkOn(color)
   const ratio = card.flagRatio ?? '3 / 2'
@@ -56,8 +56,8 @@ function CardFront({ card }: { card: Country }) {
           style={{ aspectRatio: ratio }}
           src={flagUrl(card.code)}
           alt={`Drapeau de ${card.name}`}
-          loading="lazy"
-          decoding="async"
+          loading={eager ? 'eager' : 'lazy'}
+          decoding={eager ? 'sync' : 'async'}
         />
       </span>
       {showMeta ? (
@@ -171,7 +171,7 @@ function PrintDeck({ cards }: { cards: Country[] }) {
                 <div className="print-card" key={`f-${pageIndex}-${i}`}>
                   {card ? (
                     <div className="face face-front static">
-                      <CardFront card={card} />
+                      <CardFront card={card} eager />
                     </div>
                   ) : null}
                 </div>

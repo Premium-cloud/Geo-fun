@@ -95,7 +95,21 @@ export default function App() {
               <button
                 type="button"
                 className="btn-print-inline"
-                onClick={() => window.print()}
+                onClick={() => {
+                  const imgs = Array.from(
+                    document.querySelectorAll<HTMLImageElement>('.print-deck img'),
+                  )
+                  void Promise.all(
+                    imgs.map(
+                      (img) =>
+                        img.complete ||
+                        new Promise<void>((resolve) => {
+                          img.addEventListener('load', () => resolve(), { once: true })
+                          img.addEventListener('error', () => resolve(), { once: true })
+                        }),
+                    ),
+                  ).then(() => window.print())
+                }}
               >
                 Imprimer
               </button>
@@ -153,7 +167,7 @@ export default function App() {
       <main>
         {lexique ? (
           <div className="lexique-shell">
-            <div className="lexique-switch" role="tablist" aria-label="Lexique">
+            <div className="lexique-switch no-print" role="tablist" aria-label="Lexique">
               <button
                 type="button"
                 role="tab"

@@ -438,11 +438,17 @@
 }
 
 @media print {
-  .no-print {
+  .no-print,
+  .topbar,
+  .lexique-switch {
     display: none !important;
   }
 
   body {
-    background: #fff;
+    background: #fff !important;
+  }
+
+  .print-deck {
+    display: block !important;
   }
 }

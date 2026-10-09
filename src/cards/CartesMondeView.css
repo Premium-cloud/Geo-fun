@@ -426,8 +426,14 @@
   color: #1a1a1a;
 }
 
+/* Hors écran mais chargé (sinon lazy + display:none = blasons/drapeaux absents à l’impression) */
 .print-deck {
-  display: none;
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 210mm;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 @media print {
@@ -436,12 +442,26 @@
     background: #fff !important;
   }
 
+  /* N’imprimer que le deck de cartes (recto / verso) */
+  .topbar,
+  .lexique-switch,
+  .lexique-toolbar,
+  .lexique-body,
+  .no-print {
+    display: none !important;
+  }
+
   .cartes-view {
     padding: 0;
     background: #fff;
   }
 
   .print-deck {
+    position: static;
+    left: auto;
+    width: auto;
+    overflow: visible;
+    pointer-events: auto;
     display: block;
     background: #fff;
   }

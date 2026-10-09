@@ -55,7 +55,15 @@ function nameSizeClass(name: string): string {
   return ''
 }
 
-function BlasonImg({ code, name }: { code: string; name: string }) {
+function BlasonImg({
+  code,
+  name,
+  eager = false,
+}: {
+  code: string
+  name: string
+  eager?: boolean
+}) {
   const [idx, setIdx] = useState(0)
   const sources = blasonCandidates(code)
   const src = sources[idx]
@@ -73,14 +81,14 @@ function BlasonImg({ code, name }: { code: string; name: string }) {
       className="blason"
       src={src}
       alt={`Blason de ${name}`}
-      loading="lazy"
-      decoding="async"
+      loading={eager ? 'eager' : 'lazy'}
+      decoding={eager ? 'sync' : 'async'}
       onError={() => setIdx((i) => i + 1)}
     />
   )
 }
 
-function CardFront({ card }: { card: DeptCard }) {
+function CardFront({ card, eager = false }: { card: DeptCard; eager?: boolean }) {
   const color = REGION_COLOR[card.region] ?? '#1f6f8b'
   const ink = inkOn(color)
   const chefClass = card.chefLieu.length > 16 ? 'is-long' : ''
@@ -103,7 +111,7 @@ function CardFront({ card }: { card: DeptCard }) {
         </span>
       </span>
       <span className="emblem has-pictos">
-        <BlasonImg code={card.code} name={card.name} />
+        <BlasonImg code={card.code} name={card.name} eager={eager} />
       </span>
       {pictos.length > 0 ? (
         <span className="front-pictos" aria-label="Spécialités">
@@ -180,7 +188,7 @@ function PrintDeck({ cards }: { cards: DeptCard[] }) {
                 <div className="print-card" key={`f-${pageIndex}-${i}`}>
                   {card ? (
                     <div className="face face-front static">
-                      <CardFront card={card} />
+                      <CardFront card={card} eager />
                     </div>
                   ) : null}
                 </div>
