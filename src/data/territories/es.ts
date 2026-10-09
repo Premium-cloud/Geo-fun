@@ -16,13 +16,7 @@ export const ES_PACK: TerritoryPack = {
   accent: '#aa151b',
   emblemKind: 'flag',
   subLabel: 'Capital',
-  backIds: [
-    'olive', 'grape', 'wine', 'castle', 'cathedral', 'beach', 'fish', 'sea',
-    'pepper', 'garlic', 'horse', 'rose', 'pottery', 'palm', 'melon', 'spa',
-    'sheep', 'goat', 'honey', 'wheat', 'pig', 'cheese', 'barrel', 'ship',
-    'flower', 'strawberry', 'cherry', 'apple', 'river', 'mountain', 'ski', 'gold',
-    'silk', 'lace', 'ribbon', 'sword', 'lion', 'duck', 'cow', 'factory',
-  ],
+  backIds: ['olive', 'grape', 'wine', 'castle', 'cathedral', 'beach', 'fish', 'sea', 'pepper', 'garlic', 'horse', 'rose', 'pottery', 'palm', 'melon', 'spa', 'sheep', 'goat', 'honey', 'wheat', 'pig', 'cheese', 'barrel', 'ship', 'flower', 'scallop', 'cherry', 'apple', 'river', 'mountain', 'ski', 'gold', 'bull', 'sword', 'lion', 'banana', 'volcano', 'briefcase', 'factory', 'coal'],
   units: [
     { code: 'AN', name: 'Andalucía', capital: 'Sevilla', pictos: [
       { icon: 'olive', label: 'Huile' }, { icon: 'grape', label: 'Jerez' }, { icon: 'castle', label: 'Alcázar' },
@@ -64,7 +58,7 @@ export const ES_PACK: TerritoryPack = {
       { icon: 'briefcase', label: 'Capitale' }, { icon: 'castle', label: 'Royal' }, { icon: 'rose', label: 'Prado' },
     ]},
     { code: 'NC', name: 'Navarra', capital: 'Pamplona', pictos: [
-      { icon: 'wine', label: 'Navarra' }, { icon: 'cow', label: 'Encierro' }, { icon: 'forest', label: 'Pyrénées' },
+      { icon: 'wine', label: 'Navarra' }, { icon: 'bull', label: 'Encierro' }, { icon: 'forest', label: 'Pyrénées' },
     ]},
     { code: 'PV', name: 'País Vasco', capital: 'Vitoria', pictos: [
       { icon: 'fish', label: 'Pintxos' }, { icon: 'factory', label: 'Industrie' }, { icon: 'sea', label: 'Golfe' },

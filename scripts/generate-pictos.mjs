@@ -118,6 +118,13 @@ const GI_MAP = {
   sugar: 'sugar-cane',
   rum: 'drink-me',
   rocket: 'rocket',
+  // Icônes dédiées (plus d’approximations oak/factory/cow)
+  bear: 'bear-face',
+  bull: 'charging-bull',
+  maple: 'maple-leaf',
+  coffee: 'coffee-beans',
+  oil: 'oil-drum',
+  deer: 'deer',
 }
 
 const CUSTOM = {

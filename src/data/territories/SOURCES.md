@@ -30,12 +30,24 @@ Curation manuelle croisée (pas d’API légale unique) :
 
 Script de corrections : `scripts/apply-picto-audit.mjs`
 
+## Pictos dédiés (Game Icons)
+
+| PictoId | Game Icon | Usages |
+|---------|-----------|--------|
+| `bear` | `bear-face` | Berlin, Bern, Alaska, Californie, NT/NU… |
+| `bull` | `charging-bull` | Navarra (Encierro) |
+| `maple` | `maple-leaf` | Québec, Ontario, Vermont, New Hampshire… |
+| `coffee` | `coffee-beans` | Minas Gerais, Espírito Santo, São Paulo… |
+| `oil` | `oil-drum` | Texas, Alberta, Oklahoma, Sergipe… |
+| `deer` | `deer` | Nara (cerfs) |
+
+Génération : `node scripts/generate-pictos.mjs`
+
 ## Limites honnêtes
 
-- Pas de pictogramme « ours / taureau / érable / café / pétrole » dédié → approximations iconographiques (`oak`≈érable, `factory`≈pétrole, `cow`≈encierro).
 - Labels courts pour la carte (pas le texte légal AOP/DO complet).
-- Verso = pool thématique pack (40 slots France), pas une liste officielle.
+- Verso = pool thématique pack (40 slots France), pas une liste officielle — **40 pictos factuels et représentatifs** du pays, uniques, positions = `BACK_SCATTER_SLOTS`.
 
 ## Verso
 
-Pool de 40 pictos **thématiques pack**, positions = `BACK_SCATTER_SLOTS` (France).
+Pool de 40 pictos **factuels / représentatifs** par pack, positions = `BACK_SCATTER_SLOTS` (France).

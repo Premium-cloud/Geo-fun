@@ -16,7 +16,7 @@ export const JP_PACK: TerritoryPack = {
   accent: '#bc002d',
   emblemKind: 'flag',
   subLabel: 'Chef-lieu',
-  backIds: ['flower', 'fleur', 'fish', 'volcano', 'mountain', 'sea', 'ship', 'castle', 'silk', 'crystal', 'airplane', 'pearl', 'plum', 'ribbon', 'rose', 'spa', 'pottery', 'ceramic', 'cherry', 'apple', 'honey', 'forest', 'river', 'oak', 'duck', 'goat', 'sheep', 'horse', 'sword', 'gold', 'metal', 'factory', 'clock', 'watch', 'beach', 'palm', 'grape', 'wine', 'mushroom', 'lace'],
+  backIds: ['flower', 'fleur', 'fish', 'volcano', 'mountain', 'sea', 'ship', 'castle', 'silk', 'crystal', 'airplane', 'pearl', 'plum', 'ribbon', 'rose', 'spa', 'pottery', 'ceramic', 'cherry', 'apple', 'honey', 'forest', 'river', 'deer', 'duck', 'sword', 'gold', 'metal', 'factory', 'clock', 'watch', 'beach', 'palm', 'grape', 'wine', 'mushroom', 'wheat', 'cow', 'ski', 'horse'],
   units: [
     { code: '01', name: 'Hokkaidō', capital: 'Sapporo', pictos: [{ icon: 'ski', label: 'Hiver' }, { icon: 'fish', label: 'Crabe' }, { icon: 'forest', label: 'Nature' }] },
     { code: '02', name: 'Aomori', capital: 'Aomori', pictos: [{ icon: 'apple', label: 'Pomme' }, { icon: 'fish', label: 'Pêche' }, { icon: 'forest', label: 'Forêt' }] },
@@ -46,7 +46,7 @@ export const JP_PACK: TerritoryPack = {
     { code: '26', name: 'Kyōto', capital: 'Kyōto', pictos: [{ icon: 'cathedral', label: 'Temples' }, { icon: 'forest', label: 'Thé' }, { icon: 'silk', label: 'Kimono' }] },
     { code: '27', name: 'Ōsaka', capital: 'Ōsaka', pictos: [{ icon: 'briefcase', label: 'Commerce' }, { icon: 'castle', label: 'Château' }, { icon: 'pepper', label: 'Cuisine' }] },
     { code: '28', name: 'Hyōgo', capital: 'Kōbe', pictos: [{ icon: 'cow', label: 'Bœuf Kōbe' }, { icon: 'ship', label: 'Port' }, { icon: 'spa', label: 'Arima' }] },
-    { code: '29', name: 'Nara', capital: 'Nara', pictos: [{ icon: 'forest', label: 'Cerfs' }, { icon: 'cathedral', label: 'Temples' }, { icon: 'castle', label: 'Histoire' }] },
+    { code: '29', name: 'Nara', capital: 'Nara', pictos: [{ icon: 'deer', label: 'Cerfs' }, { icon: 'cathedral', label: 'Temples' }, { icon: 'castle', label: 'Histoire' }] },
     { code: '30', name: 'Wakayama', capital: 'Wakayama', pictos: [{ icon: 'melon', label: 'Mikan' }, { icon: 'cathedral', label: 'Kōya' }, { icon: 'spa', label: 'Onsen' }] },
     { code: '31', name: 'Tottori', capital: 'Tottori', pictos: [{ icon: 'beach', label: 'Dunes' }, { icon: 'apple', label: 'Poire' }, { icon: 'fish', label: 'Crabe' }] },
     { code: '32', name: 'Shimane', capital: 'Matsue', pictos: [{ icon: 'cathedral', label: 'Izumo' }, { icon: 'sea', label: 'Mer' }, { icon: 'metal', label: 'Iwami' }] },

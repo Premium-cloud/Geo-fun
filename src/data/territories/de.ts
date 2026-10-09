@@ -16,11 +16,11 @@ export const DE_PACK: TerritoryPack = {
   accent: '#111111',
   emblemKind: 'blason',
   subLabel: 'Capital',
-  backIds: ['pretzel', 'beer', 'castle', 'oak', 'mountain', 'ski', 'forest', 'factory', 'clock', 'horse', 'wheat', 'lion', 'metal', 'mushroom', 'river', 'cow', 'pig', 'cheese', 'apple', 'cherry', 'honey', 'wine', 'grape', 'barrel', 'cathedral', 'duck', 'fish', 'sheep', 'goat', 'flower', 'rose', 'spa', 'knife', 'butter', 'salt', 'coal', 'gold', 'briefcase', 'race', 'ship'],
+  backIds: ['pretzel', 'beer', 'castle', 'oak', 'mountain', 'ski', 'forest', 'factory', 'clock', 'horse', 'wheat', 'bear', 'metal', 'mushroom', 'river', 'cow', 'pig', 'cheese', 'apple', 'cherry', 'honey', 'wine', 'grape', 'barrel', 'cathedral', 'duck', 'fish', 'sheep', 'goat', 'flower', 'rose', 'spa', 'knife', 'butter', 'salt', 'coal', 'gold', 'briefcase', 'race', 'ship'],
   units: [
     { code: 'BW', name: 'Baden-Württemberg', capital: 'Stuttgart', pictos: [{ icon: 'factory', label: 'Auto' }, { icon: 'wine', label: 'Baden' }, { icon: 'forest', label: 'Forêt-Noire' }] },
     { code: 'BY', name: 'Bayern', capital: 'München', pictos: [{ icon: 'pretzel', label: 'Brezel' }, { icon: 'beer', label: 'Bier' }, { icon: 'ski', label: 'Alpen' }] },
-    { code: 'BE', name: 'Berlin', capital: 'Berlin', pictos: [{ icon: 'briefcase', label: 'Capitale' }, { icon: 'film', label: 'Culture' }, { icon: 'castle', label: 'Porte' }] },
+    { code: 'BE', name: 'Berlin', capital: 'Berlin', pictos: [{ icon: 'bear', label: 'Ours' }, { icon: 'briefcase', label: 'Capitale' }, { icon: 'film', label: 'Culture' }] },
     { code: 'BB', name: 'Brandenburg', capital: 'Potsdam', pictos: [{ icon: 'castle', label: 'Châteaux' }, { icon: 'forest', label: 'Forêt' }, { icon: 'river', label: 'Havel' }] },
     { code: 'HB', name: 'Bremen', capital: 'Bremen', pictos: [{ icon: 'ship', label: 'Port' }, { icon: 'briefcase', label: 'Hanse' }, { icon: 'beer', label: 'Bière' }] },
     { code: 'HH', name: 'Hamburg', capital: 'Hamburg', pictos: [{ icon: 'ship', label: 'Port' }, { icon: 'fish', label: 'Elbe' }, { icon: 'briefcase', label: 'Commerce' }] },

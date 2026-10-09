@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync } from 'fs'
 
 const VALID = new Set(
-  `wheat,wine,cheese,croissant,fleur,baguette,palm,lavender,lighthouse,castle,olive,fish,cathedral,oyster,ship,grape,barrel,cow,coq,duck,scallop,honey,mustard,knife,apple,sea,champagne,cider,butter,ski,strawberry,chicken,forest,salt,cherry,pearl,volcano,beach,flower,sheep,goat,soap,oak,watch,airplane,ribbon,coal,cookie,crystal,fries,beer,horse,pepper,pig,pretzel,stork,race,garlic,lion,atom,briefcase,film,rose,gold,penguin,metal,factory,vanilla,sword,walnut,mushroom,plum,pottery,silk,beet,spa,mountain,chestnut,river,textile,calisson,truffle,clock,nougat,plane,lentil,lace,prune,ceramic,melon,banana,sugar,rum,rocket,eiffel,beret,crepe`.split(','),
+  `wheat,wine,cheese,croissant,fleur,baguette,palm,lavender,lighthouse,castle,olive,fish,cathedral,oyster,ship,grape,barrel,cow,coq,duck,scallop,honey,mustard,knife,apple,sea,champagne,cider,butter,ski,strawberry,chicken,forest,salt,cherry,pearl,volcano,beach,flower,sheep,goat,soap,oak,watch,airplane,ribbon,coal,cookie,crystal,fries,beer,horse,pepper,pig,pretzel,stork,race,garlic,lion,atom,briefcase,film,rose,gold,penguin,metal,factory,vanilla,sword,walnut,mushroom,plum,pottery,silk,beet,spa,mountain,chestnut,river,textile,calisson,truffle,clock,nougat,plane,lentil,lace,prune,ceramic,melon,banana,sugar,rum,rocket,eiffel,beret,crepe,bear,bull,maple,coffee,oil,deer`.split(','),
 )
 
 function fixFile(path, replacements) {

@@ -16,13 +16,7 @@ export const CH_PACK: TerritoryPack = {
   accent: '#c8102e',
   emblemKind: 'blason',
   subLabel: 'Chef-lieu',
-  backIds: [
-    'cheese', 'cow', 'ski', 'mountain', 'watch', 'clock', 'grape', 'wine',
-    'honey', 'forest', 'oak', 'sheep', 'goat', 'river', 'crystal', 'castle',
-    'apple', 'cherry', 'wheat', 'butter', 'mushroom', 'duck', 'fish', 'ship',
-    'factory', 'metal', 'gold', 'ribbon', 'flower', 'rose', 'spa', 'cathedral',
-    'pottery', 'silk', 'horse', 'beer', 'barrel', 'knife', 'salt', 'plum',
-  ],
+  backIds: ['cheese', 'cow', 'ski', 'mountain', 'watch', 'clock', 'grape', 'wine', 'honey', 'forest', 'oak', 'sheep', 'goat', 'river', 'crystal', 'castle', 'apple', 'cherry', 'wheat', 'butter', 'mushroom', 'duck', 'fish', 'ship', 'factory', 'metal', 'gold', 'ribbon', 'flower', 'rose', 'spa', 'cathedral', 'pottery', 'silk', 'horse', 'beer', 'barrel', 'knife', 'salt', 'bear'],
   units: [
     { code: 'AG', name: 'Aargau', capital: 'Aarau', pictos: [
       { icon: 'river', label: 'Aar' }, { icon: 'castle', label: 'Habsbourg' }, { icon: 'factory', label: 'Industrie' },
@@ -34,7 +28,7 @@ export const CH_PACK: TerritoryPack = {
       { icon: 'textile', label: 'Broderie' }, { icon: 'cheese', label: 'Appenzeller' }, { icon: 'cow', label: 'Alpage' },
     ]},
     { code: 'BE', name: 'Bern', capital: 'Bern', pictos: [
-      { icon: 'cheese', label: 'Emmental' }, { icon: 'ski', label: 'Oberland' }, { icon: 'mountain', label: 'Alpes' },
+      { icon: 'cheese', label: 'Emmental' }, { icon: 'bear', label: 'Ours' }, { icon: 'ski', label: 'Oberland' },
     ]},
     { code: 'BL', name: 'Basel-Landschaft', capital: 'Liestal', pictos: [
       { icon: 'factory', label: 'Chimie' }, { icon: 'grape', label: 'Vignoble' }, { icon: 'river', label: 'Rhin' },
