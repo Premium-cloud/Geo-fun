@@ -618,9 +618,8 @@ export function GameView({
   onOpenHistory?: () => void
 }) {
   const isPlay = variant === 'jeu'
-  /** null = pas encore choisi → on n’affiche pas Format / Réponse / Difficulté */
-  const [category, setCategory] = useState<Category | null>(null)
-  const [mode, setMode] = useState<Mode>('chiffre')
+  const [category, setCategory] = useState<Category>('pays')
+  const [mode, setMode] = useState<Mode>('flagToName')
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
   const [sessionFormat, setSessionFormat] = useState<SessionFormatId>('libre')
@@ -648,12 +647,12 @@ export function GameView({
   const missTimer = useRef(0)
   const sessionStartRef = useRef<number | null>(null)
 
-  const setupReady = category != null
+  const setupReady = true
   const isMixte = category === 'mixte'
   const isRapidite = sessionFormat === 'rapidite'
   const isBounded = sessionFormat === 'session10' || sessionFormat === 'rapidite'
-  const availableModes = !category || isMixte ? [] : modesFor(category)
-  const isMapMode = Boolean(category && !isMixte && mode === 'carte')
+  const availableModes = isMixte ? [] : modesFor(category)
+  const isMapMode = Boolean(!isMixte && mode === 'carte')
   const effectiveAnswerMode: AnswerMode = isMapMode
     ? 'map'
     : answerMode === 'map'
@@ -664,7 +663,7 @@ export function GameView({
   const usePerQuestionTimer = isPlay && !isRapidite
   const statsMode = isMixte ? 'mixte' : mode
   const key = statsKey(
-    isMixte ? 'mixte' : (category ?? 'departements'),
+    isMixte ? 'mixte' : category,
     statsMode,
     difficulty,
     effectiveAnswerMode,
@@ -775,8 +774,9 @@ export function GameView({
     if (variant === 'entrainement' && sessionFormat === 'rapidite') {
       setSessionFormat('libre')
     }
-    // Nouveau mode → on recommence par le choix de catégorie
-    setCategory(null)
+    // Nouveau mode → repart sur Pays par défaut
+    setCategory('pays')
+    setMode('flagToName')
     resetRun({ start: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
@@ -1033,7 +1033,7 @@ export function GameView({
   }
 
   const categoryBar = (
-    <div className="game-catbar" role="group" aria-label="Catégorie">
+    <div className="game-catbar is-emphasis" role="group" aria-label="Catégorie">
       <span className="game-catbar-label">Catégorie</span>
       <div className="game-catbar-tabs">
         {categoryOptions.map((c) => (
@@ -1049,14 +1049,6 @@ export function GameView({
       </div>
     </div>
   )
-
-  if (!setupReady || !category) {
-    return (
-      <div className="game-view">
-        {categoryBar}
-      </div>
-    )
-  }
 
   if (!round) {
     return (

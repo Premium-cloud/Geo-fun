@@ -83,6 +83,95 @@
   color: var(--header-ink);
 }
 
+.brand-mode-sub.is-lexique-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.btn-print-inline {
+  margin-top: 0.2rem;
+  border: 0;
+  background: transparent;
+  color: var(--header-muted);
+  padding: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.btn-print-inline:hover {
+  color: var(--accent);
+}
+
+.btn-lexique {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: var(--header-muted);
+  border-radius: 0.45rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+}
+
+.btn-lexique.is-active,
+.btn-lexique:hover {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.lexique-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 4rem);
+  background: var(--paper);
+}
+
+.lexique-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: #e4e7ec;
+  border-bottom: 1px solid var(--line);
+}
+
+.lexique-switch-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.95rem 1.35rem;
+  text-align: left;
+  font-family: var(--font-display);
+}
+
+.lexique-switch-tab strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: inherit;
+}
+
+.lexique-switch-tab span {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.lexique-switch-tab.is-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.lexique-switch-tab.is-active strong,
+.lexique-switch-tab.is-active span {
+  color: #fff;
+}
+
 .brand-link {
   display: inline-flex;
   align-items: center;

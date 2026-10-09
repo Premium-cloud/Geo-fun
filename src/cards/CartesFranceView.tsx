@@ -244,7 +244,7 @@ export function CartesFranceView() {
 
   return (
     <div className="cartes-view cartes-france">
-      <div className="toolbar no-print">
+      <div className="lexique-toolbar no-print">
         <label className="search">
           <span className="sr-only">Rechercher</span>
           <input
@@ -266,54 +266,58 @@ export function CartesFranceView() {
             </button>
           ))}
         </div>
-        <div className="chips chips-regions" role="tablist" aria-label="Régions">
-          <button
-            type="button"
-            className={`chip ${region === 'Tous' ? 'is-active' : ''}`}
-            onClick={() => setRegion('Tous')}
-          >
-            Toutes <em>{DEPT_CARDS.length}</em>
-          </button>
-          {REGION_ORDER.filter((r) => (regionCounts[r] ?? 0) > 0).map((r) => {
-            const color = REGION_COLOR[r]
-            return (
-              <button
-                key={r}
-                type="button"
-                className={`chip ${region === r ? 'is-active' : ''}`}
-                style={
-                  region === r && color
-                    ? { background: color, color: inkOn(color) }
-                    : undefined
-                }
-                onClick={() => setRegion(r)}
-              >
-                {r} <em>{regionCounts[r]}</em>
-              </button>
-            )
-          })}
-        </div>
-        <p className="count">
-          {cards.length} carte{cards.length > 1 ? 's' : ''}
-        </p>
       </div>
 
-      {cards.length === 0 ? (
-        <p className="empty no-print">Aucun département ne correspond à votre recherche.</p>
-      ) : (
-        <div className="grid no-print">
-          {cards.map((card) => (
-            <PlayingCard
-              key={card.code}
-              card={card}
-              flipped={!!flipped[card.code]}
-              onFlip={() =>
-                setFlipped((prev) => ({ ...prev, [card.code]: !prev[card.code] }))
-              }
-            />
+      <div className="lexique-body no-print">
+        <aside className="lexique-side" aria-label="Régions">
+          <button
+            type="button"
+            className={`lexique-side-item is-head ${region === 'Tous' ? 'is-active' : ''}`}
+            onClick={() => setRegion('Tous')}
+          >
+            <span>Toutes</span>
+            <em>{DEPT_CARDS.length}</em>
+          </button>
+          {REGION_ORDER.filter((r) => (regionCounts[r] ?? 0) > 0).map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={`lexique-side-item ${region === r ? 'is-active' : ''}`}
+              onClick={() => setRegion(r)}
+            >
+              <span>{r}</span>
+              <em>{regionCounts[r]}</em>
+            </button>
           ))}
+        </aside>
+
+        <div className="lexique-main">
+          <div className="lexique-main-bar">
+            <p className="count">
+              {cards.length} carte{cards.length > 1 ? 's' : ''}
+            </p>
+          </div>
+          {cards.length === 0 ? (
+            <p className="empty">Aucun département ne correspond à votre recherche.</p>
+          ) : (
+            <div className="grid">
+              {cards.map((card) => (
+                <PlayingCard
+                  key={card.code}
+                  card={card}
+                  flipped={!!flipped[card.code]}
+                  onFlip={() =>
+                    setFlipped((prev) => ({
+                      ...prev,
+                      [card.code]: !prev[card.code],
+                    }))
+                  }
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <PrintDeck cards={DEPT_CARDS} />
     </div>

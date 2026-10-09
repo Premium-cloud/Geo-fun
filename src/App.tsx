@@ -15,14 +15,6 @@ import './App.css'
 
 type Tab = 'france' | 'monde' | 'entrainement' | 'jeu' | 'duel'
 
-const TAB_LABEL: Record<Tab, string> = {
-  france: 'Départements',
-  monde: 'Pays',
-  entrainement: 'Entraînement',
-  jeu: 'Jeu',
-  duel: 'Duel',
-}
-
 function isLexique(tab: Tab): boolean {
   return tab === 'france' || tab === 'monde'
 }
@@ -41,13 +33,24 @@ function BrandMark({ className }: { className?: string }) {
   )
 }
 
+function BookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
+      <path
+        fill="currentColor"
+        d="M6 4.75A1.75 1.75 0 0 1 7.75 3h9.5c.69 0 1.25.56 1.25 1.25V20a.75.75 0 0 1-1.1.66L12 17.4l-5.4 3.26A.75.75 0 0 1 5.5 20V5.75C5.5 5.2 5.7 4.75 6 4.75Zm1.5.5v12.7l4.15-2.5a.75.75 0 0 1 .7 0l4.15 2.5V5.25h-9z"
+      />
+    </svg>
+  )
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>(() => {
     if (typeof window !== 'undefined') {
       const duel = new URL(window.location.href).searchParams.get('duel')
       if (duel) return 'duel'
     }
-    return 'france'
+    return 'entrainement'
   })
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -70,65 +73,50 @@ export default function App() {
     setOptions(next)
   }
 
+  const modeLabel = lexique
+    ? 'LEXIQUE — CARTES À JOUER'
+    : tab === 'jeu'
+      ? 'Jeu'
+      : tab === 'duel'
+        ? 'Duel'
+        : 'Entraînement'
+
   return (
-    <div className="app">
-      <header className={`topbar no-print ${lexique ? 'is-lexique' : 'is-quiz'}`}>
-        {lexique ? (
-          <div className="brand-stack">
-            <div className="brand brand-static">
-              <BrandMark />
-              <h1>Cartes à jouer</h1>
-            </div>
-            <button
-              type="button"
-              className="btn-pdf btn-pdf-primary btn-print-under"
-              onClick={() => window.print()}
-            >
-              Imprimer
-            </button>
+    <div className={`app ${lexique ? 'is-lexique-app' : ''}`}>
+      <header className="topbar no-print is-quiz">
+        <div className="brand-quiz">
+          <BrandMark className="brand-mark-lg" />
+          <div className="brand-quiz-copy">
+            <p className="brand-mode">Mode actuel</p>
+            <p className={`brand-mode-sub ${lexique ? 'is-lexique-title' : ''}`}>
+              {modeLabel}
+            </p>
+            {lexique ? (
+              <button
+                type="button"
+                className="btn-print-inline"
+                onClick={() => window.print()}
+              >
+                Imprimer
+              </button>
+            ) : null}
           </div>
-        ) : (
-          <div className="brand-quiz">
-            <BrandMark className="brand-mark-lg" />
-            <div className="brand-quiz-copy">
-              <p className="brand-mode">Mode actuel</p>
-              <p className="brand-mode-sub">
-                {tab === 'jeu' ? 'Jeu' : tab === 'duel' ? 'Duel' : 'Entraînement'}
-              </p>
-            </div>
-          </div>
-        )}
+        </div>
 
         <nav className="tabs" aria-label="Sections">
-          {lexique ? (
-            <div className="tabs-group" role="presentation">
-              {(['france', 'monde'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`tab ${tab === t ? 'is-active' : ''}`}
-                  onClick={() => setTab(t)}
-                  aria-current={tab === t ? 'page' : undefined}
-                >
-                  {TAB_LABEL[t]}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="tabs-group" role="presentation">
-              {(['entrainement', 'jeu', 'duel'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`tab ${tab === t ? 'is-active' : ''} ${t === 'jeu' || t === 'duel' ? 'tab-play' : ''}`}
-                  onClick={() => setTab(t)}
-                  aria-current={tab === t ? 'page' : undefined}
-                >
-                  {TAB_LABEL[t]}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="tabs-group" role="presentation">
+            {(['entrainement', 'jeu', 'duel'] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`tab ${!lexique && tab === t ? 'is-active' : ''}`}
+                onClick={() => setTab(t)}
+                aria-current={!lexique && tab === t ? 'page' : undefined}
+              >
+                {t === 'entrainement' ? 'Entraînement' : t === 'jeu' ? 'Jeu' : 'Duel'}
+              </button>
+            ))}
+          </div>
         </nav>
 
         <div className="topbar-right">
@@ -150,31 +138,46 @@ export default function App() {
           >
             ⚙
           </button>
-          {lexique ? (
-            <button
-              type="button"
-              className="brand-link brand-link-jeux"
-              onClick={() => setTab('entrainement')}
-            >
-              <BrandMark className="brand-mark-sm" />
-              <span>Jeux</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="brand-link"
-              onClick={() => setTab('france')}
-            >
-              <BrandMark className="brand-mark-sm" />
-              <span>Lexique</span>
-            </button>
-          )}
+          <button
+            type="button"
+            className={`btn-lexique ${lexique ? 'is-active' : ''}`}
+            onClick={() => setTab(lexique ? 'entrainement' : 'france')}
+            aria-label={lexique ? 'Retour aux jeux' : 'Lexique'}
+            title={lexique ? 'Jeux' : 'Lexique'}
+          >
+            <BookIcon />
+          </button>
         </div>
       </header>
 
       <main>
-        {tab === 'france' ? <CartesFranceView /> : null}
-        {tab === 'monde' ? <CartesMondeView /> : null}
+        {lexique ? (
+          <div className="lexique-shell">
+            <div className="lexique-switch" role="tablist" aria-label="Lexique">
+              <button
+                type="button"
+                role="tab"
+                className={`lexique-switch-tab ${tab === 'france' ? 'is-active' : ''}`}
+                aria-selected={tab === 'france'}
+                onClick={() => setTab('france')}
+              >
+                <strong>France</strong>
+                <span>Départements</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                className={`lexique-switch-tab ${tab === 'monde' ? 'is-active' : ''}`}
+                aria-selected={tab === 'monde'}
+                onClick={() => setTab('monde')}
+              >
+                <strong>Pays</strong>
+                <span>Drapeaux</span>
+              </button>
+            </div>
+            {tab === 'france' ? <CartesFranceView /> : <CartesMondeView />}
+          </div>
+        ) : null}
         {tab === 'entrainement' || tab === 'jeu' ? (
           <GameView
             variant={tab as PlayVariant}

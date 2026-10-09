@@ -229,8 +229,8 @@ export function CartesMondeView() {
   }, [])
 
   return (
-    <div className="cartes-view">
-      <div className="toolbar no-print">
+    <div className="cartes-view cartes-monde">
+      <div className="lexique-toolbar no-print">
         <label className="search">
           <span className="sr-only">Rechercher</span>
           <input
@@ -240,51 +240,58 @@ export function CartesMondeView() {
             autoComplete="off"
           />
         </label>
-        <div className="chips" role="tablist" aria-label="Continents">
+      </div>
+
+      <div className="lexique-body no-print">
+        <aside className="lexique-side" aria-label="Continents">
           <button
             type="button"
-            className={`chip ${continent === 'Tous' ? 'is-active' : ''}`}
+            className={`lexique-side-item is-head ${continent === 'Tous' ? 'is-active' : ''}`}
             onClick={() => setContinent('Tous')}
           >
-            Tous <em>{COUNTRIES.length}</em>
+            <span>Tous</span>
+            <em>{COUNTRIES.length}</em>
           </button>
           {CONTINENT_ORDER.map((c) => (
             <button
               key={c}
               type="button"
-              className={`chip ${continent === c ? 'is-active' : ''}`}
-              style={
-                continent === c
-                  ? { background: CONTINENT_COLOR[c], color: inkOn(CONTINENT_COLOR[c]) }
-                  : undefined
-              }
+              className={`lexique-side-item ${continent === c ? 'is-active' : ''}`}
               onClick={() => setContinent(c)}
             >
-              {c} <em>{counts[c]}</em>
+              <span>{c}</span>
+              <em>{counts[c]}</em>
             </button>
           ))}
-        </div>
-        <p className="count">
-          {cards.length} carte{cards.length > 1 ? 's' : ''}
-        </p>
-      </div>
+        </aside>
 
-      {cards.length === 0 ? (
-        <p className="empty no-print">Aucun pays ne correspond à votre recherche.</p>
-      ) : (
-        <div className="grid no-print">
-          {cards.map((card) => (
-            <PlayingCard
-              key={card.code}
-              card={card}
-              flipped={!!flipped[card.code]}
-              onFlip={() =>
-                setFlipped((prev) => ({ ...prev, [card.code]: !prev[card.code] }))
-              }
-            />
-          ))}
+        <div className="lexique-main">
+          <div className="lexique-main-bar">
+            <p className="count">
+              {cards.length} carte{cards.length > 1 ? 's' : ''}
+            </p>
+          </div>
+          {cards.length === 0 ? (
+            <p className="empty">Aucun pays ne correspond à votre recherche.</p>
+          ) : (
+            <div className="grid">
+              {cards.map((card) => (
+                <PlayingCard
+                  key={card.code}
+                  card={card}
+                  flipped={!!flipped[card.code]}
+                  onFlip={() =>
+                    setFlipped((prev) => ({
+                      ...prev,
+                      [card.code]: !prev[card.code],
+                    }))
+                  }
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <PrintDeck cards={COUNTRIES} />
     </div>
