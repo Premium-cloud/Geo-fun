@@ -132,87 +132,101 @@
   color: #1a1a1a;
 }
 
+/* Ruban / identité calqués sur .ribbon / .identity France */
 .mock-ribbon {
+  display: block;
   flex: 0 0 auto;
   text-align: center;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  padding: 0.32rem 0.35rem;
+  padding: 0.26rem 0.3rem;
+  line-height: 1.15;
   color: #fff;
 }
 
 .mock-identity {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.06rem;
   text-align: center;
-  padding: 0.4rem 0.45rem 0.12rem;
+  padding: 0.38rem 0.35rem 0.1rem;
+  min-width: 0;
   position: relative;
   z-index: 1;
 }
 
 .mock-code {
-  font-size: 1.55rem;
+  font-size: 1.4rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 .mock-name {
-  margin-top: 0.15rem;
-  font-size: 0.95rem;
-  font-weight: 800;
+  font-size: 0.8rem;
+  font-weight: 700;
   letter-spacing: -0.01em;
+  line-height: 1.12;
 }
 
 .mock-sub {
+  display: block;
   margin-top: 0.12rem;
-  font-size: 0.72rem;
-  color: #6a6358;
+  font-size: 0.64rem;
+  color: #3f3a33;
+  line-height: 1.15;
 }
 
 .mock-sub span {
+  display: block;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.58rem;
-  margin-right: 0.2rem;
-  color: #8a8378;
+  letter-spacing: 0.08em;
+  font-size: 0.52rem;
+  color: #7a7368;
 }
 
+/* Emblème calqué sur .emblem / .blason France — ne doit jamais chevaucher les pictos */
 .mock-emblem {
-  flex: 1;
-  display: grid;
-  place-items: center;
-  padding: 0.2rem 0.65rem 0.15rem;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.45rem 0.05rem;
   min-height: 0;
+  overflow: hidden;
   position: relative;
   z-index: 1;
 }
 
 .mock-emblem img {
-  max-width: 86%;
+  width: auto;
+  height: auto;
+  max-width: 70%;
   max-height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(28, 20, 12, 0.16));
+  filter: drop-shadow(0 1px 2px rgba(28, 20, 12, 0.18));
 }
 
 .mock-emblem.is-flag img {
-  width: 86%;
-  border-radius: 0.15rem;
+  max-width: 86%;
+  width: auto;
+  border-radius: 0.1rem;
 }
 
 .mock-emblem.is-blason img {
-  max-width: 72%;
+  max-width: 70%;
+  max-height: 100%;
 }
 
-/* Recto : réutilise .front-pictos / .front-picto (CartesFranceView.css) */
-
+/* Recto : mêmes classes / mêmes rem que France (.front-pictos) */
 .mock-face-front .front-pictos {
   color: #1c140c;
-}
-
-.mock-emblem.has-pictos {
-  padding-bottom: 0.05rem;
+  flex: 0 0 auto;
 }
 
 /* Verso = blanc + scatter (esprit France), sans cadre */
