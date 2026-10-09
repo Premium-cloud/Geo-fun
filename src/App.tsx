@@ -106,10 +106,13 @@ export default function App() {
           </div>
         ) : (
           <div className="brand-quiz">
-            <p className="brand-mode">Mode actuel</p>
-            <p className="brand-mode-sub">
-              {tab === 'jeu' ? 'Jeu' : tab === 'duel' ? 'Duel' : 'Entraînement'}
-            </p>
+            <span className="brand-quiz-mark" aria-hidden />
+            <div className="brand-quiz-copy">
+              <p className="brand-mode">Mode actuel</p>
+              <p className="brand-mode-sub">
+                {tab === 'jeu' ? 'Jeu' : tab === 'duel' ? 'Duel' : 'Entraînement'}
+              </p>
+            </div>
           </div>
         )}
 

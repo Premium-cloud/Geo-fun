@@ -80,7 +80,7 @@ const CATEGORY_LABEL: Record<Category, string> = {
   departements: 'Départements',
   pays: 'Pays',
   capitale: 'Capitales',
-  mixte: 'Mixte',
+  mixte: 'MIX',
 }
 
 const FORMAT_LABEL: Record<SessionFormatId, string> = {
@@ -452,7 +452,7 @@ function makeRound(
   return makeCapitaleRound(mode as CapitaleMode, difficulty, preferUnseen, answerMode)
 }
 
-/** Mixte = uniquement drapeau→pays, nom→capitale, chiffre→département. */
+/** MIX = uniquement drapeau→pays, nom→capitale, chiffre→département. */
 const MIXTE_POOL: { cat: Exclude<Category, 'mixte'>; mode: Mode }[] = [
   { cat: 'pays', mode: 'flagToName' },
   { cat: 'capitale', mode: 'nameToCapital' },
@@ -1032,22 +1032,20 @@ export function GameView({
     resolveAnswer(typed || '—', ok)
   }
 
-  const categoryToolbar = (
-    <div className="game-toolbar-primary">
-      <div className="game-field">
-        <span className="game-field-label">Catégorie</span>
-        <div className="game-group game-categories" role="group" aria-label="Catégorie">
-          {categoryOptions.map((c) => (
-            <button
-              key={c}
-              type="button"
-              className={`game-chip game-chip-cat ${category === c ? 'is-active' : ''}`}
-              onClick={() => selectCategory(c)}
-            >
-              {CATEGORY_LABEL[c]}
-            </button>
-          ))}
-        </div>
+  const categoryBar = (
+    <div className="game-catbar" role="group" aria-label="Catégorie">
+      <span className="game-catbar-label">Catégorie</span>
+      <div className="game-catbar-tabs">
+        {categoryOptions.map((c) => (
+          <button
+            key={c}
+            type="button"
+            className={`game-cat-tab ${category === c ? 'is-active' : ''}`}
+            onClick={() => selectCategory(c)}
+          >
+            {CATEGORY_LABEL[c]}
+          </button>
+        ))}
       </div>
     </div>
   )
@@ -1055,7 +1053,7 @@ export function GameView({
   if (!setupReady || !category) {
     return (
       <div className="game-view">
-        <div className="game-toolbar is-compact">{categoryToolbar}</div>
+        {categoryBar}
       </div>
     )
   }
@@ -1168,45 +1166,56 @@ export function GameView({
 
   return (
     <div className={`game-view ${roundIsMap ? 'is-map-mode' : ''}`}>
-      <div className={`game-toolbar ${roundIsMap ? 'is-compact' : ''}`}>
-        {categoryToolbar}
+      {categoryBar}
 
-        <div className="game-toolbar-secondary">
-          {!isMixte ? (
-            <div className="game-field">
-              <span className="game-field-label">Sous-mode</span>
-              <div className="game-group" role="group" aria-label="Sous-mode">
+      <div className={`game-config ${roundIsMap ? 'is-compact' : ''}`}>
+        <p className="game-config-kicker">01 — Configuration</p>
+        <h2 className="game-config-title">Préparez votre partie</h2>
+
+        <div className="game-config-grid">
+          <div className="game-field">
+            <span className="game-field-label">Sous-mode</span>
+            {!isMixte ? (
+              <div className="game-radio-list" role="group" aria-label="Sous-mode">
                 {availableModes.map((m) => (
                   <button
                     key={m.id}
                     type="button"
-                    className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
+                    className={`game-radio ${mode === m.id ? 'is-active' : ''}`}
                     onClick={() => selectMode(m.id)}
                   >
+                    <span className="game-radio-dot" aria-hidden />
                     {m.label}
                   </button>
                 ))}
               </div>
-            </div>
-          ) : (
-            <div className="game-field">
-              <span className="game-field-label">Sous-mode</span>
+            ) : (
               <p className="game-mixte-hint">(Drapeau·Nom de capitale·Chiffre)</p>
-            </div>
-          )}
-
-          <div className="game-field-sep" aria-hidden />
+            )}
+            {isMapMode || isMixte ? (
+              <button
+                type="button"
+                className={`game-radio game-radio-dom ${mapDomTom ? 'is-active' : ''}`}
+                onClick={toggleMapDomTom}
+                aria-pressed={mapDomTom}
+              >
+                <span className="game-radio-dot" aria-hidden />
+                DOM-TOM {mapDomTom ? 'actif' : 'inactif'}
+              </button>
+            ) : null}
+          </div>
 
           <div className="game-field">
             <span className="game-field-label">Format</span>
-            <div className="game-group" role="group" aria-label="Format de partie">
+            <div className="game-radio-list" role="group" aria-label="Format de partie">
               {formatOptions.map((f) => (
                 <button
                   key={f}
                   type="button"
-                  className={`game-chip ${sessionFormat === f ? 'is-active' : ''}`}
+                  className={`game-radio ${sessionFormat === f ? 'is-active' : ''}`}
                   onClick={() => selectFormat(f)}
                 >
+                  <span className="game-radio-dot" aria-hidden />
                   {FORMAT_LABEL[f]}
                 </button>
               ))}
@@ -1214,64 +1223,40 @@ export function GameView({
           </div>
 
           {!isMapMode ? (
-            <>
-              <div className="game-field-sep" aria-hidden />
-              <div className="game-field">
-                <span className="game-field-label">Type</span>
-                <div className="game-group" role="group" aria-label="Type de réponse">
-                  <button
-                    type="button"
-                    className={`game-chip ${effectiveAnswerMode === 'qcm' ? 'is-active' : ''}`}
-                    onClick={() => selectAnswerMode('qcm')}
-                  >
-                    QCM
-                  </button>
-                  <button
-                    type="button"
-                    className={`game-chip ${effectiveAnswerMode === 'saisie' ? 'is-active' : ''}`}
-                    onClick={() => selectAnswerMode('saisie')}
-                  >
-                    Réponse écrite
-                  </button>
-                </div>
+            <div className="game-field">
+              <span className="game-field-label">Type</span>
+              <div className="game-radio-list" role="group" aria-label="Type de réponse">
+                <button
+                  type="button"
+                  className={`game-radio ${effectiveAnswerMode === 'qcm' ? 'is-active' : ''}`}
+                  onClick={() => selectAnswerMode('qcm')}
+                >
+                  <span className="game-radio-dot" aria-hidden />
+                  QCM
+                </button>
+                <button
+                  type="button"
+                  className={`game-radio ${effectiveAnswerMode === 'saisie' ? 'is-active' : ''}`}
+                  onClick={() => selectAnswerMode('saisie')}
+                >
+                  <span className="game-radio-dot" aria-hidden />
+                  Réponse écrite
+                </button>
               </div>
-            </>
+            </div>
           ) : null}
-
-          {isMapMode || isMixte ? (
-            <>
-              <div className="game-field-sep" aria-hidden />
-              <div className="game-field">
-                <span className="game-field-label">Territoires</span>
-                <div className="game-group" role="group" aria-label="DOM-TOM">
-                  <button
-                    type="button"
-                    className={`game-chip game-chip-dom ${mapDomTom ? 'is-on' : 'is-off'}`}
-                    onClick={toggleMapDomTom}
-                    aria-pressed={mapDomTom}
-                  >
-                    DOM-TOM
-                    <span className="game-pastille" aria-hidden>
-                      {mapDomTom ? 'actif' : 'inactif'}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : null}
-
-          <div className="game-field-sep" aria-hidden />
 
           <div className="game-field game-field-diff">
             <span className="game-field-label">Difficulté</span>
-            <div className="game-group" role="group" aria-label="Difficulté">
+            <div className="game-radio-list" role="group" aria-label="Difficulté">
               {difficultyOptions.map((d) => (
                 <button
                   key={d.id}
                   type="button"
-                  className={`game-chip game-chip-diff ${difficulty === d.id ? 'is-active' : ''} is-${d.id}`}
+                  className={`game-radio ${difficulty === d.id ? 'is-active' : ''}`}
                   onClick={() => selectDifficulty(d.id)}
                 >
+                  <span className="game-radio-dot" aria-hidden />
                   {d.label}
                 </button>
               ))}
@@ -1302,7 +1287,7 @@ export function GameView({
               className="game-next game-lancer"
               onClick={() => resetRun({ start: true })}
             >
-              Lancer
+              Commencer la partie
             </button>
           </div>
         ) : (

@@ -31,7 +31,7 @@
 
 .hist-head h2 {
   margin: 0;
-  font-family: Fraunces, Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.35rem;
 }
 
@@ -141,7 +141,7 @@ html.is-night .hist-badge {
 }
 
 .hist-badge.is-format {
-  background: #1f6f8b;
+  background: var(--accent);
   color: #fff;
 }
 
@@ -160,7 +160,7 @@ html.is-night .hist-badge {
 }
 
 .hist-pct {
-  font-family: Fraunces, Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.35rem;
   color: var(--accent);
@@ -182,7 +182,7 @@ html.is-night .hist-bar {
 .hist-bar i {
   display: block;
   height: 100%;
-  background: #1f6f8b;
+  background: var(--accent);
   border-radius: inherit;
 }
 

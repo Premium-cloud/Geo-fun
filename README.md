@@ -5,7 +5,7 @@ Collection de cartes à collectionner et mode jeu :
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
 - **Entraînement** — quiz pour apprendre (validation manuelle)
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
-- **Mixte** (Jeu Difficile / Hardcore) — uniquement drapeau→pays, nom→capitale, chiffre→département
+- **MIX** (Jeu Difficile / Hardcore) — uniquement drapeau→pays, nom→capitale, chiffre→département
 - **Carte** — pointer le département ou le pays ; zoom / pinch ; timers allongés ; option DOM-TOM (silhouettes)
 - **Hardcore** — pièges QCM plus collés, saisie très stricte (Entraînement et Jeu)
 - **Récap** — fin de partie avec bonnes / mauvaises réponses
@@ -27,7 +27,7 @@ Onglet **Jeux → Duel** :
 
 - **Même écran** : Battle royale (premier faux = perdu), Chacun son tour (question différente par joueur), Split (même question — téléphone miroir moitié/moitié ; PC : J1 = 1–2–3–4, J2 = A–Z–E–R)
 - **En ligne** : salon + lien d’invitation (PeerJS) ; l’hôte synchronise timer, scores et question (1 pt par bonne réponse, timer → 5 s dès qu’un trouve)
-- Catégories : Départements (n°) · Pays (drapeau) · Capitales · Mixte — QCM ou saisie, pas de carte
+- Catégories : Départements (n°) · Pays (drapeau) · Capitales · MIX — QCM ou saisie, pas de carte
 
 ## Déploiement Vercel (prod stable)
 

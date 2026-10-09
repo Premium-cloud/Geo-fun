@@ -33,7 +33,7 @@ export const DUEL_CATEGORY_LABEL: Record<DuelCategory, string> = {
   departements: 'Départements',
   pays: 'Pays',
   capitale: 'Capitales',
-  mixte: 'Mixte',
+  mixte: 'MIX',
 }
 
 export const DEFAULT_DUEL_CONFIG: DuelConfig = {

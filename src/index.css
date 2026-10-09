@@ -1,12 +1,17 @@
 :root {
   color-scheme: light;
-  --ink: #1a1a1a;
-  --paper: #f7f4ef;
-  --paper-elev: #fffefb;
-  --muted: #5c574f;
-  --line: #d9d2c5;
-  --accent: #1f6f8b;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  --ink: #1a1d23;
+  --paper: #f0f2f5;
+  --paper-elev: #ffffff;
+  --muted: #8a9099;
+  --line: #e2e5ea;
+  --accent: #4a90e2;
+  --accent-hot: #e74c3c;
+  --header: #25282e;
+  --header-ink: #ffffff;
+  --header-muted: #9aa0a8;
+  --font-display: Inter, system-ui, sans-serif;
+  font-family: Inter, system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -14,19 +19,29 @@
 
 html.is-night {
   color-scheme: dark;
-  --ink: #f3efe8;
-  --paper: #1c1916;
-  --paper-elev: #26221e;
-  --muted: #b1a89c;
-  --line: #3d3730;
-  --accent: #5fa8c2;
+  --ink: #f0f2f5;
+  --paper: #1a1d23;
+  --paper-elev: #25282e;
+  --muted: #9aa0a8;
+  --line: #3a3f48;
+  --accent: #5aa0f0;
+  --accent-hot: #f06055;
+  --header: #14161a;
+  --header-ink: #ffffff;
+  --header-muted: #8a9099;
 }
 
 html.is-night body {
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #243038 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #2a2218 0%, transparent 50%),
-    linear-gradient(180deg, #181512 0%, var(--paper) 100%);
+  background: var(--paper);
+}
+
+html.is-night .game-catbar {
+  background: #1e2229;
+}
+
+html.is-night .game-radio-dot {
+  background: #2a2f38;
+  border-color: #5a616c;
 }
 
 /* Surfaces encore en #fff en dur → sinon texte clair invisible */
@@ -49,7 +64,6 @@ html.is-night .game-choice {
   border-color: var(--line);
 }
 
-html.is-night .tab.is-active,
 html.is-night .chip.is-active,
 html.is-night .game-chip.is-active,
 html.is-night .btn-pdf-primary {
@@ -58,20 +72,10 @@ html.is-night .btn-pdf-primary {
   color: #141210;
 }
 
-html.is-night .tab.tab-play.is-active,
-html.is-night .game-chip-diff.is-difficile.is-active {
-  background: #a85a6a;
-  color: #fff;
-}
-
-html.is-night .game-chip-diff.is-facile.is-active {
-  background: #3d8a66;
-  color: #fff;
-}
-
-html.is-night .game-chip-diff.is-hardcore.is-active {
-  background: #6b3040;
-  color: #fff;
+html.is-night .topbar.is-lexique .tab.is-active {
+  background: var(--accent);
+  border-color: transparent;
+  color: #141210;
 }
 
 html.is-night .brand h1,
@@ -227,10 +231,7 @@ body,
 
 body {
   color: var(--ink);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #e8f0f4 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #f3ebe0 0%, transparent 50%),
-    linear-gradient(180deg, #fbfaf7 0%, var(--paper) 100%);
+  background: var(--paper);
 }
 
 button,

@@ -20,7 +20,7 @@
 }
 
 .search input:focus {
-  border-color: #1f6f8b;
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.15);
 }
 
@@ -47,7 +47,7 @@
 }
 
 .chip.is-active {
-  background: #1f6f8b;
+  background: var(--accent);
   border-color: transparent;
   color: #fff;
 }
@@ -164,7 +164,7 @@
 }
 
 .code {
-  font-family: Fraunces, Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.4rem;
   line-height: 1;
@@ -172,7 +172,7 @@
 }
 
 .dept {
-  font-family: Fraunces, Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.8rem;
   line-height: 1.12;
@@ -283,7 +283,7 @@
   position: absolute;
   width: 120%;
   height: 120%;
-  color: #1f6f8b;
+  color: var(--accent);
   pointer-events: none;
   z-index: 0;
 }
@@ -305,7 +305,7 @@
   box-sizing: border-box;
   padding: 0 0.55rem;
   margin: 0;
-  font-family: Fraunces, Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 0.78rem;
   line-height: 1.12;

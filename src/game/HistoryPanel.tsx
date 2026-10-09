@@ -5,7 +5,7 @@ const LABELS: Record<string, string> = {
   departements: 'Départements',
   pays: 'Pays',
   capitale: 'Capitales',
-  mixte: 'Mixte',
+  mixte: 'MIX',
   chiffre: 'Par chiffre',
   chefLieu: 'Par chef-lieu',
   blason: 'Par blason',

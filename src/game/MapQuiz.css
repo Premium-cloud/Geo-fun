@@ -179,7 +179,7 @@ html.is-night .dom-shape-svg {
 }
 
 .dom-shape.is-reveal {
-  box-shadow: 0 0 0 2px #1f6f8b;
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .dom-shape-label {
