@@ -167,6 +167,25 @@ function PlayingCard({
   )
 }
 
+/** Aperçu recto + verso séparés (maquettes) — design FR inchangé. */
+export function FranceCardPairPreview({ code = '29' }: { code?: string }) {
+  const card = DEPT_CARDS.find((c) => c.code === code) ?? DEPT_CARDS[0]!
+  return (
+    <div className="cartes-france france-pair-preview">
+      <div className="card france-pair-static" aria-hidden>
+        <span className="face face-front static">
+          <CardFront card={card} />
+        </span>
+      </div>
+      <div className="card france-pair-static" aria-hidden>
+        <span className="face face-back static">
+          <CardBack />
+        </span>
+      </div>
+    </div>
+  )
+}
+
 function PrintDeck({ cards }: { cards: DeptCard[] }) {
   const pages: DeptCard[][] = []
   for (let i = 0; i < cards.length; i += 9) {
