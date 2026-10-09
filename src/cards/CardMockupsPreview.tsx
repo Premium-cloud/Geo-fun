@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { buildBackScatter, type BackScatterItem } from './backScatterSlots'
 import { FranceCardPairPreview } from './CartesFranceView'
 import { Picto } from './pictos'
@@ -11,15 +12,19 @@ import './CartesMondeView.css'
 import './CartesFranceView.css'
 import './CardMockupsPreview.css'
 
-/** Emblèmes disponibles en local (sinon fallback code). */
-const EMBLEM_SRC: Partial<Record<string, string>> = {
-  'ch:VD': '/mockups/emblems/vaud.png',
+/** Emblèmes pack/code (Wikimedia) + quelques legacy racine. */
+const EMBLEM_LEGACY: Partial<Record<string, string>> = {
   'us:CA': '/mockups/emblems/california.png',
-  'es:AN': '/mockups/emblems/andalucia.png',
   'de:BY': '/mockups/emblems/bayern.png',
   'jp:13': '/mockups/emblems/tokyo.png',
   'ca:QC': '/mockups/emblems/quebec.png',
   'br:SP': '/mockups/emblems/saopaulo.png',
+}
+
+function emblemCandidates(packId: string, code: string): string[] {
+  const base = `/mockups/emblems/${packId}/${code}`
+  const legacy = EMBLEM_LEGACY[`${packId}:${code}`]
+  return [`${base}.svg`, `${base}.png`, ...(legacy ? [legacy] : [])]
 }
 
 function MockBackPictos({ items }: { items: BackScatterItem[] }) {
@@ -44,6 +49,35 @@ function MockBackPictos({ items }: { items: BackScatterItem[] }) {
   )
 }
 
+function MockEmblem({
+  packId,
+  code,
+  kind,
+}: {
+  packId: string
+  code: string
+  kind: 'blason' | 'flag'
+}) {
+  const sources = emblemCandidates(packId, code)
+  const [idx, setIdx] = useState(0)
+  const src = sources[idx]
+  if (!src) {
+    return (
+      <span className="mock-emblem-fallback" aria-hidden>
+        {code}
+      </span>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      className={kind === 'flag' ? 'is-flag-img' : undefined}
+      onError={() => setIdx((i) => i + 1)}
+    />
+  )
+}
+
 function MockRecto({
   pack,
   unit,
@@ -51,8 +85,6 @@ function MockRecto({
   pack: TerritoryPack
   unit: TerritoryUnit
 }) {
-  const emblemKey = `${pack.id}:${unit.code}`
-  const emblemSrc = EMBLEM_SRC[emblemKey]
   return (
     <div className="mock-card">
       <span className="mock-face-tag">{unit.code}</span>
@@ -70,13 +102,7 @@ function MockRecto({
           </div>
         </div>
         <div className={`mock-emblem has-pictos is-${pack.emblemKind}`}>
-          {emblemSrc ? (
-            <img src={emblemSrc} alt="" />
-          ) : (
-            <span className="mock-emblem-fallback" aria-hidden>
-              {unit.code}
-            </span>
-          )}
+          <MockEmblem packId={pack.id} code={unit.code} kind={pack.emblemKind} />
         </div>
         <span className="front-pictos" aria-label="Spécialités">
           {unit.pictos.map((f) => (
@@ -137,8 +163,8 @@ export function CardMockupsPreview() {
         <p className="mockups-kicker">Aperçu local — pas déployé</p>
         <h1>Maquettes cartes Territoires</h1>
         <p className="mockups-lead">
-          France inchangée. Autres packs : {total} cartes — pictos recto par zone, verso partagé
-          (mêmes positions que la France).
+          France inchangée. {total} zones. CH/ES : emblèmes Wikimedia + pictos documentés (voir{' '}
+          <code>territories/SOURCES.md</code>). Autres packs : pictos indicatifs, emblèmes partiels.
         </p>
       </div>
 
