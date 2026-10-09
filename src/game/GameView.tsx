@@ -1055,17 +1055,7 @@ export function GameView({
   if (!setupReady || !category) {
     return (
       <div className="game-view">
-        <div className="game-toolbar is-compact">
-          {categoryToolbar}
-        </div>
-        <div className="game-board is-idle">
-          <div className="game-idle">
-            <p className="game-idle-title">Choisis une catégorie</p>
-            <p className="game-idle-hint">
-              Ensuite tu régleras la difficulté, le type de réponse et le format.
-            </p>
-          </div>
-        </div>
+        <div className="game-toolbar is-compact">{categoryToolbar}</div>
       </div>
     )
   }
