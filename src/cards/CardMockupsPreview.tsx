@@ -26,45 +26,71 @@ type MockCard = {
   backScatter: Scatter[]
 }
 
-/** Densité proche du verso France (~36), centre dégagé pour le titre. */
+/** Densité > France (40) : ~56 pictos, centre libre pour le titre. */
 function scatterRing(ids: PictoId[]): Scatter[] {
   const slots: Omit<Scatter, 'id'>[] = [
-    { x: 8, y: 9, r: -18, s: 9 },
-    { x: 28, y: 7, r: 14, s: 8 },
-    { x: 50, y: 6, r: -8, s: 9 },
-    { x: 72, y: 8, r: 20, s: 8 },
-    { x: 91, y: 11, r: -14, s: 9 },
-    { x: 7, y: 26, r: 10, s: 9 },
-    { x: 22, y: 22, r: -22, s: 8 },
-    { x: 78, y: 20, r: 12, s: 9 },
-    { x: 93, y: 28, r: -10, s: 8 },
-    { x: 6, y: 44, r: 16, s: 9 },
-    { x: 18, y: 40, r: -6, s: 8 },
-    { x: 84, y: 38, r: 18, s: 9 },
-    { x: 94, y: 46, r: -16, s: 8 },
-    { x: 5, y: 60, r: 8, s: 9 },
-    { x: 16, y: 58, r: -20, s: 8 },
-    { x: 86, y: 56, r: 14, s: 9 },
-    { x: 95, y: 64, r: -12, s: 8 },
-    { x: 7, y: 76, r: 22, s: 9 },
-    { x: 20, y: 74, r: -14, s: 8 },
-    { x: 80, y: 72, r: 10, s: 9 },
-    { x: 93, y: 78, r: -18, s: 8 },
-    { x: 12, y: 90, r: 6, s: 9 },
-    { x: 30, y: 93, r: -10, s: 8 },
-    { x: 50, y: 94, r: 16, s: 9 },
-    { x: 70, y: 92, r: -8, s: 8 },
-    { x: 88, y: 90, r: 12, s: 9 },
-    { x: 34, y: 18, r: -24, s: 8 },
-    { x: 66, y: 16, r: 8, s: 8 },
-    { x: 32, y: 82, r: 14, s: 8 },
-    { x: 68, y: 80, r: -16, s: 8 },
-    { x: 10, y: 52, r: 4, s: 8 },
-    { x: 90, y: 52, r: -4, s: 8 },
-    { x: 40, y: 10, r: 26, s: 8 },
-    { x: 60, y: 12, r: -12, s: 8 },
-    { x: 38, y: 88, r: -6, s: 8 },
-    { x: 62, y: 86, r: 20, s: 8 },
+    // rangée haute
+    { x: 6, y: 7, r: -18, s: 10 },
+    { x: 18, y: 5, r: 12, s: 9 },
+    { x: 30, y: 8, r: -10, s: 10 },
+    { x: 42, y: 4, r: 20, s: 9 },
+    { x: 54, y: 6, r: -14, s: 10 },
+    { x: 66, y: 5, r: 8, s: 9 },
+    { x: 78, y: 8, r: -22, s: 10 },
+    { x: 90, y: 6, r: 16, s: 9 },
+    // haut-milieu
+    { x: 5, y: 20, r: 10, s: 11 },
+    { x: 16, y: 18, r: -16, s: 9 },
+    { x: 28, y: 22, r: 24, s: 10 },
+    { x: 72, y: 18, r: -12, s: 10 },
+    { x: 84, y: 21, r: 14, s: 9 },
+    { x: 95, y: 17, r: -20, s: 11 },
+    // flancs (évite le centre 35–65 / 35–65)
+    { x: 4, y: 34, r: 6, s: 10 },
+    { x: 14, y: 32, r: -24, s: 9 },
+    { x: 8, y: 46, r: 18, s: 11 },
+    { x: 15, y: 48, r: -8, s: 9 },
+    { x: 5, y: 58, r: 12, s: 10 },
+    { x: 13, y: 62, r: -18, s: 9 },
+    { x: 86, y: 34, r: -10, s: 10 },
+    { x: 96, y: 32, r: 22, s: 9 },
+    { x: 85, y: 46, r: -14, s: 11 },
+    { x: 95, y: 50, r: 8, s: 9 },
+    { x: 87, y: 60, r: -20, s: 10 },
+    { x: 96, y: 64, r: 16, s: 9 },
+    // bas-milieu
+    { x: 6, y: 74, r: -6, s: 10 },
+    { x: 17, y: 72, r: 20, s: 9 },
+    { x: 28, y: 76, r: -12, s: 10 },
+    { x: 72, y: 74, r: 14, s: 10 },
+    { x: 84, y: 72, r: -16, s: 9 },
+    { x: 94, y: 76, r: 10, s: 11 },
+    // rangée basse
+    { x: 8, y: 88, r: 18, s: 10 },
+    { x: 20, y: 92, r: -14, s: 9 },
+    { x: 32, y: 89, r: 8, s: 10 },
+    { x: 44, y: 94, r: -20, s: 9 },
+    { x: 56, y: 91, r: 12, s: 10 },
+    { x: 68, y: 93, r: -8, s: 9 },
+    { x: 80, y: 88, r: 22, s: 10 },
+    { x: 92, y: 91, r: -16, s: 9 },
+    // densification coins / bords
+    { x: 10, y: 12, r: 4, s: 8 },
+    { x: 88, y: 12, r: -4, s: 8 },
+    { x: 22, y: 28, r: 26, s: 8 },
+    { x: 78, y: 28, r: -26, s: 8 },
+    { x: 9, y: 40, r: -12, s: 8 },
+    { x: 91, y: 40, r: 12, s: 8 },
+    { x: 11, y: 54, r: 20, s: 8 },
+    { x: 89, y: 54, r: -20, s: 8 },
+    { x: 24, y: 68, r: -10, s: 8 },
+    { x: 76, y: 68, r: 10, s: 8 },
+    { x: 14, y: 82, r: 16, s: 8 },
+    { x: 86, y: 82, r: -16, s: 8 },
+    { x: 38, y: 84, r: 6, s: 8 },
+    { x: 62, y: 84, r: -6, s: 8 },
+    { x: 48, y: 78, r: 24, s: 8 },
+    { x: 52, y: 16, r: -18, s: 8 },
   ]
   return slots.map((slot, i) => ({
     id: ids[i % ids.length]!,
@@ -393,19 +419,17 @@ function MockPlayingCard({ card }: { card: MockCard }) {
                 <span>{card.subLabel}</span> {card.subValue}
               </div>
             </div>
-            <div className={`mock-emblem is-${card.emblemKind}`}>
+            <div className={`mock-emblem has-pictos is-${card.emblemKind}`}>
               <img src={card.emblemSrc} alt="" />
             </div>
-            <div className="mock-foot-pictos">
+            <span className="front-pictos" aria-label="Spécialités">
               {card.foot.map((f) => (
-                <span key={f.label} title={f.label}>
-                  <span className="mock-foot-ico">
-                    <Picto id={f.id} />
-                  </span>
-                  {f.label}
+                <span key={f.label} className="front-picto" title={f.label}>
+                  <Picto id={f.id} />
+                  <span className="front-picto-label">{f.label}</span>
                 </span>
               ))}
-            </div>
+            </span>
           </div>
         </div>
 
