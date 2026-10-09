@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { CardMockupsPreview } from './cards/CardMockupsPreview'
 import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { DuelView } from './duel/DuelView'
@@ -55,6 +56,9 @@ export default function App() {
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [options, setOptions] = useState<OptionsState>(() => loadOptions())
+  const previewCartes =
+    typeof window !== 'undefined' &&
+    new URL(window.location.href).searchParams.get('preview') === 'cartes'
   const lexique = isLexique(tab)
   const showHistoryBtn = tab === 'entrainement' || tab === 'jeu'
 
@@ -80,6 +84,30 @@ export default function App() {
       : tab === 'duel'
         ? 'Duel'
         : 'Entraînement'
+
+  if (previewCartes) {
+    return (
+      <div className="app">
+        <header className="topbar no-print is-quiz">
+          <div className="brand-quiz">
+            <BrandMark className="brand-mark-lg" />
+            <div className="brand-quiz-copy">
+              <p className="brand-mode">Aperçu</p>
+              <p className="brand-mode-sub">Maquettes cartes</p>
+            </div>
+          </div>
+          <div className="topbar-right">
+            <a className="btn-history" href="/">
+              Retour app
+            </a>
+          </div>
+        </header>
+        <main>
+          <CardMockupsPreview />
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className={`app ${lexique ? 'is-lexique-app' : ''}`}>
