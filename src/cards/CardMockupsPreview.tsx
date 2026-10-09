@@ -1,7 +1,11 @@
 import { FranceCardPairPreview } from './CartesFranceView'
+import { Picto, type PictoId } from './pictos'
 import './CartesMondeView.css'
 import './CartesFranceView.css'
 import './CardMockupsPreview.css'
+
+type Scatter = { id: PictoId; x: number; y: number; r: number; s: number }
+type Foot = { id: PictoId; label: string }
 
 type MockCard = {
   id: string
@@ -16,16 +20,63 @@ type MockCard = {
   subValue: string
   emblemSrc: string
   emblemKind: 'blason' | 'flag'
-  footText?: string
+  foot: Foot[]
   backTitle: string
   backSub: string
+  backScatter: Scatter[]
+}
+
+/** Densité proche du verso France (~36), centre dégagé pour le titre. */
+function scatterRing(ids: PictoId[]): Scatter[] {
+  const slots: Omit<Scatter, 'id'>[] = [
+    { x: 8, y: 9, r: -18, s: 9 },
+    { x: 28, y: 7, r: 14, s: 8 },
+    { x: 50, y: 6, r: -8, s: 9 },
+    { x: 72, y: 8, r: 20, s: 8 },
+    { x: 91, y: 11, r: -14, s: 9 },
+    { x: 7, y: 26, r: 10, s: 9 },
+    { x: 22, y: 22, r: -22, s: 8 },
+    { x: 78, y: 20, r: 12, s: 9 },
+    { x: 93, y: 28, r: -10, s: 8 },
+    { x: 6, y: 44, r: 16, s: 9 },
+    { x: 18, y: 40, r: -6, s: 8 },
+    { x: 84, y: 38, r: 18, s: 9 },
+    { x: 94, y: 46, r: -16, s: 8 },
+    { x: 5, y: 60, r: 8, s: 9 },
+    { x: 16, y: 58, r: -20, s: 8 },
+    { x: 86, y: 56, r: 14, s: 9 },
+    { x: 95, y: 64, r: -12, s: 8 },
+    { x: 7, y: 76, r: 22, s: 9 },
+    { x: 20, y: 74, r: -14, s: 8 },
+    { x: 80, y: 72, r: 10, s: 9 },
+    { x: 93, y: 78, r: -18, s: 8 },
+    { x: 12, y: 90, r: 6, s: 9 },
+    { x: 30, y: 93, r: -10, s: 8 },
+    { x: 50, y: 94, r: 16, s: 9 },
+    { x: 70, y: 92, r: -8, s: 8 },
+    { x: 88, y: 90, r: 12, s: 9 },
+    { x: 34, y: 18, r: -24, s: 8 },
+    { x: 66, y: 16, r: 8, s: 8 },
+    { x: 32, y: 82, r: 14, s: 8 },
+    { x: 68, y: 80, r: -16, s: 8 },
+    { x: 10, y: 52, r: 4, s: 8 },
+    { x: 90, y: 52, r: -4, s: 8 },
+    { x: 40, y: 10, r: 26, s: 8 },
+    { x: 60, y: 12, r: -12, s: 8 },
+    { x: 38, y: 88, r: -6, s: 8 },
+    { x: 62, y: 86, r: 20, s: 8 },
+  ]
+  return slots.map((slot, i) => ({
+    id: ids[i % ids.length]!,
+    ...slot,
+  }))
 }
 
 const MOCKS: MockCard[] = [
   {
     id: 'ch',
     country: 'Suisse — Canton',
-    note: 'Vrai blason (Vaud) · verso motif croix',
+    note: 'Esprit France : pictos sous blason · verso blanc + scatter',
     ribbon: 'Suisse',
     ribbonBg: '#c8102e',
     accent: '#c8102e',
@@ -35,13 +86,36 @@ const MOCKS: MockCard[] = [
     subValue: 'Lausanne',
     emblemSrc: '/mockups/emblems/vaud.png',
     emblemKind: 'blason',
+    foot: [
+      { id: 'mountain', label: 'Alpes' },
+      { id: 'grape', label: 'Vigne' },
+      { id: 'cheese', label: 'Fromage' },
+    ],
     backTitle: 'Cantons',
     backSub: 'de Suisse',
+    backScatter: scatterRing([
+      'mountain',
+      'cheese',
+      'watch',
+      'cow',
+      'ski',
+      'clock',
+      'forest',
+      'grape',
+      'river',
+      'crystal',
+      'oak',
+      'sheep',
+      'honey',
+      'castle',
+      'wine',
+      'goat',
+    ]),
   },
   {
     id: 'us',
     country: 'USA — État',
-    note: 'Vrai drapeau (California) · verso étoiles',
+    note: 'Pictos sous drapeau · verso blanc + scatter',
     ribbon: 'West',
     ribbonBg: '#1d3557',
     accent: '#1d3557',
@@ -51,14 +125,36 @@ const MOCKS: MockCard[] = [
     subValue: 'Sacramento',
     emblemSrc: '/mockups/emblems/california.png',
     emblemKind: 'flag',
-    footText: 'The Golden State',
+    foot: [
+      { id: 'gold', label: 'Or' },
+      { id: 'film', label: 'Cinéma' },
+      { id: 'palm', label: 'Palmier' },
+    ],
     backTitle: 'States of',
     backSub: 'the USA',
+    backScatter: scatterRing([
+      'gold',
+      'film',
+      'airplane',
+      'beach',
+      'horse',
+      'rocket',
+      'oak',
+      'sea',
+      'factory',
+      'briefcase',
+      'atom',
+      'race',
+      'mountain',
+      'palm',
+      'ship',
+      'crystal',
+    ]),
   },
   {
     id: 'es',
     country: 'Espagne — Communauté',
-    note: 'Vrai drapeau (Andalucía)',
+    note: 'Pictos sous drapeau · verso blanc + scatter',
     ribbon: 'España',
     ribbonBg: '#aa151b',
     accent: '#aa151b',
@@ -68,14 +164,36 @@ const MOCKS: MockCard[] = [
     subValue: 'Sevilla',
     emblemSrc: '/mockups/emblems/andalucia.png',
     emblemKind: 'flag',
-    footText: 'español',
+    foot: [
+      { id: 'olive', label: 'Olive' },
+      { id: 'grape', label: 'Vigne' },
+      { id: 'castle', label: 'Alcázar' },
+    ],
     backTitle: 'Comunidades',
     backSub: 'de España',
+    backScatter: scatterRing([
+      'olive',
+      'grape',
+      'castle',
+      'beach',
+      'fish',
+      'pepper',
+      'horse',
+      'rose',
+      'pottery',
+      'cathedral',
+      'sea',
+      'garlic',
+      'palm',
+      'melon',
+      'wine',
+      'spa',
+    ]),
   },
   {
     id: 'de',
     country: 'Allemagne — Land',
-    note: 'Vrai blason (Bayern)',
+    note: 'Pictos sous blason · verso blanc + scatter',
     ribbon: 'Deutschland',
     ribbonBg: '#111111',
     accent: '#111111',
@@ -85,13 +203,36 @@ const MOCKS: MockCard[] = [
     subValue: 'München',
     emblemSrc: '/mockups/emblems/bayern.png',
     emblemKind: 'blason',
+    foot: [
+      { id: 'pretzel', label: 'Brezel' },
+      { id: 'beer', label: 'Bier' },
+      { id: 'mountain', label: 'Alpen' },
+    ],
     backTitle: 'Länder',
     backSub: 'Deutschlands',
+    backScatter: scatterRing([
+      'pretzel',
+      'beer',
+      'castle',
+      'oak',
+      'mountain',
+      'forest',
+      'factory',
+      'clock',
+      'horse',
+      'wheat',
+      'lion',
+      'metal',
+      'mushroom',
+      'river',
+      'ski',
+      'cow',
+    ]),
   },
   {
     id: 'jp',
     country: 'Japon — Préfecture',
-    note: 'Vrai drapeau (Tōkyō)',
+    note: 'Pictos sous drapeau · verso blanc + scatter',
     ribbon: '日本',
     ribbonBg: '#bc002d',
     accent: '#bc002d',
@@ -101,13 +242,36 @@ const MOCKS: MockCard[] = [
     subValue: 'Tōkyō',
     emblemSrc: '/mockups/emblems/tokyo.png',
     emblemKind: 'flag',
+    foot: [
+      { id: 'flower', label: 'Sakura' },
+      { id: 'fish', label: 'Sushi' },
+      { id: 'mountain', label: 'Fuji' },
+    ],
     backTitle: '都道府県',
     backSub: 'Japan',
+    backScatter: scatterRing([
+      'flower',
+      'fleur',
+      'fish',
+      'mountain',
+      'sea',
+      'ship',
+      'castle',
+      'silk',
+      'crystal',
+      'airplane',
+      'pearl',
+      'plum',
+      'ribbon',
+      'rose',
+      'spa',
+      'pottery',
+    ]),
   },
   {
     id: 'ca',
     country: 'Canada — Province',
-    note: 'Vrai drapeau (Québec)',
+    note: 'Pictos sous drapeau · verso blanc + scatter',
     ribbon: 'Canada',
     ribbonBg: '#0b3d91',
     accent: '#0b3d91',
@@ -117,13 +281,36 @@ const MOCKS: MockCard[] = [
     subValue: 'Québec',
     emblemSrc: '/mockups/emblems/quebec.png',
     emblemKind: 'flag',
+    foot: [
+      { id: 'forest', label: 'Forêt' },
+      { id: 'ski', label: 'Hiver' },
+      { id: 'river', label: 'Fleuve' },
+    ],
     backTitle: 'Provinces',
     backSub: 'of Canada',
+    backScatter: scatterRing([
+      'forest',
+      'ski',
+      'oak',
+      'fish',
+      'mountain',
+      'river',
+      'cow',
+      'wheat',
+      'ship',
+      'crystal',
+      'duck',
+      'honey',
+      'apple',
+      'castle',
+      'sheep',
+      'goat',
+    ]),
   },
   {
     id: 'br',
     country: 'Brésil — État',
-    note: 'Vrai drapeau (São Paulo)',
+    note: 'Pictos sous drapeau · verso blanc + scatter',
     ribbon: 'Brasil',
     ribbonBg: '#009c3b',
     accent: '#002776',
@@ -133,10 +320,55 @@ const MOCKS: MockCard[] = [
     subValue: 'São Paulo',
     emblemSrc: '/mockups/emblems/saopaulo.png',
     emblemKind: 'flag',
+    foot: [
+      { id: 'palm', label: 'Palm' },
+      { id: 'factory', label: 'Industrie' },
+      { id: 'race', label: 'Sport' },
+    ],
     backTitle: 'Estados',
     backSub: 'do Brasil',
+    backScatter: scatterRing([
+      'palm',
+      'beach',
+      'banana',
+      'rum',
+      'sugar',
+      'fish',
+      'sea',
+      'factory',
+      'pepper',
+      'flower',
+      'ship',
+      'gold',
+      'melon',
+      'airplane',
+      'river',
+      'race',
+    ]),
   },
 ]
+
+function MockBackPictos({ items }: { items: Scatter[] }) {
+  return (
+    <span className="back-pictos mock-back-pictos" aria-hidden>
+      {items.map((item, i) => (
+        <span
+          key={`${item.id}-${i}`}
+          className="back-picto"
+          style={{
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+            width: `${item.s}%`,
+            height: `${item.s}%`,
+            transform: `translate(-50%, -50%) rotate(${item.r}deg)`,
+          }}
+        >
+          <Picto id={item.id} />
+        </span>
+      ))}
+    </span>
+  )
+}
 
 function MockPlayingCard({ card }: { card: MockCard }) {
   return (
@@ -148,12 +380,7 @@ function MockPlayingCard({ card }: { card: MockCard }) {
       <div className="mock-pair-cards">
         <div className="mock-card">
           <span className="mock-face-tag">Recto</span>
-          <div
-            className={`mock-face mock-face-front is-${card.emblemKind}`}
-            style={{ ['--mock-accent' as string]: card.accent }}
-          >
-            <div className="mock-corner mock-corner-tl" aria-hidden />
-            <div className="mock-corner mock-corner-br" aria-hidden />
+          <div className={`mock-face mock-face-front is-${card.emblemKind}`}>
             <div className="mock-ribbon" style={{ background: card.ribbonBg }}>
               {card.ribbon}
             </div>
@@ -169,19 +396,23 @@ function MockPlayingCard({ card }: { card: MockCard }) {
             <div className={`mock-emblem is-${card.emblemKind}`}>
               <img src={card.emblemSrc} alt="" />
             </div>
-            {card.footText ? <div className="mock-foot-text">{card.footText}</div> : null}
+            <div className="mock-foot-pictos">
+              {card.foot.map((f) => (
+                <span key={f.label} title={f.label}>
+                  <span className="mock-foot-ico">
+                    <Picto id={f.id} />
+                  </span>
+                  {f.label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
         <div className="mock-card">
           <span className="mock-face-tag">Verso</span>
-          <div
-            className={`mock-face mock-face-back theme-${card.id}`}
-            style={{ ['--mock-accent' as string]: card.accent }}
-          >
-            <div className="mock-back-wash" aria-hidden />
-            <div className="mock-back-pattern" aria-hidden />
-            <div className="mock-back-frame" aria-hidden />
+          <div className="mock-face mock-face-back">
+            <MockBackPictos items={card.backScatter} />
             <div className="mock-back-title">
               <strong>{card.backTitle}</strong>
               <span>{card.backSub}</span>
@@ -200,8 +431,8 @@ export function CardMockupsPreview() {
         <p className="mockups-kicker">Aperçu local — pas déployé</p>
         <h1>Maquettes cartes Territoires</h1>
         <p className="mockups-lead">
-          France = cartes actuelles (inchangées). Autres pays = vrais blasons/drapeaux + verso
-          travaillé pour juger le rendu « carte à jouer ».
+          France inchangée. Autres pays : même esprit — pictos sous l’emblème, verso blanc avec
+          pictos dispersés (pas de cadre).
         </p>
       </div>
 
