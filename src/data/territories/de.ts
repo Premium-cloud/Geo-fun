@@ -1,5 +1,11 @@
 import type { TerritoryPack } from './types'
 
+/**
+ * Allemagne — 16 Länder.
+ * Pictos : spécialités / identité régionale (bière, vin, industrie).
+ * Emblèmes : blasons Wikimedia → public/mockups/emblems/de/
+ * Voir SOURCES.md
+ */
 export const DE_PACK: TerritoryPack = {
   id: 'de',
   country: 'Allemagne',

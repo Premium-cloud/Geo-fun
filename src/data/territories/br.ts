@@ -1,5 +1,11 @@
 import type { TerritoryPack } from './types'
 
+/**
+ * Brésil — 26 États + DF.
+ * Pictos : produits / géographie des États.
+ * Emblèmes : drapeaux Wikimedia → public/mockups/emblems/br/
+ * Voir SOURCES.md
+ */
 export const BR_PACK: TerritoryPack = {
   id: 'br',
   country: 'Brésil',

@@ -1,30 +1,34 @@
 # Sources pictos & emblèmes (territoires)
 
-## Emblèmes
+## Emblèmes (Wikimedia Commons)
 
-| Pack | Type | Source | Statut |
-|------|------|--------|--------|
-| **CH** | Blasons cantonaux | Wikimedia Commons, série `Wappen … matt.svg` (Fahnenreglement armée suisse / domaine public) | Téléchargés → `public/mockups/emblems/ch/` |
-| **ES** | Drapeaux autonomies | Wikimedia Commons (`Flag of …`) — drapeaux officiels des communautés | Téléchargés → `public/mockups/emblems/es/` |
-| Autres packs | — | Pas encore branchés | Fallback code |
+| Pack | Type | Fichiers Commons | Dossier local |
+|------|------|------------------|---------------|
+| **CH** | Blasons | `Wappen … matt.svg` (Fahnenreglement) | `public/mockups/emblems/ch/` |
+| **ES** | Drapeaux | `Flag of …` (communautés) | `…/es/` |
+| **US** | Drapeaux | `Flag of {State}.svg` | `…/us/` |
+| **DE** | Blasons | `Coat of arms of ….svg` (Länder) | `…/de/` |
+| **JP** | Drapeaux | `Flag of {Prefecture} Prefecture.svg` | `…/jp/` |
+| **CA** | Drapeaux | `Flag of {Province}.svg` | `…/ca/` |
+| **BR** | Drapeaux | `Bandeira do/de ….svg` | `…/br/` |
 
-Script : `scripts/download-territory-emblems.mjs`
+Script : `node scripts/download-territory-emblems.mjs [pack…]`
 
 ## Pictos recto
 
-**Pas une API officielle unique.** Curation manuelle, croisée avec :
+Curation manuelle (pas d’API légale unique), croisée avec des sources stables :
 
-### Suisse (CH)
-- Spécialités AOP/IGP et produits emblématiques : [aop-igp.ch](https://www.aop-igp.ch), Lavaux UNESCO (VD)
-- Identité cantonale classique (horlogerie GE/JU/NE, Castelli TI, Cervin VS, etc.)
-- Labels = noms courts pour la carte (pas le texte légal AOP)
+| Pack | Base de référence |
+|------|-------------------|
+| **CH** | AOP/IGP [aop-igp.ch](https://www.aop-igp.ch), Lavaux UNESCO, identité cantonale |
+| **ES** | DO/DOP/IGP (Rioja, Jerez, Manchego, Plátano de Canarias…), patrimoine |
+| **US** | Symboles / productions d’État connus (state symbols, agriculture, industrie) |
+| **DE** | Spécialités régionales & identité des Länder (bière, vin, industrie) |
+| **JP** | Spécialités préfecturales (meibutsu) + symboles (Fuji, sakura, ports) |
+| **CA** | Ressources & identité provinciale (érable, pétrole, pêches, blé) |
+| **BR** | Produits / géographie des États (café, Amazone, plages, industrie) |
 
-### Espagne (ES)
-- Appellations / produits protégés et symboles régionaux (Jerez, Rioja DOCa, Manchego, Camino / coquille St-Jacques, Teide, etc.)
-- Drapeaux / patrimoine (Sagrada Família CT, Alcázar AN) — choix pédagogique, pas une liste légale
-
-### Autres packs (US, DE, JP, CA, BR)
-- Toujours **indicatif** (culture / économie / paysage) — à revoir pack par pack comme CH/ES
+Labels = noms courts pour la carte.
 
 ## Verso
 

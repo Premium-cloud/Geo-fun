@@ -1,5 +1,11 @@
 import type { TerritoryPack } from './types'
 
+/**
+ * Japon — 47 préfectures.
+ * Pictos : meibutsu / symboles préfecturaux (Fuji, sakura, ports…).
+ * Emblèmes : drapeaux Wikimedia → public/mockups/emblems/jp/
+ * Voir SOURCES.md
+ */
 export const JP_PACK: TerritoryPack = {
   id: 'jp',
   country: 'Japon',

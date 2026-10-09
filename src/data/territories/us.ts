@@ -1,5 +1,11 @@
 import type { TerritoryPack } from './types'
 
+/**
+ * USA — 50 États.
+ * Pictos : symboles / productions d’État (state symbols, agri, industrie).
+ * Emblèmes : drapeaux Wikimedia → public/mockups/emblems/us/
+ * Voir SOURCES.md
+ */
 export const US_PACK: TerritoryPack = {
   id: 'us',
   country: 'USA',

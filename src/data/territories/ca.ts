@@ -1,5 +1,11 @@
 import type { TerritoryPack } from './types'
 
+/**
+ * Canada — 13 provinces / territoires.
+ * Pictos : ressources & identité provinciale.
+ * Emblèmes : drapeaux Wikimedia → public/mockups/emblems/ca/
+ * Voir SOURCES.md
+ */
 export const CA_PACK: TerritoryPack = {
   id: 'ca',
   country: 'Canada',

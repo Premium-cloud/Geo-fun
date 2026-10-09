@@ -12,19 +12,9 @@ import './CartesMondeView.css'
 import './CartesFranceView.css'
 import './CardMockupsPreview.css'
 
-/** Emblèmes pack/code (Wikimedia) + quelques legacy racine. */
-const EMBLEM_LEGACY: Partial<Record<string, string>> = {
-  'us:CA': '/mockups/emblems/california.png',
-  'de:BY': '/mockups/emblems/bayern.png',
-  'jp:13': '/mockups/emblems/tokyo.png',
-  'ca:QC': '/mockups/emblems/quebec.png',
-  'br:SP': '/mockups/emblems/saopaulo.png',
-}
-
 function emblemCandidates(packId: string, code: string): string[] {
   const base = `/mockups/emblems/${packId}/${code}`
-  const legacy = EMBLEM_LEGACY[`${packId}:${code}`]
-  return [`${base}.svg`, `${base}.png`, ...(legacy ? [legacy] : [])]
+  return [`${base}.svg`, `${base}.png`]
 }
 
 function MockBackPictos({ items }: { items: BackScatterItem[] }) {
@@ -163,8 +153,8 @@ export function CardMockupsPreview() {
         <p className="mockups-kicker">Aperçu local — pas déployé</p>
         <h1>Maquettes cartes Territoires</h1>
         <p className="mockups-lead">
-          France inchangée. {total} zones. CH/ES : emblèmes Wikimedia + pictos documentés (voir{' '}
-          <code>territories/SOURCES.md</code>). Autres packs : pictos indicatifs, emblèmes partiels.
+          France inchangée. {total} zones — emblèmes Wikimedia + pictos documentés par pack (voir{' '}
+          <code>territories/SOURCES.md</code>).
         </p>
       </div>
 
