@@ -245,6 +245,7 @@ export function CartesFranceView() {
   const [query, setQuery] = useState('')
   const [region, setRegion] = useState<string>('Tous')
   const [group, setGroup] = useState<DeptCard['group'] | 'Tous'>('Tous')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 
   const cards = useMemo(() => {
@@ -269,6 +270,40 @@ export function CartesFranceView() {
     return map
   }, [])
 
+  const filterActive = group !== 'Tous' || region !== 'Tous'
+  const filterSummary =
+    group !== 'Tous' && region !== 'Tous'
+      ? `${GROUP_LABEL[group]} · ${region}`
+      : group !== 'Tous'
+        ? GROUP_LABEL[group]
+        : region !== 'Tous'
+          ? region
+          : null
+
+  const regionButtons = (
+    <>
+      <button
+        type="button"
+        className={`lexique-side-item is-head ${region === 'Tous' ? 'is-active' : ''}`}
+        onClick={() => setRegion('Tous')}
+      >
+        <span>Toutes</span>
+        <em>{DEPT_CARDS.length}</em>
+      </button>
+      {REGION_ORDER.filter((r) => (regionCounts[r] ?? 0) > 0).map((r) => (
+        <button
+          key={r}
+          type="button"
+          className={`lexique-side-item ${region === r ? 'is-active' : ''}`}
+          onClick={() => setRegion(r)}
+        >
+          <span>{r}</span>
+          <em>{regionCounts[r]}</em>
+        </button>
+      ))}
+    </>
+  )
+
   return (
     <div className="cartes-view cartes-france">
       <div className="lexique-toolbar no-print">
@@ -281,41 +316,62 @@ export function CartesFranceView() {
             autoComplete="off"
           />
         </label>
-        <div className="chips" role="tablist" aria-label="Groupes">
-          {(['Tous', 'metro', 'dom', 'tom'] as const).map((g) => (
-            <button
-              key={g}
-              type="button"
-              className={`chip ${group === g ? 'is-active' : ''}`}
-              onClick={() => setGroup(g)}
-            >
-              {GROUP_LABEL[g]}
-            </button>
-          ))}
-        </div>
+        <button
+          type="button"
+          className={`lexique-filter-btn ${filtersOpen ? 'is-open' : ''} ${filterActive ? 'is-active' : ''}`}
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          Filtre
+          {filterSummary ? <em>{filterSummary}</em> : null}
+        </button>
       </div>
+
+      {filtersOpen ? (
+        <div className="lexique-filter-panel no-print">
+          <div className="lexique-filter-section">
+            <p className="lexique-filter-label">Groupe</p>
+            <div className="chips" role="group" aria-label="Groupes">
+              {(['Tous', 'metro', 'dom', 'tom'] as const).map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  className={`chip ${group === g ? 'is-active' : ''}`}
+                  onClick={() => setGroup(g)}
+                >
+                  {GROUP_LABEL[g]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="lexique-filter-section lexique-filter-mobile-only">
+            <p className="lexique-filter-label">Région</p>
+            <div className="chips" role="group" aria-label="Régions">
+              <button
+                type="button"
+                className={`chip ${region === 'Tous' ? 'is-active' : ''}`}
+                onClick={() => setRegion('Tous')}
+              >
+                Toutes <em>{DEPT_CARDS.length}</em>
+              </button>
+              {REGION_ORDER.filter((r) => (regionCounts[r] ?? 0) > 0).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`chip ${region === r ? 'is-active' : ''}`}
+                  onClick={() => setRegion(r)}
+                >
+                  {r} <em>{regionCounts[r]}</em>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="lexique-body no-print">
         <aside className="lexique-side" aria-label="Régions">
-          <button
-            type="button"
-            className={`lexique-side-item is-head ${region === 'Tous' ? 'is-active' : ''}`}
-            onClick={() => setRegion('Tous')}
-          >
-            <span>Toutes</span>
-            <em>{DEPT_CARDS.length}</em>
-          </button>
-          {REGION_ORDER.filter((r) => (regionCounts[r] ?? 0) > 0).map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={`lexique-side-item ${region === r ? 'is-active' : ''}`}
-              onClick={() => setRegion(r)}
-            >
-              <span>{r}</span>
-              <em>{regionCounts[r]}</em>
-            </button>
-          ))}
+          {regionButtons}
         </aside>
 
         <div className="lexique-main">

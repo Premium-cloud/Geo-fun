@@ -231,6 +231,7 @@ function PrintDeck({ pack }: { pack: TerritoryPack }) {
 export function CartesTerritoiresView() {
   const [packId, setPackId] = useState<TerritoryPackId>('fr')
   const [query, setQuery] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 
   const pack = TERRITORY_PACKS[packId]
@@ -246,6 +247,12 @@ export function CartesTerritoiresView() {
     )
   }, [pack, query])
 
+  function selectPack(id: TerritoryPackId) {
+    setPackId(id)
+    setQuery('')
+    setFlipped({})
+  }
+
   return (
     <div className="cartes-view cartes-france cartes-territoires">
       <div className="lexique-toolbar no-print">
@@ -258,28 +265,41 @@ export function CartesTerritoiresView() {
             autoComplete="off"
           />
         </label>
-        <div className="chips territoire-pack-chips" role="tablist" aria-label="Pays">
-          {TERRITORY_PACK_ORDER.map((id) => {
-            const p = TERRITORY_PACKS[id]
-            return (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                className={`chip ${packId === id ? 'is-active' : ''}`}
-                aria-selected={packId === id}
-                onClick={() => {
-                  setPackId(id)
-                  setQuery('')
-                  setFlipped({})
-                }}
-              >
-                {p.country}
-              </button>
-            )
-          })}
-        </div>
+        <button
+          type="button"
+          className={`lexique-filter-btn ${filtersOpen ? 'is-open' : ''} is-active`}
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          Filtre
+          <em>{pack.country}</em>
+        </button>
       </div>
+
+      {filtersOpen ? (
+        <div className="lexique-filter-panel no-print">
+          <div className="lexique-filter-section">
+            <p className="lexique-filter-label">Pays</p>
+            <div className="chips" role="tablist" aria-label="Pays">
+              {TERRITORY_PACK_ORDER.map((id) => {
+                const p = TERRITORY_PACKS[id]
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    className={`chip ${packId === id ? 'is-active' : ''}`}
+                    aria-selected={packId === id}
+                    onClick={() => selectPack(id)}
+                  >
+                    {p.country} <em>{p.units.length}</em>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="lexique-body no-print">
         <aside className="lexique-side" aria-label="Packs territoires">
@@ -290,11 +310,7 @@ export function CartesTerritoiresView() {
                 key={id}
                 type="button"
                 className={`lexique-side-item ${packId === id ? 'is-active' : ''}`}
-                onClick={() => {
-                  setPackId(id)
-                  setQuery('')
-                  setFlipped({})
-                }}
+                onClick={() => selectPack(id)}
               >
                 <span>{p.country}</span>
                 <em>{p.units.length}</em>

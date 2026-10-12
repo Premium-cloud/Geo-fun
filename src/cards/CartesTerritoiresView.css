@@ -11,13 +11,3 @@
 .cartes-territoires .emblem.is-flag {
   padding: 0.2rem 0.5rem 0.1rem;
 }
-
-.territoire-pack-chips {
-  flex-wrap: wrap;
-}
-
-@media (max-width: 720px) {
-  .cartes-territoires .lexique-side {
-    display: none;
-  }
-}

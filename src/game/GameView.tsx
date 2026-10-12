@@ -48,12 +48,8 @@ type CapitaleMode = 'flagToCapital' | 'nameToCapital'
 type Mode = DeptMode | PaysMode | CapitaleMode | TerritoryMode
 
 const SESSION_LEN = 10
-const BASE_CATEGORIES: Category[] = [
-  'departements',
-  'pays',
-  'capitale',
-  'territoires',
-]
+/** Départements FR = pack Territoires → France (plus de catégorie dédiée). */
+const BASE_CATEGORIES: Category[] = ['pays', 'capitale', 'territoires']
 
 type ChoiceKind = 'text' | 'flag' | 'saisie' | 'map'
 
@@ -788,10 +784,6 @@ export function GameView({
     setSeed((s) => s + 1)
   }, [mapDomTom, timerMax])
 
-  function toggleMapDomTom() {
-    onMapDomTomChange(!mapDomTom)
-  }
-
   function flushTrainingSession() {
     if (isPlay || asked <= 0) return
     recordRun({ key, score, asked, streakPeak })
@@ -1299,17 +1291,6 @@ export function GameView({
             ) : (
               <p className="game-mixte-hint">(Drapeau·Nom de capitale·Chiffre)</p>
             )}
-            {(isMapMode && category === 'departements') || isMixte ? (
-              <button
-                type="button"
-                className={`game-radio game-radio-dom ${mapDomTom ? 'is-active' : ''}`}
-                onClick={toggleMapDomTom}
-                aria-pressed={mapDomTom}
-              >
-                <span className="game-radio-dot" aria-hidden />
-                DOM-TOM {mapDomTom ? 'actif' : 'inactif'}
-              </button>
-            ) : null}
           </div>
 
           <div className="game-field">

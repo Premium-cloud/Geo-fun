@@ -219,7 +219,7 @@ export default function App() {
                 onClick={() => setTab('territoires')}
               >
                 <strong>Territoires</strong>
-                <span>CH · ES · US…</span>
+                <span>FR · CH · ES…</span>
               </button>
               <button
                 type="button"

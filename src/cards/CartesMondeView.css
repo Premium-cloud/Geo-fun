@@ -13,6 +13,75 @@
   border-bottom: 1px solid var(--line);
 }
 
+.lexique-filter-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.9rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lexique-filter-btn.is-open,
+.lexique-filter-btn.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #eef4fc;
+}
+
+.lexique-filter-btn em {
+  font-style: normal;
+  font-weight: 600;
+  opacity: 0.75;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lexique-filter-panel {
+  padding: 0.85rem 1.25rem 1rem;
+  background: var(--paper-elev);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.lexique-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.lexique-filter-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lexique-filter-mobile-only {
+  display: none;
+}
+
+html.is-night .lexique-filter-btn {
+  background: rgba(42, 38, 34, 0.94);
+}
+
+html.is-night .lexique-filter-btn.is-open,
+html.is-night .lexique-filter-btn.is-active {
+  background: rgba(74, 144, 226, 0.18);
+}
+
 .lexique-body {
   display: grid;
   grid-template-columns: minmax(12rem, 16rem) 1fr;
@@ -173,23 +242,13 @@
     grid-template-columns: 1fr;
   }
 
+  /* Filtres latéraux → panneau « Filtre » (évite la poussée sur téléphone) */
   .lexique-side {
-    max-height: none;
-    flex-direction: row;
-    flex-wrap: wrap;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
+    display: none;
   }
 
-  .lexique-side-item {
-    flex: 1 1 auto;
-    border-bottom: 0;
-    border-right: 1px solid var(--line);
-  }
-
-  .lexique-side-item.is-head {
-    position: static;
-    flex: 1 1 100%;
+  .lexique-filter-mobile-only {
+    display: flex;
   }
 
   .grid {

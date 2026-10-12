@@ -201,6 +201,7 @@ function PrintDeck({ cards }: { cards: Country[] }) {
 export function CartesMondeView() {
   const [query, setQuery] = useState('')
   const [continent, setContinent] = useState<Continent | 'Tous'>('Tous')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 
   const cards = useMemo(() => {
@@ -228,6 +229,8 @@ export function CartesMondeView() {
     return map
   }, [])
 
+  const filterActive = continent !== 'Tous'
+
   return (
     <div className="cartes-view cartes-monde">
       <div className="lexique-toolbar no-print">
@@ -240,7 +243,43 @@ export function CartesMondeView() {
             autoComplete="off"
           />
         </label>
+        <button
+          type="button"
+          className={`lexique-filter-btn ${filtersOpen ? 'is-open' : ''} ${filterActive ? 'is-active' : ''}`}
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          Filtre
+          {filterActive ? <em>{continent}</em> : null}
+        </button>
       </div>
+
+      {filtersOpen ? (
+        <div className="lexique-filter-panel no-print">
+          <div className="lexique-filter-section">
+            <p className="lexique-filter-label">Continent</p>
+            <div className="chips" role="group" aria-label="Continents">
+              <button
+                type="button"
+                className={`chip ${continent === 'Tous' ? 'is-active' : ''}`}
+                onClick={() => setContinent('Tous')}
+              >
+                Tous <em>{COUNTRIES.length}</em>
+              </button>
+              {CONTINENT_ORDER.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`chip ${continent === c ? 'is-active' : ''}`}
+                  onClick={() => setContinent(c)}
+                >
+                  {c} <em>{counts[c]}</em>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="lexique-body no-print">
         <aside className="lexique-side" aria-label="Continents">

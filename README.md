@@ -7,7 +7,7 @@ Collection de cartes à collectionner et mode jeu :
 - **Entraînement** — quiz pour apprendre (validation manuelle)
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
 - **MIX** (Jeu Difficile / Hardcore) — uniquement drapeau→pays, nom→capitale, chiffre→département
-- **Carte** — pointer le département, le pays ou une subdivision ; zoom / pinch ; timers allongés ; option DOM-TOM (silhouettes)
+- **Carte** — pointer le pays ou une subdivision (Territoires) ; zoom / pinch ; timers allongés
 - **Hardcore** — pièges QCM plus collés, saisie très stricte (Entraînement et Jeu)
 - **Récap** — fin de partie avec bonnes / mauvaises réponses
 - **Réponse unique** — saisie libre avec tolérances (tirets, accents…)
