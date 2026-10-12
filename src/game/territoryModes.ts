@@ -15,7 +15,7 @@ export type TerritoryMode = 'carte' | 'code' | 'capital' | 'emblem'
 export const TERRITORY_MODE_LABEL: Record<TerritoryMode, string> = {
   carte: 'Carte',
   code: 'Par code',
-  capital: 'Par capital',
+  capital: 'Par capitale',
   emblem: 'Par blason / drapeau',
 }
 
