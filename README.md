@@ -2,11 +2,12 @@
 
 Collection de cartes à collectionner et mode jeu :
 - **France** — 108 départements / territoires (blason, chef-lieu, région, pictos de spécialité)
+- **Territoires** — cantons CH, communautés ES, États US, Länder DE, préfectures JP, provinces CA, États BR (lexique + quiz)
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
 - **Entraînement** — quiz pour apprendre (validation manuelle)
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
 - **MIX** (Jeu Difficile / Hardcore) — uniquement drapeau→pays, nom→capitale, chiffre→département
-- **Carte** — pointer le département ou le pays ; zoom / pinch ; timers allongés ; option DOM-TOM (silhouettes)
+- **Carte** — pointer le département, le pays ou une subdivision ; zoom / pinch ; timers allongés ; option DOM-TOM (silhouettes)
 - **Hardcore** — pièges QCM plus collés, saisie très stricte (Entraînement et Jeu)
 - **Récap** — fin de partie avec bonnes / mauvaises réponses
 - **Réponse unique** — saisie libre avec tolérances (tirets, accents…)

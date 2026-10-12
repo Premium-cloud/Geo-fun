@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { DEPT_CARDS } from '../cards/CartesFranceView'
 import { COUNTRIES } from '../data/countries'
+import {
+  TERRITORY_PACK_ORDER,
+  TERRITORY_PACKS,
+  type TerritoryPackId,
+} from '../data/territories'
 import { answersMatch } from '../lib/answerMatch'
 import { pickWeightedItem } from '../lib/pickWeighted'
 import {
@@ -24,24 +29,46 @@ import {
 } from './difficulty'
 import { FranceMapQuiz } from './FranceMapQuiz'
 import { WORLD_MAP_CODES } from './mapCodes'
+import { TerritoryMapQuiz } from './TerritoryMapQuiz'
+import {
+  defaultTerritoryMode,
+  makeTerritoryRound,
+  territoryEmblemUrl,
+  territoryModesFor,
+  type TerritoryMode,
+} from './territoryModes'
 import { WorldMapQuiz } from './WorldMapQuiz'
 import './GameView.css'
 
-type Category = 'departements' | 'pays' | 'capitale' | 'mixte'
+type Category = 'departements' | 'pays' | 'capitale' | 'territoires' | 'mixte'
 
 type DeptMode = 'chiffre' | 'chefLieu' | 'blason' | 'region' | 'carte'
 type PaysMode = 'flagToName' | 'nameToFlag' | 'capitalToName' | 'capitalToFlag' | 'carte'
 type CapitaleMode = 'flagToCapital' | 'nameToCapital'
-type Mode = DeptMode | PaysMode | CapitaleMode
+type Mode = DeptMode | PaysMode | CapitaleMode | TerritoryMode
 
 const SESSION_LEN = 10
-const BASE_CATEGORIES: Category[] = ['departements', 'pays', 'capitale']
+const BASE_CATEGORIES: Category[] = [
+  'departements',
+  'pays',
+  'capitale',
+  'territoires',
+]
 
 type ChoiceKind = 'text' | 'flag' | 'saisie' | 'map'
 
 type Round = {
   prompt: string
-  show: 'code' | 'chefLieu' | 'blason' | 'flag' | 'name' | 'capital' | 'deptName' | 'mapPrompt'
+  show:
+    | 'code'
+    | 'chefLieu'
+    | 'blason'
+    | 'flag'
+    | 'name'
+    | 'capital'
+    | 'deptName'
+    | 'mapPrompt'
+    | 'territoryEmblem'
   showValue?: string
   showCode?: string
   answer: string
@@ -49,7 +76,8 @@ type Round = {
   choiceKind: ChoiceKind
   answerLabel: string
   itemId: string
-  mapKind?: 'france' | 'world'
+  mapKind?: 'france' | 'world' | 'territory'
+  territoryPackId?: TerritoryPackId
 }
 
 const DEPT_MODES: { id: DeptMode; label: string }[] = [
@@ -80,6 +108,7 @@ const CATEGORY_LABEL: Record<Category, string> = {
   departements: 'Départements',
   pays: 'Pays',
   capitale: 'Capitales',
+  territoires: 'Territoires',
   mixte: 'MIX',
 }
 
@@ -106,16 +135,18 @@ function blasonSrc(code: string): string {
   return `/blasons/${code}.png`
 }
 
-function modesFor(cat: Category) {
+function modesFor(cat: Category, packId: TerritoryPackId = 'jp') {
   if (cat === 'mixte') return [] as { id: Mode; label: string }[]
   if (cat === 'departements') return DEPT_MODES
   if (cat === 'pays') return PAYS_MODES
+  if (cat === 'territoires') return territoryModesFor(packId)
   return CAPITALE_MODES
 }
 
-function defaultMode(cat: Category): Mode {
+function defaultMode(cat: Category, packId: TerritoryPackId = 'jp'): Mode {
   if (cat === 'mixte') return 'chiffre'
-  return modesFor(cat)[0]!.id
+  if (cat === 'territoires') return defaultTerritoryMode(packId)
+  return modesFor(cat, packId)[0]!.id
 }
 
 function allRegions(): string[] {
@@ -433,6 +464,7 @@ function makeRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
   includeDomTom: boolean,
+  territoryPackId: TerritoryPackId = 'jp',
 ): Round | null {
   if (category === 'mixte') {
     return makeMixedRound(difficulty, preferUnseen, answerMode, includeDomTom)
@@ -449,11 +481,22 @@ function makeRound(
   if (category === 'pays') {
     return makePaysRound(mode as PaysMode, difficulty, preferUnseen, answerMode)
   }
+  if (category === 'territoires') {
+    return makeTerritoryRound(
+      territoryPackId,
+      mode as TerritoryMode,
+      difficulty,
+      answerMode,
+    )
+  }
   return makeCapitaleRound(mode as CapitaleMode, difficulty, preferUnseen, answerMode)
 }
 
 /** MIX = uniquement drapeau→pays, nom→capitale, chiffre→département. */
-const MIXTE_POOL: { cat: Exclude<Category, 'mixte'>; mode: Mode }[] = [
+const MIXTE_POOL: {
+  cat: Exclude<Category, 'mixte' | 'territoires'>
+  mode: Mode
+}[] = [
   { cat: 'pays', mode: 'flagToName' },
   { cat: 'capitale', mode: 'nameToCapital' },
   { cat: 'departements', mode: 'chiffre' },
@@ -512,6 +555,26 @@ function PromptVisual({ round }: { round: Round }) {
           src={blasonSrc(round.showCode)}
           alt=""
           decoding="async"
+        />
+      </div>
+    )
+  }
+  if (round.show === 'territoryEmblem' && round.showCode && round.territoryPackId) {
+    const packId = round.territoryPackId
+    const code = round.showCode
+    return (
+      <div className="game-emblem">
+        <img
+          className="game-emblem-img is-blason"
+          src={territoryEmblemUrl(packId, code)}
+          alt=""
+          decoding="async"
+          onError={(e) => {
+            const img = e.currentTarget
+            if (img.src.endsWith('.svg')) {
+              img.src = territoryEmblemUrl(packId, code).replace('.svg', '.png')
+            }
+          }}
         />
       </div>
     )
@@ -620,6 +683,7 @@ export function GameView({
   const isPlay = variant === 'jeu'
   const [category, setCategory] = useState<Category>('pays')
   const [mode, setMode] = useState<Mode>('flagToName')
+  const [territoryPackId, setTerritoryPackId] = useState<TerritoryPackId>('jp')
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
   const [sessionFormat, setSessionFormat] = useState<SessionFormatId>('libre')
@@ -649,9 +713,10 @@ export function GameView({
 
   const setupReady = true
   const isMixte = category === 'mixte'
+  const isTerritoires = category === 'territoires'
   const isRapidite = sessionFormat === 'rapidite'
   const isBounded = sessionFormat === 'session10' || sessionFormat === 'rapidite'
-  const availableModes = isMixte ? [] : modesFor(category)
+  const availableModes = isMixte ? [] : modesFor(category, territoryPackId)
   const isMapMode = Boolean(!isMixte && mode === 'carte')
   const effectiveAnswerMode: AnswerMode = isMapMode
     ? 'map'
@@ -661,7 +726,11 @@ export function GameView({
   const maxLives = LIVES_FOR[difficulty]
   const timerMax = isMapMode ? MAP_TIMER_SECONDS[difficulty] : TIMER_SECONDS[difficulty]
   const usePerQuestionTimer = isPlay && !isRapidite
-  const statsMode = isMixte ? 'mixte' : mode
+  const statsMode = isMixte
+    ? 'mixte'
+    : isTerritoires
+      ? `${territoryPackId}:${mode}`
+      : mode
   const key = statsKey(
     isMixte ? 'mixte' : category,
     statsMode,
@@ -683,9 +752,26 @@ export function GameView({
   const round = useMemo(
     () =>
       category
-        ? makeRound(category, mode, difficulty, isPlay, effectiveAnswerMode, mapDomTom)
+        ? makeRound(
+            category,
+            mode,
+            difficulty,
+            isPlay,
+            effectiveAnswerMode,
+            mapDomTom,
+            territoryPackId,
+          )
         : null,
-    [category, mode, difficulty, seed, isPlay, effectiveAnswerMode, mapDomTom],
+    [
+      category,
+      mode,
+      difficulty,
+      seed,
+      isPlay,
+      effectiveAnswerMode,
+      mapDomTom,
+      territoryPackId,
+    ],
   )
 
   const roundIsMap = round?.choiceKind === 'map'
@@ -890,11 +976,20 @@ export function GameView({
       setMode('chiffre')
       if (answerMode === 'map') setAnswerMode('qcm')
     } else {
-      const nextMode = defaultMode(cat)
+      const nextMode = defaultMode(cat, territoryPackId)
       setMode(nextMode)
       if (nextMode === 'carte') setAnswerMode('map')
       else if (answerMode === 'map') setAnswerMode('qcm')
     }
+    resetRun({ start: !isPlay })
+  }
+
+  function selectTerritoryPack(packId: TerritoryPackId) {
+    setTerritoryPackId(packId)
+    const nextMode = defaultTerritoryMode(packId)
+    setMode(nextMode)
+    if (nextMode === 'carte') setAnswerMode('map')
+    else if (answerMode === 'map') setAnswerMode('qcm')
     resetRun({ start: !isPlay })
   }
 
@@ -1165,6 +1260,25 @@ export function GameView({
         <h2 className="game-config-title">Préparez votre partie</h2>
 
         <div className="game-config-grid">
+          {isTerritoires ? (
+            <div className="game-field">
+              <span className="game-field-label">Pays</span>
+              <div className="game-radio-list" role="group" aria-label="Pack territoires">
+                {TERRITORY_PACK_ORDER.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`game-radio ${territoryPackId === id ? 'is-active' : ''}`}
+                    onClick={() => selectTerritoryPack(id)}
+                  >
+                    <span className="game-radio-dot" aria-hidden />
+                    {TERRITORY_PACKS[id].country}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="game-field">
             <span className="game-field-label">Sous-mode</span>
             {!isMixte ? (
@@ -1184,7 +1298,7 @@ export function GameView({
             ) : (
               <p className="game-mixte-hint">(Drapeau·Nom de capitale·Chiffre)</p>
             )}
-            {isMapMode || isMixte ? (
+            {(isMapMode && category === 'departements') || isMixte ? (
               <button
                 type="button"
                 className={`game-radio game-radio-dom ${mapDomTom ? 'is-active' : ''}`}
@@ -1337,9 +1451,23 @@ export function GameView({
           />
         ) : null}
 
+        {round.choiceKind === 'map' &&
+        round.mapKind === 'territory' &&
+        round.territoryPackId ? (
+          <TerritoryMapQuiz
+            packId={round.territoryPackId}
+            answerCode={round.answer}
+            locked={revealed}
+            picked={picked}
+            onPick={answer}
+            onMiss={onMapMiss}
+            label={`Carte ${TERRITORY_PACKS[round.territoryPackId].country}`}
+          />
+        ) : null}
+
         {missHint && !revealed ? (
           <p className="game-miss-hint" role="status">
-            À côté — vise un pays ou un département
+            À côté — vise une zone sur la carte
           </p>
         ) : null}
 

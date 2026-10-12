@@ -56,6 +56,10 @@ html.is-night .zoom-map-viewport {
   height: min(64vh, 32rem);
 }
 
+.map-quiz.is-territoire .zoom-map-viewport {
+  height: min(62vh, 30rem);
+}
+
 .zoom-map-viewport:active {
   cursor: grabbing;
 }
