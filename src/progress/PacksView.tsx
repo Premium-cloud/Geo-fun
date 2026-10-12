@@ -14,6 +14,19 @@ import './PacksView.css'
 
 type Phase = 'idle' | 'opening' | 'reveal'
 
+function Thumb({ src, alt = '' }: { src?: string; alt?: string }) {
+  const [broken, setBroken] = useState(false)
+  if (!src || broken) return <span className="packs-thumb is-empty" aria-hidden />
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="packs-thumb"
+      onError={() => setBroken(true)}
+    />
+  )
+}
+
 export function PacksView({
   onBack,
   onOpenAlbum,
@@ -151,11 +164,7 @@ export function PacksView({
                   style={{ transitionDelay: shown ? `${i * 40}ms` : '0ms' }}
                 >
                   <div className="packs-flip">
-                    {d.card.image ? (
-                      <img src={d.card.image} alt="" className="packs-thumb" />
-                    ) : (
-                      <span className="packs-thumb is-empty" aria-hidden />
-                    )}
+                    <Thumb src={d.card.image} />
                     <div className="packs-flip-meta">
                       <strong>{d.card.name}</strong>
                       <span>{d.card.sub}</span>

@@ -103,12 +103,14 @@ export function getCardCatalog(): CollectibleCard[] {
     if (pid === 'fr') continue
     const pack = TERRITORY_PACKS[pid]
     for (const u of pack.units) {
+      const base = `/mockups/emblems/${pid}/${u.code}`
       cards.push({
         id: `${pid}:${u.code}`,
         name: u.name,
         sub: `${pack.country} · ${u.code}`,
         region: 'territoires',
-        image: `/mockups/emblems/${pid}/${u.code}.svg`,
+        // png en priorité (plus souvent présent) — le thumb fallback gère l’échec
+        image: pack.emblemKind === 'flag' ? `${base}.png` : `${base}.svg`,
       })
     }
   }
