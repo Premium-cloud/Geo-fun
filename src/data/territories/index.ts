@@ -3,6 +3,7 @@ import { CA_PACK } from './ca'
 import { CH_PACK } from './ch'
 import { DE_PACK } from './de'
 import { ES_PACK } from './es'
+import { FR_PACK } from './fr'
 import { JP_PACK } from './jp'
 import { US_PACK } from './us'
 import type { TerritoryPack, TerritoryPackId } from './types'
@@ -11,6 +12,7 @@ export type { TerritoryPack, TerritoryPackId, TerritoryUnit } from './types'
 export { unitByCode } from './types'
 
 export const TERRITORY_PACKS: Record<TerritoryPackId, TerritoryPack> = {
+  fr: FR_PACK,
   ch: CH_PACK,
   us: US_PACK,
   es: ES_PACK,
@@ -21,6 +23,7 @@ export const TERRITORY_PACKS: Record<TerritoryPackId, TerritoryPack> = {
 }
 
 export const TERRITORY_PACK_ORDER: TerritoryPackId[] = [
+  'fr',
   'ch',
   'us',
   'es',

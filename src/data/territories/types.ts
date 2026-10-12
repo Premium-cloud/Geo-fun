@@ -1,7 +1,15 @@
 import type { PictoId } from '../../cards/pictos'
 import type { Specialty } from '../deptPictos'
 
-export type TerritoryPackId = 'ch' | 'us' | 'es' | 'de' | 'jp' | 'ca' | 'br'
+export type TerritoryPackId =
+  | 'fr'
+  | 'ch'
+  | 'us'
+  | 'es'
+  | 'de'
+  | 'jp'
+  | 'ca'
+  | 'br'
 
 export type TerritoryUnit = {
   code: string

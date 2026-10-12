@@ -28,6 +28,9 @@ function nameSizeClass(name: string): string {
 }
 
 function emblemCandidates(packId: string, code: string): string[] {
+  if (packId === 'fr') {
+    return [`/blasons/${code}.svg`, `/blasons/${code}.png`]
+  }
   const base = `/mockups/emblems/${packId}/${code}`
   return [`${base}.svg`, `${base}.png`]
 }
@@ -226,7 +229,7 @@ function PrintDeck({ pack }: { pack: TerritoryPack }) {
 }
 
 export function CartesTerritoiresView() {
-  const [packId, setPackId] = useState<TerritoryPackId>('ch')
+  const [packId, setPackId] = useState<TerritoryPackId>('fr')
   const [query, setQuery] = useState('')
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 

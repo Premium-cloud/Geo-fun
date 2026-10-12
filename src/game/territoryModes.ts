@@ -21,6 +21,7 @@ export const TERRITORY_MODE_LABEL: Record<TerritoryMode, string> = {
 
 /** Modes jouables (pas d’abréviations / capitales triviales). */
 export const TERRITORY_MODES_BY_PACK: Record<TerritoryPackId, TerritoryMode[]> = {
+  fr: ['carte', 'code', 'capital', 'emblem'],
   ch: ['carte', 'emblem'],
   us: ['carte', 'capital', 'emblem'],
   es: ['carte', 'capital', 'emblem'],
@@ -31,10 +32,12 @@ export const TERRITORY_MODES_BY_PACK: Record<TerritoryPackId, TerritoryMode[]> =
 }
 
 export function territoryModesFor(packId: TerritoryPackId) {
-  return TERRITORY_MODES_BY_PACK[packId].map((id) => ({
-    id,
-    label: TERRITORY_MODE_LABEL[id],
-  }))
+  return TERRITORY_MODES_BY_PACK[packId].map((id) => {
+    let label = TERRITORY_MODE_LABEL[id]
+    if (packId === 'fr' && id === 'capital') label = 'Par chef-lieu'
+    if (packId === 'fr' && id === 'emblem') label = 'Par blason'
+    return { id, label }
+  })
 }
 
 export function defaultTerritoryMode(packId: TerritoryPackId): TerritoryMode {
@@ -42,6 +45,7 @@ export function defaultTerritoryMode(packId: TerritoryPackId): TerritoryMode {
 }
 
 export function territoryEmblemUrl(packId: string, code: string): string {
+  if (packId === 'fr') return `/blasons/${code}.svg`
   return `/mockups/emblems/${packId}/${code}.svg`
 }
 

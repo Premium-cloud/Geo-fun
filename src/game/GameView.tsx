@@ -135,7 +135,7 @@ function blasonSrc(code: string): string {
   return `/blasons/${code}.png`
 }
 
-function modesFor(cat: Category, packId: TerritoryPackId = 'jp') {
+function modesFor(cat: Category, packId: TerritoryPackId = 'fr') {
   if (cat === 'mixte') return [] as { id: Mode; label: string }[]
   if (cat === 'departements') return DEPT_MODES
   if (cat === 'pays') return PAYS_MODES
@@ -143,7 +143,7 @@ function modesFor(cat: Category, packId: TerritoryPackId = 'jp') {
   return CAPITALE_MODES
 }
 
-function defaultMode(cat: Category, packId: TerritoryPackId = 'jp'): Mode {
+function defaultMode(cat: Category, packId: TerritoryPackId = 'fr'): Mode {
   if (cat === 'mixte') return 'chiffre'
   if (cat === 'territoires') return defaultTerritoryMode(packId)
   return modesFor(cat, packId)[0]!.id
@@ -464,7 +464,7 @@ function makeRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
   includeDomTom: boolean,
-  territoryPackId: TerritoryPackId = 'jp',
+  territoryPackId: TerritoryPackId = 'fr',
 ): Round | null {
   if (category === 'mixte') {
     return makeMixedRound(difficulty, preferUnseen, answerMode, includeDomTom)
@@ -683,7 +683,7 @@ export function GameView({
   const isPlay = variant === 'jeu'
   const [category, setCategory] = useState<Category>('pays')
   const [mode, setMode] = useState<Mode>('flagToName')
-  const [territoryPackId, setTerritoryPackId] = useState<TerritoryPackId>('jp')
+  const [territoryPackId, setTerritoryPackId] = useState<TerritoryPackId>('fr')
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
   const [sessionFormat, setSessionFormat] = useState<SessionFormatId>('libre')
