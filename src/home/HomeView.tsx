@@ -76,10 +76,20 @@ export function HomeView({
         </button>
       </div>
 
+      <button type="button" className="home-packs-promo" onClick={() => onGo('packs')}>
+        <span className="home-packs-promo-copy">
+          <strong>Ouvrir un pack</strong>
+          <em>
+            {progress.points} crédits · album {owned}
+            {albumOk ? '' : ' · verrouillé'}
+          </em>
+        </span>
+        <span className="home-packs-promo-go" aria-hidden>
+          →
+        </span>
+      </button>
+
       <div className="home-secondary">
-        <button type="button" className="home-link" onClick={() => onGo('packs')}>
-          Packs
-        </button>
         <button
           type="button"
           className={`home-link ${albumOk ? '' : 'is-muted'}`}

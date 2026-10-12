@@ -282,7 +282,13 @@ export default function App() {
         ) : null}
 
         {tab === 'profil' ? (
-          <ProfileView onBack={() => setTab('home')} onProgressChange={setProgress} />
+          <ProfileView
+            onBack={() => setTab('home')}
+            onOpenPacks={() => setTab('packs')}
+            onOpenAlbum={() => setTab('album')}
+            onOpenLexique={() => setTab('territoires')}
+            onProgressChange={setProgress}
+          />
         ) : null}
 
         {tab === 'packs' ? (
@@ -329,13 +335,19 @@ export default function App() {
                 <span>Drapeaux</span>
               </button>
             </div>
-            <p className="lexique-owned-note no-print">
-              Catalogue — tu consultes tout. Pour posséder une carte, ouvre un{' '}
-              <button type="button" className="lexique-inline-link" onClick={() => setTab('packs')}>
-                pack
-              </button>
-              .
-            </p>
+            <div className="lexique-banner no-print">
+              <p>
+                <strong>Catalogue</strong> — tout est visible, rien n’est possédé ici.
+              </p>
+              <div className="lexique-banner-actions">
+                <button type="button" className="lexique-banner-btn is-pack" onClick={() => setTab('packs')}>
+                  Packs
+                </button>
+                <button type="button" className="lexique-banner-btn" onClick={() => setTab('album')}>
+                  Album
+                </button>
+              </div>
+            </div>
             {tab === 'territoires' ? <CartesTerritoiresView /> : <CartesMondeView />}
           </div>
         ) : null}
