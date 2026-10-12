@@ -17,7 +17,16 @@ export type CollectibleCard = {
   name: string
   sub: string
   region: CardRegion
+  /** Première URL candidate (compat). */
   image?: string
+  /** Toutes les URLs à essayer (png/svg, etc.). */
+  images?: string[]
+}
+
+/** Candidats d’image pour une carte (ordre de fallback). */
+export function cardImageCandidates(card: CollectibleCard): string[] {
+  if (card.images?.length) return card.images
+  return card.image ? [card.image] : []
 }
 
 export type ProgressState = {
@@ -90,12 +99,14 @@ export function getCardCatalog(): CollectibleCard[] {
   const cards: CollectibleCard[] = []
 
   for (const u of TERRITORY_PACKS.fr.units) {
+    const images = [`/blasons/${u.code}.png`, `/blasons/${u.code}.svg`]
     cards.push({
       id: `fr:${u.code}`,
       name: u.name,
       sub: `${u.code} · ${u.capital}`,
       region: 'france',
-      image: `/blasons/${u.code}.png`,
+      image: images[0],
+      images,
     })
   }
 
@@ -104,24 +115,29 @@ export function getCardCatalog(): CollectibleCard[] {
     const pack = TERRITORY_PACKS[pid]
     for (const u of pack.units) {
       const base = `/mockups/emblems/${pid}/${u.code}`
+      // Les emblèmes territoires sont surtout en png ; on garde svg en secours.
+      const images = [`${base}.png`, `${base}.svg`]
       cards.push({
         id: `${pid}:${u.code}`,
         name: u.name,
         sub: `${pack.country} · ${u.code}`,
         region: 'territoires',
-        // png en priorité (plus souvent présent) — le thumb fallback gère l’échec
-        image: pack.emblemKind === 'flag' ? `${base}.png` : `${base}.svg`,
+        image: images[0],
+        images,
       })
     }
   }
 
   for (const c of COUNTRIES) {
+    const code = c.code.toLowerCase()
+    const images = [`/flags/${code}.svg`, `/flags/${code}.png`]
     cards.push({
       id: `monde:${c.code}`,
       name: c.name,
       sub: c.capital,
       region: 'monde',
-      image: `/flags/${c.code.toLowerCase()}.svg`,
+      image: images[0],
+      images,
     })
   }
 

@@ -10,6 +10,7 @@ import {
   type CardRegion,
   type ProgressState,
 } from '../lib/progression'
+import { CardThumb } from './CardThumb'
 import './AlbumView.css'
 
 type Filter = 'all' | CardRegion
@@ -101,11 +102,7 @@ export function AlbumView({
       <ul className="album-grid">
         {list.map((c) => (
           <li key={c.id} className="album-card is-owned">
-            {c.image ? (
-              <img src={c.image} alt="" className="album-img" />
-            ) : (
-              <span className="album-img is-empty" />
-            )}
+            <CardThumb card={c} className="album-img" emptyClassName="is-empty" />
             <strong>{c.name}</strong>
             <span>{c.sub}</span>
             {c.count > 1 ? (
