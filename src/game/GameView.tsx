@@ -669,12 +669,10 @@ function formatDuration(totalSec: number): string {
 export function GameView({
   variant,
   mapDomTom,
-  onMapDomTomChange,
   onOpenHistory,
 }: {
   variant: PlayVariant
   mapDomTom: boolean
-  onMapDomTomChange: (on: boolean) => void
   onOpenHistory?: () => void
 }) {
   const isPlay = variant === 'jeu'

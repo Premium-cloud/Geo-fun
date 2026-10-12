@@ -69,8 +69,9 @@
   color: var(--muted);
 }
 
-.lexique-filter-mobile-only {
-  display: none;
+/* Régions France dans Filtre : visibles dans le panneau ; sidebar desktop reste */
+.lexique-filter-regions {
+  display: flex;
 }
 
 html.is-night .lexique-filter-btn {
@@ -237,18 +238,14 @@ html.is-night .lexique-filter-btn.is-active {
   perspective: 1200px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .lexique-body {
     grid-template-columns: 1fr;
   }
 
-  /* Filtres latéraux → panneau « Filtre » (évite la poussée sur téléphone) */
+  /* Téléphone / tablette : plus de liste régions/continents qui pousse */
   .lexique-side {
-    display: none;
-  }
-
-  .lexique-filter-mobile-only {
-    display: flex;
+    display: none !important;
   }
 
   .grid {

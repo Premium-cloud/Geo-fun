@@ -344,7 +344,7 @@ export function CartesFranceView() {
               ))}
             </div>
           </div>
-          <div className="lexique-filter-section lexique-filter-mobile-only">
+          <div className="lexique-filter-section lexique-filter-regions">
             <p className="lexique-filter-label">Région</p>
             <div className="chips" role="group" aria-label="Régions">
               <button

@@ -9,7 +9,6 @@ import { HistoryPanel } from './game/HistoryPanel'
 import {
   applyNightClass,
   loadOptions,
-  saveOptions,
   type OptionsState,
 } from './lib/storage'
 import { OptionsModal } from './options/OptionsModal'
@@ -70,12 +69,6 @@ export default function App() {
   function handleOptionsChange(next: OptionsState) {
     setOptions(next)
     applyNightClass(next.night)
-  }
-
-  function setMapDomTom(mapDomTom: boolean) {
-    const next = { ...loadOptions(), mapDomTom }
-    saveOptions(next)
-    setOptions(next)
   }
 
   const modeLabel = lexique
@@ -245,7 +238,6 @@ export default function App() {
           <GameView
             variant={tab as PlayVariant}
             mapDomTom={options.mapDomTom}
-            onMapDomTomChange={setMapDomTom}
             onOpenHistory={() => setHistoryOpen(true)}
           />
         ) : null}
