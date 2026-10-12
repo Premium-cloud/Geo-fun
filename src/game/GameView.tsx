@@ -487,6 +487,7 @@ function makeRound(
       mode as TerritoryMode,
       difficulty,
       answerMode,
+      preferUnseen,
     )
   }
   return makeCapitaleRound(mode as CapitaleMode, difficulty, preferUnseen, answerMode)
@@ -756,7 +757,8 @@ export function GameView({
             category,
             mode,
             difficulty,
-            isPlay,
+            // Entraînement + Jeu : sac sans remise (évite les doublons trop tôt)
+            true,
             effectiveAnswerMode,
             mapDomTom,
             territoryPackId,
@@ -767,7 +769,6 @@ export function GameView({
       mode,
       difficulty,
       seed,
-      isPlay,
       effectiveAnswerMode,
       mapDomTom,
       territoryPackId,

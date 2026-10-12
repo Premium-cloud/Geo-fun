@@ -7,6 +7,7 @@ import {
   type TerritoryPackId,
   type TerritoryUnit,
 } from '../data/territories'
+import { pickWeightedItem } from '../lib/pickWeighted'
 import type { AnswerMode } from '../lib/storage'
 import type { Difficulty } from './difficulty'
 
@@ -97,13 +98,21 @@ export function makeTerritoryRound(
   mode: TerritoryMode,
   difficulty: Difficulty,
   answerMode: AnswerMode,
+  preferUnseen = true,
+  excludeIds: readonly string[] = [],
 ): TerritoryRound | null {
   const pack = TERRITORY_PACKS[packId]
   const allowed = TERRITORY_MODES_BY_PACK[packId]
   if (!allowed.includes(mode)) return null
   if (pack.units.length < 4) return null
 
-  const unit = pack.units[Math.floor(Math.random() * pack.units.length)]!
+  const unit = pickWeightedItem(
+    `territory:${packId}:${mode}`,
+    pack.units as TerritoryUnit[],
+    (u) => u.code,
+    preferUnseen,
+    excludeIds,
+  )
   const distractors = pickTerritoryDistractors(unit, pack, difficulty)
   const saisie = answerMode === 'saisie'
   const nameChoices = saisie
