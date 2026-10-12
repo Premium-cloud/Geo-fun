@@ -194,6 +194,7 @@ export function clearAllData() {
   localStorage.removeItem(STATS_KEY)
   localStorage.removeItem(SEEN_KEY)
   localStorage.removeItem('cartes.bag.v1')
+  localStorage.removeItem('cartes.progress.v1')
 }
 
 export function applyNightClass(night: boolean) {

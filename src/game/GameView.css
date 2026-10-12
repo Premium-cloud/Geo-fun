@@ -70,6 +70,48 @@
   padding-bottom: 0.85rem;
 }
 
+.game-config.is-short {
+  padding: 0.85rem 1.15rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.game-config-short-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.game-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.game-chip-row.is-packs {
+  padding-top: 0.15rem;
+}
+
+.game-more-opts {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.15rem 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.game-config-grid.is-more {
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--line);
+}
+
 .game-config-kicker {
   margin: 0 0 0.35rem;
   font-size: 0.68rem;

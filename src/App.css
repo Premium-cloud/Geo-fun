@@ -58,6 +58,16 @@
   min-width: 0;
 }
 
+.brand-quiz-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
 .brand-quiz-copy {
   display: flex;
   flex-direction: column;
@@ -121,6 +131,28 @@
   background: var(--accent);
   border-color: transparent;
   color: #fff;
+}
+
+.lexique-owned-note {
+  margin: 0;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--paper-elev);
+  border-bottom: 1px solid var(--line);
+}
+
+.lexique-inline-link {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 800;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
 }
 
 .lexique-shell {

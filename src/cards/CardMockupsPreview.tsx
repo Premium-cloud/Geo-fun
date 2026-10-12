@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { buildBackScatter, type BackScatterItem } from './backScatterSlots'
 import { FranceCardPairPreview } from './CartesFranceView'
 import { Picto } from './pictos'
+import { REGION_COLOR } from '../data/cartes'
 import {
   TERRITORY_PACK_ORDER,
   TERRITORY_PACKS,
+  TERRITORY_REGION_COLOR,
   type TerritoryPack,
   type TerritoryUnit,
 } from '../data/territoryPictos'
@@ -75,15 +77,20 @@ function MockRecto({
   pack: TerritoryPack
   unit: TerritoryUnit
 }) {
+  const ribbonLabel = unit.region?.trim() || pack.country
+  const ribbonColor =
+    (unit.region &&
+      (REGION_COLOR[unit.region] ?? TERRITORY_REGION_COLOR[unit.region])) ||
+    pack.ribbonBg
   return (
     <div className="mock-card">
       <span className="mock-face-tag">{unit.code}</span>
       <div className={`mock-face mock-face-front is-${pack.emblemKind}`}>
-        <div className="mock-ribbon" style={{ background: pack.ribbonBg }}>
-          {pack.country}
+        <div className="mock-ribbon" style={{ background: ribbonColor }}>
+          {ribbonLabel}
         </div>
         <div className="mock-identity">
-          <div className="mock-code" style={{ color: pack.accent }}>
+          <div className="mock-code" style={{ color: ribbonColor }}>
             {unit.code}
           </div>
           <div className="mock-name">{unit.name}</div>

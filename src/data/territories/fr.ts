@@ -18,6 +18,7 @@ const units: TerritoryUnit[] = DEPARTEMENTS.filter((d) => d.group === 'metro').m
       code: d.code,
       name: d.name,
       capital: fiche?.chefLieu ?? '—',
+      region: fiche?.region,
       pictos: DEPT_PICTOS[d.code] ?? [],
     }
   },

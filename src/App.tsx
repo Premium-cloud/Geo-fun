@@ -1,26 +1,42 @@
 import { useEffect, useState } from 'react'
 import { CardMockupsPreview } from './cards/CardMockupsPreview'
-import { CartesFranceView } from './cards/CartesFranceView'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { CartesTerritoiresView } from './cards/CartesTerritoiresView'
 import { DuelView } from './duel/DuelView'
 import { GameView, type PlayVariant } from './game/GameView'
 import { HistoryPanel } from './game/HistoryPanel'
+import { HomeView, type HomeDest } from './home/HomeView'
+import { Onboarding } from './home/Onboarding'
+import { loadProgress, type ProgressState } from './lib/progression'
 import {
   applyNightClass,
   loadOptions,
   type OptionsState,
 } from './lib/storage'
 import { OptionsModal } from './options/OptionsModal'
+import { AlbumView } from './progress/AlbumView'
+import { PacksView } from './progress/PacksView'
+import { ProfileView } from './progress/ProfileView'
+import { ProgressView } from './progress/ProgressView'
 import './App.css'
+import './home/HomeView.css'
 
-type Tab = 'france' | 'territoires' | 'monde' | 'entrainement' | 'jeu' | 'duel'
+type Tab =
+  | 'home'
+  | 'territoires'
+  | 'monde'
+  | 'entrainement'
+  | 'jeu'
+  | 'duel'
+  | 'progres'
+  | 'packs'
+  | 'album'
+  | 'profil'
 
 function isLexique(tab: Tab): boolean {
-  return tab === 'france' || tab === 'territoires' || tab === 'monde'
+  return tab === 'territoires' || tab === 'monde'
 }
 
-/** M stylisé dans le carré bleu (logo provisoire). */
 function BrandMark({ className }: { className?: string }) {
   return (
     <span className={`brand-mark ${className ?? ''}`.trim()} aria-hidden>
@@ -45,22 +61,42 @@ function BookIcon() {
   )
 }
 
+function TrophyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
+      <path
+        fill="currentColor"
+        d="M7 3h10v2h2.5a1 1 0 0 1 1 1v1a4.5 4.5 0 0 1-4.1 4.48A5.01 5.01 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1a5.01 5.01 0 0 1-3.4-3.42A4.5 4.5 0 0 1 3.5 7V6a1 1 0 0 1 1-1H7V3Zm0 4H5.5a2.5 2.5 0 0 0 2.45 2.5A3.01 3.01 0 0 1 7 7Zm9.5 0H17a3.01 3.01 0 0 1-.95 2.5A2.5 2.5 0 0 0 18.5 7H16.5Z"
+      />
+    </svg>
+  )
+}
+
+const HUB_TABS: Tab[] = ['progres', 'packs', 'album', 'profil']
+
 export default function App() {
   const [tab, setTab] = useState<Tab>(() => {
     if (typeof window !== 'undefined') {
       const duel = new URL(window.location.href).searchParams.get('duel')
       if (duel) return 'duel'
     }
-    return 'entrainement'
+    return 'home'
   })
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [options, setOptions] = useState<OptionsState>(() => loadOptions())
+  const [progress, setProgress] = useState<ProgressState>(() => loadProgress())
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => !loadProgress().onboardingDone,
+  )
+
   const previewCartes =
     typeof window !== 'undefined' &&
     new URL(window.location.href).searchParams.get('preview') === 'cartes'
   const lexique = isLexique(tab)
   const showHistoryBtn = tab === 'entrainement' || tab === 'jeu'
+  const isHome = tab === 'home'
+  const hideMainTabs = isHome || lexique || HUB_TABS.includes(tab)
 
   useEffect(() => {
     applyNightClass(options.night)
@@ -71,13 +107,34 @@ export default function App() {
     applyNightClass(next.night)
   }
 
-  const modeLabel = lexique
-    ? 'LEXIQUE — CARTES À JOUER'
-    : tab === 'jeu'
-      ? 'Jeu'
-      : tab === 'duel'
-        ? 'Duel'
-        : 'Entraînement'
+  function goHomeDest(dest: HomeDest) {
+    if (dest === 'apprendre') setTab('entrainement')
+    else if (dest === 'jouer') setTab('jeu')
+    else if (dest === 'defier') setTab('duel')
+    else if (dest === 'lexique') setTab('territoires')
+    else if (dest === 'packs') setTab('packs')
+    else if (dest === 'album') setTab('album')
+    else if (dest === 'trophees') setTab('progres')
+    else setTab('profil')
+  }
+
+  const modeLabel = isHome
+    ? 'Accueil'
+    : lexique
+      ? 'LEXIQUE'
+      : tab === 'jeu'
+        ? 'Jouer'
+        : tab === 'duel'
+          ? 'Défier'
+          : tab === 'progres'
+            ? 'Trophées'
+            : tab === 'packs'
+              ? 'Packs'
+              : tab === 'album'
+                ? 'Album'
+                : tab === 'profil'
+                  ? 'Profil'
+                  : 'Apprendre'
 
   if (previewCartes) {
     return (
@@ -106,18 +163,25 @@ export default function App() {
   return (
     <div className={`app ${lexique ? 'is-lexique-app' : ''}`}>
       <header className="topbar no-print is-quiz">
-        <div className="brand-quiz">
+        <button
+          type="button"
+          className="brand-quiz brand-quiz-btn"
+          onClick={() => setTab('home')}
+          aria-label="Accueil GeoFun"
+        >
           <BrandMark className="brand-mark-lg" />
           <div className="brand-quiz-copy">
-            <p className="brand-mode">Mode actuel</p>
+            <p className="brand-mode">GeoFun</p>
             <p className={`brand-mode-sub ${lexique ? 'is-lexique-title' : ''}`}>
               {modeLabel}
             </p>
             {lexique ? (
-              <button
-                type="button"
+              <span
                 className="btn-print-inline"
-                onClick={() => {
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation()
                   const imgs = Array.from(
                     document.querySelectorAll<HTMLImageElement>('.print-deck img'),
                   )
@@ -132,17 +196,30 @@ export default function App() {
                     ),
                   ).then(() => window.print())
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    ;(e.target as HTMLElement).click()
+                  }
+                }}
               >
                 Imprimer
-              </button>
+              </span>
             ) : null}
           </div>
-        </div>
+        </button>
 
-        {!lexique ? (
+        {!hideMainTabs ? (
           <nav className="tabs" aria-label="Sections">
             <div className="tabs-group" role="presentation">
-              {(['entrainement', 'jeu', 'duel'] as const).map((t) => (
+              {(
+                [
+                  ['home', 'Accueil'],
+                  ['entrainement', 'Apprendre'],
+                  ['jeu', 'Jouer'],
+                  ['duel', 'Défier'],
+                ] as const
+              ).map(([t, label]) => (
                 <button
                   key={t}
                   type="button"
@@ -150,7 +227,7 @@ export default function App() {
                   onClick={() => setTab(t)}
                   aria-current={tab === t ? 'page' : undefined}
                 >
-                  {t === 'entrainement' ? 'Entraînement' : t === 'jeu' ? 'Jeu' : 'Duel'}
+                  {label}
                 </button>
               ))}
             </div>
@@ -180,10 +257,19 @@ export default function App() {
           </button>
           <button
             type="button"
+            className={`btn-lexique ${tab === 'progres' ? 'is-active' : ''}`}
+            onClick={() => setTab('progres')}
+            aria-label="Trophées"
+            title="Trophées"
+          >
+            <TrophyIcon />
+          </button>
+          <button
+            type="button"
             className={`btn-lexique ${lexique ? 'is-active' : ''}`}
-            onClick={() => setTab(lexique ? 'entrainement' : 'france')}
-            aria-label={lexique ? 'Retour aux jeux' : 'Lexique'}
-            title={lexique ? 'Jeux' : 'Lexique'}
+            onClick={() => setTab(lexique ? 'home' : 'territoires')}
+            aria-label={lexique ? 'Retour accueil' : 'Lexique'}
+            title={lexique ? 'Accueil' : 'Lexique'}
           >
             <BookIcon />
           </button>
@@ -191,19 +277,37 @@ export default function App() {
       </header>
 
       <main>
+        {tab === 'home' ? (
+          <HomeView onGo={goHomeDest} progress={progress} />
+        ) : null}
+
+        {tab === 'profil' ? (
+          <ProfileView onBack={() => setTab('home')} onProgressChange={setProgress} />
+        ) : null}
+
+        {tab === 'packs' ? (
+          <PacksView
+            onBack={() => setTab('home')}
+            onOpenAlbum={() => setTab('album')}
+            onProgressChange={setProgress}
+          />
+        ) : null}
+
+        {tab === 'album' ? (
+          <AlbumView
+            onBack={() => setTab('home')}
+            onOpenPacks={() => setTab('packs')}
+            onProgressChange={setProgress}
+          />
+        ) : null}
+
+        {tab === 'progres' ? (
+          <ProgressView onBack={() => setTab('home')} onProgressChange={setProgress} />
+        ) : null}
+
         {lexique ? (
           <div className="lexique-shell">
             <div className="lexique-switch no-print" role="tablist" aria-label="Lexique">
-              <button
-                type="button"
-                role="tab"
-                className={`lexique-switch-tab ${tab === 'france' ? 'is-active' : ''}`}
-                aria-selected={tab === 'france'}
-                onClick={() => setTab('france')}
-              >
-                <strong>France</strong>
-                <span>Départements</span>
-              </button>
               <button
                 type="button"
                 role="tab"
@@ -212,7 +316,7 @@ export default function App() {
                 onClick={() => setTab('territoires')}
               >
                 <strong>Territoires</strong>
-                <span>FR · CH · ES…</span>
+                <span>FR · CH · ES · US…</span>
               </button>
               <button
                 type="button"
@@ -225,20 +329,23 @@ export default function App() {
                 <span>Drapeaux</span>
               </button>
             </div>
-            {tab === 'france' ? (
-              <CartesFranceView />
-            ) : tab === 'territoires' ? (
-              <CartesTerritoiresView />
-            ) : (
-              <CartesMondeView />
-            )}
+            <p className="lexique-owned-note no-print">
+              Catalogue — tu consultes tout. Pour posséder une carte, ouvre un{' '}
+              <button type="button" className="lexique-inline-link" onClick={() => setTab('packs')}>
+                pack
+              </button>
+              .
+            </p>
+            {tab === 'territoires' ? <CartesTerritoiresView /> : <CartesMondeView />}
           </div>
         ) : null}
+
         {tab === 'entrainement' || tab === 'jeu' ? (
           <GameView
             variant={tab as PlayVariant}
             mapDomTom={options.mapDomTom}
             onOpenHistory={() => setHistoryOpen(true)}
+            onProgressChange={setProgress}
           />
         ) : null}
         {tab === 'duel' ? <DuelView /> : null}
@@ -250,6 +357,14 @@ export default function App() {
         onOptionsChange={handleOptionsChange}
       />
       {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
+      {showOnboarding ? (
+        <Onboarding
+          onDone={() => {
+            setShowOnboarding(false)
+            setProgress(loadProgress())
+          }}
+        />
+      ) : null}
     </div>
   )
 }

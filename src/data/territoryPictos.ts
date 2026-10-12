@@ -6,6 +6,7 @@ export {
   getUnitPictos,
   TERRITORY_PACK_ORDER,
   TERRITORY_PACKS,
+  TERRITORY_REGION_COLOR,
   unitByCode,
   type TerritoryPack,
   type TerritoryPackId,

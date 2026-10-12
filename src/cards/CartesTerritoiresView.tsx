@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
+import { REGION_COLOR } from '../data/cartes'
 import {
   TERRITORY_PACK_ORDER,
   TERRITORY_PACKS,
+  TERRITORY_REGION_COLOR,
   type TerritoryPack,
   type TerritoryPackId,
   type TerritoryUnit,
-} from '../data/territoryPictos'
+} from '../data/territories'
 import { buildBackScatter } from './backScatterSlots'
 import { Picto } from './pictos'
 import './CartesMondeView.css'
@@ -72,6 +74,15 @@ function EmblemImg({
   )
 }
 
+function ribbonMeta(pack: TerritoryPack, unit: TerritoryUnit) {
+  const label = unit.region?.trim() || pack.country
+  const color =
+    (unit.region &&
+      (REGION_COLOR[unit.region] ?? TERRITORY_REGION_COLOR[unit.region])) ||
+    pack.ribbonBg
+  return { label, color }
+}
+
 function CardFront({
   pack,
   unit,
@@ -81,16 +92,17 @@ function CardFront({
   unit: TerritoryUnit
   eager?: boolean
 }) {
-  const ink = inkOn(pack.ribbonBg)
+  const { label: ribbonLabel, color: ribbonColor } = ribbonMeta(pack, unit)
+  const ink = inkOn(ribbonColor)
   const chefClass = unit.capital.length > 16 ? 'is-long' : ''
 
   return (
     <>
-      <span className="ribbon" style={{ background: pack.ribbonBg, color: ink }}>
-        {pack.country}
+      <span className="ribbon" style={{ background: ribbonColor, color: ink }}>
+        {ribbonLabel}
       </span>
       <span className="identity">
-        <span className="code" style={{ color: pack.accent }}>
+        <span className="code" style={{ color: ribbonColor }}>
           {unit.code}
         </span>
         <span className={`dept ${nameSizeClass(unit.name)}`} title={unit.name}>
@@ -166,7 +178,7 @@ function PlayingCard({
       type="button"
       className={`card ${flipped ? 'is-flipped' : ''}`}
       onClick={onFlip}
-      aria-label={`${unit.name}, ${unit.capital}, ${pack.country}`}
+      aria-label={`${unit.name}, ${unit.capital}, ${unit.region ?? pack.country}`}
     >
       <span className="card-inner">
         <span className="face face-front">

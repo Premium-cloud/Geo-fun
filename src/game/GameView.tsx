@@ -9,6 +9,10 @@ import {
 import { answersMatch } from '../lib/answerMatch'
 import { pickWeightedItem } from '../lib/pickWeighted'
 import {
+  recordQuizFinish,
+  type ProgressState,
+} from '../lib/progression'
+import {
   getModeStats,
   loadOptions,
   noteBestStreak,
@@ -670,10 +674,12 @@ export function GameView({
   variant,
   mapDomTom,
   onOpenHistory,
+  onProgressChange,
 }: {
   variant: PlayVariant
   mapDomTom: boolean
   onOpenHistory?: () => void
+  onProgressChange?: (p: ProgressState) => void
 }) {
   const isPlay = variant === 'jeu'
   const [category, setCategory] = useState<Category>('pays')
@@ -699,6 +705,7 @@ export function GameView({
   const [runLog, setRunLog] = useState<RunEntry[]>([])
   const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
   const [missHint, setMissHint] = useState(false)
+  const [moreOptions, setMoreOptions] = useState(false)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
   const runSnapshot = useRef({ score: 0, asked: 0, peak: 0, timeMs: 0 })
@@ -782,9 +789,21 @@ export function GameView({
     setSeed((s) => s + 1)
   }, [mapDomTom, timerMax])
 
+  function awardProgress(finalScore: number, finalAsked: number) {
+    const { state } = recordQuizFinish({
+      category: isMixte ? 'mixte' : category,
+      difficulty,
+      score: finalScore,
+      asked: finalAsked,
+      countPerfect: isBounded || finalAsked >= 5,
+    })
+    onProgressChange?.(state)
+  }
+
   function flushTrainingSession() {
     if (isPlay || asked <= 0) return
     recordRun({ key, score, asked, streakPeak })
+    awardProgress(score, asked)
     setStatsTick((t) => t + 1)
   }
 
@@ -844,6 +863,7 @@ export function GameView({
       streakPeak: peak,
       timeMs: isRapidite ? timeMs : undefined,
     })
+    awardProgress(finalScore, finalAsked)
     setStatsTick((t) => t + 1)
   }
 
@@ -1246,114 +1266,108 @@ export function GameView({
     <div className={`game-view ${roundIsMap ? 'is-map-mode' : ''}`}>
       {categoryBar}
 
-      <div className={`game-config ${roundIsMap ? 'is-compact' : ''}`}>
-        <p className="game-config-kicker">01 — Configuration</p>
-        <h2 className="game-config-title">Préparez votre partie</h2>
-
-        <div className="game-config-grid">
-          {isTerritoires ? (
-            <div className="game-field">
-              <span className="game-field-label">Pays</span>
-              <div className="game-radio-list" role="group" aria-label="Pack territoires">
-                {TERRITORY_PACK_ORDER.map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className={`game-radio ${territoryPackId === id ? 'is-active' : ''}`}
-                    onClick={() => selectTerritoryPack(id)}
-                  >
-                    <span className="game-radio-dot" aria-hidden />
-                    {TERRITORY_PACKS[id].country}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          <div className="game-field">
-            <span className="game-field-label">Sous-mode</span>
-            {!isMixte ? (
-              <div className="game-radio-list" role="group" aria-label="Sous-mode">
-                {availableModes.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    className={`game-radio ${mode === m.id ? 'is-active' : ''}`}
-                    onClick={() => selectMode(m.id)}
-                  >
-                    <span className="game-radio-dot" aria-hidden />
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="game-mixte-hint">(Drapeau·Nom de capitale·Chiffre)</p>
-            )}
-          </div>
-
-          <div className="game-field">
-            <span className="game-field-label">Format</span>
-            <div className="game-radio-list" role="group" aria-label="Format de partie">
-              {formatOptions.map((f) => (
+      <div className={`game-config is-short ${roundIsMap ? 'is-compact' : ''}`}>
+        <div className="game-config-short-row">
+          {!isMixte ? (
+            <div className="game-chip-row" role="group" aria-label="Sous-mode">
+              {availableModes.map((m) => (
                 <button
-                  key={f}
+                  key={m.id}
                   type="button"
-                  className={`game-radio ${sessionFormat === f ? 'is-active' : ''}`}
-                  onClick={() => selectFormat(f)}
+                  className={`game-chip ${mode === m.id ? 'is-active' : ''}`}
+                  onClick={() => selectMode(m.id)}
                 >
-                  <span className="game-radio-dot" aria-hidden />
-                  {FORMAT_LABEL[f]}
+                  {m.label}
                 </button>
               ))}
             </div>
-          </div>
-
-          {!isMapMode ? (
-            <div className="game-field">
-              <span className="game-field-label">Type</span>
-              <div className="game-radio-list" role="group" aria-label="Type de réponse">
-                <button
-                  type="button"
-                  className={`game-radio ${effectiveAnswerMode === 'qcm' ? 'is-active' : ''}`}
-                  onClick={() => selectAnswerMode('qcm')}
-                >
-                  <span className="game-radio-dot" aria-hidden />
-                  QCM
-                </button>
-                <button
-                  type="button"
-                  className={`game-radio ${effectiveAnswerMode === 'saisie' ? 'is-active' : ''}`}
-                  onClick={() => selectAnswerMode('saisie')}
-                >
-                  <span className="game-radio-dot" aria-hidden />
-                  Réponse écrite
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          <div className="game-field game-field-diff">
-            <span className="game-field-label">Difficulté</span>
-            <div className="game-radio-list" role="group" aria-label="Difficulté">
-              {difficultyOptions.map((d) => (
-                <button
-                  key={d.id}
-                  type="button"
-                  className={`game-radio ${difficulty === d.id ? 'is-active' : ''}`}
-                  onClick={() => selectDifficulty(d.id)}
-                >
-                  <span className="game-radio-dot" aria-hidden />
-                  {d.label}
-                </button>
-              ))}
-            </div>
-            {best.bestStreak > 0 ? (
-              <p className="game-record">Record ×{best.bestStreak}</p>
-            ) : (
-              <p className="game-record is-empty">Pas encore de record</p>
-            )}
+          ) : (
+            <p className="game-mixte-hint">MIX · drapeau · capitale · chiffre</p>
+          )}
+          <div className="game-chip-row" role="group" aria-label="Difficulté">
+            {difficultyOptions.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className={`game-chip ${difficulty === d.id ? 'is-active' : ''}`}
+                onClick={() => selectDifficulty(d.id)}
+              >
+                {d.label}
+              </button>
+            ))}
           </div>
         </div>
+
+        {isTerritoires ? (
+          <div className="game-chip-row is-packs" role="group" aria-label="Pays">
+            {TERRITORY_PACK_ORDER.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={`game-chip ${territoryPackId === id ? 'is-active' : ''}`}
+                onClick={() => selectTerritoryPack(id)}
+              >
+                {TERRITORY_PACKS[id].country}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          className="game-more-opts"
+          aria-expanded={moreOptions}
+          onClick={() => setMoreOptions((o) => !o)}
+        >
+          {moreOptions ? 'Moins d’options' : 'Plus d’options'}
+        </button>
+
+        {moreOptions ? (
+          <div className="game-config-grid is-more">
+            <div className="game-field">
+              <span className="game-field-label">Format</span>
+              <div className="game-radio-list" role="group" aria-label="Format de partie">
+                {formatOptions.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    className={`game-radio ${sessionFormat === f ? 'is-active' : ''}`}
+                    onClick={() => selectFormat(f)}
+                  >
+                    <span className="game-radio-dot" aria-hidden />
+                    {FORMAT_LABEL[f]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {!isMapMode ? (
+              <div className="game-field">
+                <span className="game-field-label">Réponse</span>
+                <div className="game-radio-list" role="group" aria-label="Type de réponse">
+                  <button
+                    type="button"
+                    className={`game-radio ${effectiveAnswerMode === 'qcm' ? 'is-active' : ''}`}
+                    onClick={() => selectAnswerMode('qcm')}
+                  >
+                    <span className="game-radio-dot" aria-hidden />
+                    QCM
+                  </button>
+                  <button
+                    type="button"
+                    className={`game-radio ${effectiveAnswerMode === 'saisie' ? 'is-active' : ''}`}
+                    onClick={() => selectAnswerMode('saisie')}
+                  >
+                    <span className="game-radio-dot" aria-hidden />
+                    Écrite
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {best.bestStreak > 0 ? (
+              <p className="game-record">Record ×{best.bestStreak}</p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div
@@ -1525,8 +1539,7 @@ export function GameView({
               type="button"
               className="game-next game-next-quiet"
               onClick={() => {
-                recordRun({ key, score, asked, streakPeak })
-                setStatsTick((t) => t + 1)
+                finishRun(score, asked, streakPeak)
                 setGameOver(true)
               }}
             >

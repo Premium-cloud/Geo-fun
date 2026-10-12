@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import type { DataConnection } from 'peerjs'
 import { answersMatch } from '../lib/answerMatch'
+import { loadProgress, profileLabel, recordDuelWin } from '../lib/progression'
 import { DuelPrompt } from './DuelPrompt'
 import { makeDuelDeck } from './makeRound'
 import {
@@ -26,7 +27,11 @@ import './DuelView.css'
 
 type Phase = 'setup' | 'lobby' | 'play' | 'over'
 
-const PLAYER = ['Joueur 1', 'Joueur 2'] as const
+function playerLabels(): [string, string] {
+  const me = profileLabel(loadProgress())
+  const p0 = me === 'Ton profil' ? 'Joueur 1' : me
+  return [p0, 'Joueur 2']
+}
 
 function useWideEnough() {
   const [ok, setOk] = useState(
@@ -88,6 +93,13 @@ export function DuelView() {
       peerRef.current?.destroy()
     }
   }, [])
+
+  // 1 victoire trophée par duel terminé (même écran — pas d’égalité)
+  useEffect(() => {
+    if (phase !== 'over') return
+    if (overTitle.toLowerCase().includes('égal')) return
+    recordDuelWin()
+  }, [phase, overTitle])
 
   const round = deck[idx] ?? null
 
@@ -403,8 +415,8 @@ export function DuelView() {
       : a === b
         ? 'Égalité !'
         : a > b
-          ? `${PLAYER[0]} gagne`
-          : `${PLAYER[1]} gagne`
+          ? `${playerLabels()[0]} gagne`
+          : `${playerLabels()[1]} gagne`
     return (
       <div className="duel-view">
         <div className="duel-over">
@@ -413,11 +425,11 @@ export function DuelView() {
           {!isBattle ? (
             <div className="duel-scoreboard">
               <div className="duel-score-pill is-p0">
-                <span className="duel-score-name">{PLAYER[0]}</span>
+                <span className="duel-score-name">{playerLabels()[0]}</span>
                 <span className="duel-score-pts">{a}</span>
               </div>
               <div className="duel-score-pill is-p1">
-                <span className="duel-score-name">{PLAYER[1]}</span>
+                <span className="duel-score-name">{playerLabels()[1]}</span>
                 <span className="duel-score-pts">{b}</span>
               </div>
             </div>
@@ -603,16 +615,16 @@ function BattleRoyalePlay({
     dead.current = true
     const victim = holder
     const winner = (1 - victim) as 0 | 1
-    setFlash(`💥 ${PLAYER[victim]} éliminé`)
+    setFlash(`💥 ${playerLabels()[victim]} éliminé`)
     window.setTimeout(() => {
-      onOver(`💥 ${PLAYER[winner]} gagne — ${PLAYER[victim]} éliminé`)
+      onOver(`💥 ${playerLabels()[winner]} gagne — ${playerLabels()[victim]} éliminé`)
     }, 1100)
   }, [hp, holder, flash, onOver])
 
   function passTurn() {
     const next = (1 - holder) as 0 | 1
     const nextHp = rollBattleHp()
-    setFlash(`✓ Passe à ${PLAYER[next]}`)
+    setFlash(`✓ Passe à ${playerLabels()[next]}`)
     window.setTimeout(() => {
       setFlash(null)
       setHolder(next)
@@ -646,7 +658,7 @@ function BattleRoyalePlay({
 
       <div className={`duel-bomb-card is-p${holder}`}>
         <p className={`duel-bomb-holder is-p${holder}`}>
-          À {PLAYER[holder]}
+          À {playerLabels()[holder]}
           <span className="duel-fuse" aria-hidden="true">
             ●
           </span>
@@ -679,7 +691,7 @@ function Scoreboard({
     <div className="duel-scoreboard">
       {([0, 1] as const).map((p) => (
         <div key={p} className={`duel-score-pill is-p${p}`}>
-          <span className="duel-score-name">{PLAYER[p]}</span>
+          <span className="duel-score-name">{playerLabels()[p]}</span>
           <span className="duel-score-pts">{scores[p]}</span>
           {combos[p] > 1 ? <span className="duel-combo">×{combos[p]}</span> : null}
         </div>
@@ -936,7 +948,7 @@ function RacePlay({
         className={`duel-race-panel is-p${player} ${locked[player] ? 'is-done' : ''} ${correctAt[player] != null ? 'is-ok' : locked[player] ? 'is-ko' : ''}`}
       >
         <p className={`duel-race-name is-p${player}`}>
-          {PLAYER[player]}
+          {playerLabels()[player]}
           {online && me === player ? ' (toi)' : ''}
           {combos[player] > 1 ? (
             <span className="duel-combo"> ×{combos[player]}</span>
@@ -1092,7 +1104,7 @@ function TurnsPlay({
   function resolveTurn(ok: boolean) {
     results.current[turn] = ok
     onCombo(turn, ok)
-    setMsg(ok ? `✓ ${PLAYER[turn]}` : `✗ ${PLAYER[turn]}`)
+    setMsg(ok ? `✓ ${playerLabels()[turn]}` : `✗ ${playerLabels()[turn]}`)
     window.setTimeout(() => {
       setMsg(null)
       if (turn === 0) {
@@ -1135,7 +1147,7 @@ function TurnsPlay({
         </h2>
       </header>
       <Scoreboard scores={scores} combos={combos} timeLeft={timeLeft} />
-      <p className={`duel-turn-banner is-p${turn}`}>Tour de {PLAYER[turn]}</p>
+      <p className={`duel-turn-banner is-p${turn}`}>Tour de {playerLabels()[turn]}</p>
       {msg ? <p className="duel-flash">{msg}</p> : <DuelPrompt round={round} />}
       {!msg ? (
         <AnswerBlock

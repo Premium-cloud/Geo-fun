@@ -16,6 +16,11 @@ export type TerritoryUnit = {
   name: string
   /** Chef-lieu / capital */
   capital: string
+  /**
+   * Ruban haut de carte (comme la région FR).
+   * Si absent → on affiche le pays du pack.
+   */
+  region?: string
   /** 3 spécialités recto */
   pictos: Specialty[]
 }

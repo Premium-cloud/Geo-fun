@@ -7,19 +7,33 @@ import { FR_PACK } from './fr'
 import { JP_PACK } from './jp'
 import { US_PACK } from './us'
 import type { TerritoryPack, TerritoryPackId } from './types'
+import { UNIT_REGION } from './unitRegions'
 
 export type { TerritoryPack, TerritoryPackId, TerritoryUnit } from './types'
 export { unitByCode } from './types'
+export { TERRITORY_REGION_COLOR } from './unitRegions'
+
+function withRegions(pack: TerritoryPack): TerritoryPack {
+  const map = UNIT_REGION[pack.id]
+  if (!map) return pack
+  return {
+    ...pack,
+    units: pack.units.map((u) => ({
+      ...u,
+      region: u.region ?? map[u.code],
+    })),
+  }
+}
 
 export const TERRITORY_PACKS: Record<TerritoryPackId, TerritoryPack> = {
   fr: FR_PACK,
   ch: CH_PACK,
-  us: US_PACK,
+  us: withRegions(US_PACK),
   es: ES_PACK,
   de: DE_PACK,
-  jp: JP_PACK,
-  ca: CA_PACK,
-  br: BR_PACK,
+  jp: withRegions(JP_PACK),
+  ca: withRegions(CA_PACK),
+  br: withRegions(BR_PACK),
 }
 
 export const TERRITORY_PACK_ORDER: TerritoryPackId[] = [

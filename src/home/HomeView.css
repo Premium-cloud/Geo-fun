@@ -1,0 +1,150 @@
+.home-view {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+  font-family: var(--font-display);
+}
+
+.home-hero {
+  margin-bottom: 1.5rem;
+}
+
+.home-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.home-title {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.85rem, 5vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.home-lead {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.home-profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 22rem;
+  border: 1px solid var(--line);
+  background: var(--paper-elev);
+  border-radius: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  color: var(--ink);
+  font-family: inherit;
+}
+
+.home-profile-chip strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.home-profile-chip em {
+  display: block;
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+
+.home-avatar {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  background: #c4473a;
+}
+
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  border: 0;
+  border-radius: 1rem;
+  padding: 1.15rem 1.25rem;
+  text-align: left;
+  color: #fff;
+  font-family: inherit;
+  box-shadow: 0 8px 24px rgba(20, 24, 32, 0.12);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.home-cta:active {
+  transform: scale(0.985);
+}
+
+.home-cta.is-learn {
+  background: linear-gradient(135deg, #1f6f8b, #2a9d8f);
+}
+.home-cta.is-play {
+  background: linear-gradient(135deg, #c4473a, #d4652f);
+}
+.home-cta.is-duel {
+  background: linear-gradient(135deg, #3a4f7a, #1d4ed8);
+}
+
+.home-cta-label {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.home-cta-sub {
+  font-size: 0.9rem;
+  opacity: 0.88;
+  font-weight: 500;
+}
+
+.home-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.home-link {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.home-link.is-muted {
+  color: var(--muted);
+}
