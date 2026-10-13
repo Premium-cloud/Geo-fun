@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   CARDS_PER_PACK,
-  DUP_DISCARD_CREDIT,
-  FOIL_CHANCE,
   PACK_COST,
   canOpenPack,
   getCardCatalog,
   loadProgress,
   openPack,
-  uniqueFoilCount,
   uniqueOwnedCount,
   type PackDraw,
   type ProgressState,
@@ -34,9 +31,7 @@ export function PacksView({
   const [visibleCount, setVisibleCount] = useState(0)
   const [err, setErr] = useState<string | null>(null)
   const timers = useRef<number[]>([])
-  const total = getCardCatalog().length
   const owned = uniqueOwnedCount(state)
-  const foils = uniqueFoilCount(state)
 
   function clearTimers() {
     for (const id of timers.current) window.clearTimeout(id)
@@ -97,7 +92,7 @@ export function PacksView({
 
   const canBuy = canOpenPack(state) && phase !== 'opening'
   const revealDone = phase === 'reveal' && visibleCount >= (draws?.length ?? 0)
-  const foilPct = Math.round(FOIL_CHANCE * 100)
+  const total = getCardCatalog().length
 
   return (
     <div className={`packs-view is-${phase}`}>
@@ -114,9 +109,7 @@ export function PacksView({
       <div className="packs-intro">
         <h1>Packs</h1>
         <p>
-          {PACK_COST} crédits · {CARDS_PER_PACK} cartes · foil ~{foilPct}% · album {owned}/
-          {total}
-          {foils > 0 ? ` · ${foils} foil` : ''}
+          {PACK_COST} crédits · {CARDS_PER_PACK} cartes · {owned}/{total}
         </p>
       </div>
 
@@ -135,7 +128,7 @@ export function PacksView({
             <span className="packs-booster-body">
               <span className="packs-booster-brand">GeoFun</span>
               <span className="packs-booster-title">Booster</span>
-              <span className="packs-booster-sub">{CARDS_PER_PACK} cartes · chance foil</span>
+              <span className="packs-booster-sub">{CARDS_PER_PACK} cartes</span>
             </span>
             <span className="packs-booster-wax" aria-hidden>
               <span>{CARDS_PER_PACK}</span>
@@ -172,6 +165,9 @@ export function PacksView({
                     .filter(Boolean)
                     .join(' ')}
                 >
+                  {shown && d.duplicate ? (
+                    <span className="packs-dup-pin">Doublon</span>
+                  ) : null}
                   <div className="packs-flip">
                     <div className={`packs-art ${d.foil ? 'is-foil' : ''}`}>
                       {d.foil ? (
@@ -183,20 +179,8 @@ export function PacksView({
                       <CardThumb card={d.card} />
                     </div>
                     <div className="packs-flip-meta">
-                      {d.foil ? <span className="packs-foil-badge">Foil</span> : null}
                       <strong>{d.card.name}</strong>
                       <span>{d.card.sub}</span>
-                      {shown ? (
-                        <em>
-                          {d.foil
-                            ? d.newFoil
-                              ? 'Nouvelle foil'
-                              : 'Foil déjà eue'
-                            : d.duplicate
-                              ? 'Doublon'
-                              : 'Nouvelle'}
-                        </em>
-                      ) : null}
                     </div>
                   </div>
                 </li>
@@ -227,18 +211,11 @@ export function PacksView({
         </section>
       ) : null}
 
-      {phase === 'idle' ? (
+      {phase === 'idle' && owned > 0 ? (
         <p className="packs-footnote">
-          Hasard sur {total} cartes. Foil = variante dorée. Doublons → album (+
-          {DUP_DISCARD_CREDIT} crédits).
-          {owned > 0 ? (
-            <>
-              {' '}
-              <button type="button" className="packs-inline" onClick={onOpenAlbum}>
-                Album
-              </button>
-            </>
-          ) : null}
+          <button type="button" className="packs-inline" onClick={onOpenAlbum}>
+            Voir l’album
+          </button>
         </p>
       ) : null}
     </div>

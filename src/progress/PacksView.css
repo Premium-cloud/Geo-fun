@@ -403,17 +403,25 @@
   pointer-events: none;
 }
 
-.packs-foil-badge {
-  display: inline-block;
-  margin-bottom: 0.15rem;
-  padding: 0.12rem 0.45rem;
+.packs-dup-pin {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 4;
+  padding: 0.15rem 0.4rem;
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #1c1712;
-  background: linear-gradient(135deg, #f0d78a, #c9a24a 55%, #8a6a1a);
+  color: #fff;
+  background: rgba(40, 44, 52, 0.82);
+}
+
+.packs-draw.is-foil .packs-dup-pin {
+  background: rgba(28, 23, 18, 0.85);
+  color: #e8d08a;
+  border: 1px solid rgba(232, 208, 138, 0.35);
 }
 
 .packs-flip-meta strong {
@@ -435,23 +443,6 @@
 
 .packs-draw.is-foil .packs-flip-meta span {
   color: rgba(247, 241, 226, 0.65);
-}
-
-.packs-flip-meta em {
-  display: inline-block;
-  margin-top: 0.3rem;
-  font-style: normal;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--accent);
-}
-
-.packs-draw.is-foil .packs-flip-meta em {
-  color: #e8d08a;
-}
-
-.packs-draw.is-dup:not(.is-foil) em {
-  color: var(--muted);
 }
 
 .packs-reveal-actions {
