@@ -11,7 +11,7 @@ import {
   type CardRegion,
   type ProgressState,
 } from '../lib/progression'
-import { CardThumb } from './CardThumb'
+import { AlbumCollectibleCard } from './AlbumCollectibleCard'
 import './AlbumView.css'
 
 type Filter = 'all' | 'foil' | CardRegion
@@ -27,6 +27,7 @@ export function AlbumView({
 }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [state, setState] = useState(() => loadProgress())
+  const [flipped, setFlipped] = useState<Record<string, boolean>>({})
   const unlocked = albumUnlocked(state)
   const owned = useMemo(() => ownedCards(state), [state])
   const total = getCardCatalog().length
@@ -73,11 +74,8 @@ export function AlbumView({
       </button>
       <h1>Mon album</h1>
       <p className="album-lead">
-        {uniqueOwnedCount(state)} / {total} · {foils} foil · {state.points} crédits
-      </p>
-      <p className="album-hint">
-        Album complet → titre + contour. Album foil complet → titre + contour stylé. Doublon → +
-        {DUP_DISCARD_CREDIT} crédits.
+        {uniqueOwnedCount(state)} / {total}
+        {foils > 0 ? ` · ${foils} foil` : ''} · {state.points} crédits
       </p>
 
       <div className="album-filters" role="group" aria-label="Filtrer">
@@ -94,34 +92,47 @@ export function AlbumView({
             key={id}
             type="button"
             className={`album-chip ${filter === id ? 'is-active' : ''}`}
-            onClick={() => setFilter(id)}
+            onClick={() => {
+              setFilter(id)
+              setFlipped({})
+            }}
           >
             {label}
           </button>
         ))}
       </div>
 
-      <ul className="album-grid">
-        {list.map((c) => (
-          <li key={c.id} className={`album-card is-owned ${c.foil ? 'is-foil' : ''}`}>
-            <CardThumb card={c} className="album-img" emptyClassName="is-empty" />
-            <strong>{c.name}</strong>
-            <span>{c.sub}</span>
-            {c.foil ? <em className="album-foil-tag">Foil</em> : null}
-            {c.count > 1 ? (
-              <button
-                type="button"
-                className="album-discard"
-                onClick={() => onDiscard(c.id)}
-              >
-                Défausser ×{c.count - 1} (+{DUP_DISCARD_CREDIT})
-              </button>
-            ) : (
-              <em className="album-once">×1</em>
-            )}
-          </li>
-        ))}
-      </ul>
+      {list.length === 0 ? (
+        <p className="album-empty">Rien dans ce filtre.</p>
+      ) : (
+        <ul className="album-deck">
+          {list.map((c) => (
+            <li key={c.id} className={`album-slot ${c.foil ? 'is-foil' : ''}`}>
+              <AlbumCollectibleCard
+                id={c.id}
+                foil={c.foil}
+                flipped={!!flipped[c.id]}
+                onFlip={() =>
+                  setFlipped((prev) => ({ ...prev, [c.id]: !prev[c.id] }))
+                }
+              />
+              <div className="album-slot-meta">
+                {c.count > 1 ? (
+                  <button
+                    type="button"
+                    className="album-discard"
+                    onClick={() => onDiscard(c.id)}
+                  >
+                    Défausser ×{c.count - 1} (+{DUP_DISCARD_CREDIT})
+                  </button>
+                ) : (
+                  <em className="album-once">×1</em>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

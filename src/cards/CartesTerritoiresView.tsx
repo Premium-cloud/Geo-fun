@@ -162,26 +162,31 @@ function CardBack({ pack }: { pack: TerritoryPack }) {
   )
 }
 
-function PlayingCard({
+export function TerritoryPlayingCard({
   pack,
   unit,
   flipped,
   onFlip,
+  foil = false,
+  className = '',
 }: {
   pack: TerritoryPack
   unit: TerritoryUnit
   flipped: boolean
   onFlip: () => void
+  foil?: boolean
+  className?: string
 }) {
   return (
     <button
       type="button"
-      className={`card ${flipped ? 'is-flipped' : ''}`}
+      className={`card ${flipped ? 'is-flipped' : ''} ${foil ? 'is-foil' : ''} ${className}`.trim()}
       onClick={onFlip}
       aria-label={`${unit.name}, ${unit.capital}, ${unit.region ?? pack.country}`}
     >
       <span className="card-inner">
         <span className="face face-front">
+          {foil ? <span className="card-foil-sheen" aria-hidden /> : null}
           <CardFront pack={pack} unit={unit} />
         </span>
         <span className="face face-back">
@@ -343,7 +348,7 @@ export function CartesTerritoiresView() {
           ) : (
             <div className="grid">
               {units.map((unit) => (
-                <PlayingCard
+                <TerritoryPlayingCard
                   key={`${pack.id}-${unit.code}`}
                   pack={pack}
                   unit={unit}

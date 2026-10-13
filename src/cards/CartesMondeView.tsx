@@ -121,24 +121,29 @@ function CardBack() {
   )
 }
 
-function PlayingCard({
+export function MondePlayingCard({
   card,
   flipped,
   onFlip,
+  foil = false,
+  className = '',
 }: {
   card: Country
   flipped: boolean
   onFlip: () => void
+  foil?: boolean
+  className?: string
 }) {
   return (
     <button
       type="button"
-      className={`card ${flipped ? 'is-flipped' : ''}`}
+      className={`card ${flipped ? 'is-flipped' : ''} ${foil ? 'is-foil' : ''} ${className}`.trim()}
       onClick={onFlip}
       aria-label={`${card.name}, ${card.capital}, ${card.continent}`}
     >
       <span className="card-inner">
         <span className="face face-front">
+          {foil ? <span className="card-foil-sheen" aria-hidden /> : null}
           <CardFront card={card} />
         </span>
         <span className="face face-back">
@@ -315,7 +320,7 @@ export function CartesMondeView() {
           ) : (
             <div className="grid">
               {cards.map((card) => (
-                <PlayingCard
+                <MondePlayingCard
                   key={card.code}
                   card={card}
                   flipped={!!flipped[card.code]}
