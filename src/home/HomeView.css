@@ -75,6 +75,26 @@
   color: #fff;
   letter-spacing: -0.02em;
   background: #c4473a;
+  box-sizing: border-box;
+}
+
+.home-avatar.is-frame-album {
+  box-shadow: 0 0 0 3px #1f6f8b;
+}
+
+.home-avatar.is-frame-foil {
+  box-shadow:
+    0 0 0 3px #c9a227,
+    0 0 0 5px rgba(201, 162, 39, 0.35);
+}
+
+.home-profile-title {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #9a7a12;
+  margin-top: 0.05rem;
+  letter-spacing: 0.02em;
 }
 
 .home-actions {
@@ -89,13 +109,12 @@
   align-items: flex-start;
   gap: 0.2rem;
   border: 0;
-  border-radius: 1rem;
-  padding: 1.15rem 1.25rem;
+  border-radius: 0.4rem;
+  padding: 1.1rem 1.15rem;
   text-align: left;
   color: #fff;
   font-family: inherit;
-  box-shadow: 0 8px 24px rgba(20, 24, 32, 0.12);
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition: transform 0.12s ease;
 }
 
 .home-cta:active {
@@ -103,13 +122,13 @@
 }
 
 .home-cta.is-learn {
-  background: linear-gradient(135deg, #1f6f8b, #2a9d8f);
+  background: #1f6f8b;
 }
 .home-cta.is-play {
-  background: linear-gradient(135deg, #c4473a, #d4652f);
+  background: #c4473a;
 }
 .home-cta.is-duel {
-  background: linear-gradient(135deg, #3a4f7a, #1d4ed8);
+  background: #3a4f7a;
 }
 
 .home-cta-label {
@@ -131,14 +150,13 @@
   gap: 0.75rem;
   width: 100%;
   margin-top: 1.15rem;
-  border: 0;
-  border-radius: 0.95rem;
-  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  padding: 0.9rem 1.05rem;
   text-align: left;
-  color: #fff;
+  color: var(--ink);
   font-family: inherit;
-  background: linear-gradient(145deg, #1f6f8b, #c4473a);
-  box-shadow: 0 10px 28px rgba(20, 24, 32, 0.14);
+  background: var(--paper-elev);
 }
 
 .home-packs-promo-copy {
@@ -155,14 +173,14 @@
 .home-packs-promo-copy em {
   font-style: normal;
   font-size: 0.8rem;
-  opacity: 0.9;
+  color: var(--muted);
   font-weight: 600;
 }
 
 .home-packs-promo-go {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  opacity: 0.9;
+  color: var(--accent);
 }
 
 .home-secondary {

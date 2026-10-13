@@ -2,7 +2,8 @@
  * Progression locale — profil, crédits, pack global → album, trophées.
  * Lexique = catalogue (tout visible, rien “possédé”).
  * Album = cartes débloquées via packs (accès si tu en as au moins une).
- * Pack = tirage sur TOUTES les cartes (pas de thème / zone).
+ * Pack = tirage hasard global (pas de thème / pity / fragments).
+ * Foil = variante dorée rare au tirage.
  */
 
 import { COUNTRIES } from '../data/countries'
@@ -11,19 +12,17 @@ import { TERRITORY_PACKS, TERRITORY_PACK_ORDER } from '../data/territories'
 export type TrophyTier = 'bronze' | 'argent' | 'or'
 export type DifficultyId = 'facile' | 'difficile' | 'hardcore'
 export type CardRegion = 'france' | 'monde' | 'territoires'
+export type ProfileFrame = 'none' | 'album' | 'foil'
 
 export type CollectibleCard = {
   id: string
   name: string
   sub: string
   region: CardRegion
-  /** Première URL candidate (compat). */
   image?: string
-  /** Toutes les URLs à essayer (png/svg, etc.). */
   images?: string[]
 }
 
-/** Candidats d’image pour une carte (ordre de fallback). */
 export function cardImageCandidates(card: CollectibleCard): string[] {
   if (card.images?.length) return card.images
   return card.image ? [card.image] : []
@@ -32,16 +31,21 @@ export function cardImageCandidates(card: CollectibleCard): string[] {
 export type ProgressState = {
   points: number
   packsOpened: number
-  /** id → nombre d’exemplaires (1 = album, >1 = doublons défaussables). */
+  /** id → exemplaires (défaussables si > 1). */
   cardCounts: Record<string, number>
+  /** id → true si au moins une foil obtenue. */
+  foilOwned: Record<string, boolean>
   trophies: Record<string, string>
   perfectCats: Record<DifficultyId, string[]>
   duelWins: number
   onboardingDone: boolean
   pseudo: string
   color: string
-  /** Crédits de test déjà versés une fois. */
   starterCreditsGranted?: boolean
+  /** Contour profil débloqué (album / foil album). */
+  profileFrame: ProfileFrame
+  /** Id du titre actif (meilleur débloqué). */
+  profileTitleId: string | null
 }
 
 const KEY = 'cartes.progress.v1'
@@ -51,6 +55,8 @@ export const POINTS_PER_CORRECT = 10
 export const PERFECT_BONUS = 40
 export const CARDS_PER_PACK = 3
 export const STARTER_CREDITS = 400
+/** Chance foil par carte tirée (hasard pur, pas de pity). */
+export const FOIL_CHANCE = 0.08
 
 export const PROFILE_COLORS = [
   '#c4473a',
@@ -62,6 +68,26 @@ export const PROFILE_COLORS = [
   '#8c3a4b',
   '#d4a017',
 ] as const
+
+export type ProfileTitleDef = {
+  id: string
+  label: string
+  blurb: string
+}
+
+/** Titres collection (album / foil album). */
+export const PROFILE_TITLES: ProfileTitleDef[] = [
+  {
+    id: 'album_complete',
+    label: 'Collectionneur',
+    blurb: 'Album complet — toutes les cartes',
+  },
+  {
+    id: 'foil_album_complete',
+    label: 'Maître doré',
+    blurb: 'Album foil complet — toutes les cartes en doré',
+  },
+]
 
 export type TrophyDef = {
   id: string
@@ -87,7 +113,16 @@ export const TROPHIES: TrophyDef[] = [
   { id: 'duel_ia', title: 'Dominer l’IA', blurb: 'Battre l’IA en duel — bientôt', tier: 'or', stub: true },
   { id: 'collec_start', title: 'Collectionneur', blurb: 'Ouvrir ton premier pack', tier: 'bronze' },
   { id: 'collec_mid', title: 'Album en cours', blurb: '20 cartes dans l’album', tier: 'argent' },
-  { id: 'collec_all', title: 'Collection complète', blurb: 'Toutes les cartes — bientôt', tier: 'or', stub: true },
+  { id: 'collec_all', title: 'Album complet', blurb: 'Toutes les cartes + titre & contour', tier: 'or' },
+  { id: 'foil_1', title: 'Premier éclat', blurb: 'Obtenir 1 carte foil', tier: 'bronze' },
+  { id: 'foil_10', title: 'Collection dorée', blurb: 'Obtenir 10 cartes foil', tier: 'argent' },
+  { id: 'foil_100', title: 'Trésor foil', blurb: 'Obtenir 100 cartes foil', tier: 'or' },
+  {
+    id: 'foil_album',
+    title: 'Album foil complet',
+    blurb: 'Toutes les cartes en foil + titre & contour stylé',
+    tier: 'or',
+  },
 ]
 
 const QUIZ_CATS = ['pays', 'capitale', 'territoires', 'mixte'] as const
@@ -115,7 +150,6 @@ export function getCardCatalog(): CollectibleCard[] {
     const pack = TERRITORY_PACKS[pid]
     for (const u of pack.units) {
       const base = `/mockups/emblems/${pid}/${u.code}`
-      // Les emblèmes territoires sont surtout en png ; on garde svg en secours.
       const images = [`${base}.png`, `${base}.svg`]
       cards.push({
         id: `${pid}:${u.code}`,
@@ -153,8 +187,27 @@ export function uniqueOwnedCount(state: ProgressState): number {
   return Object.keys(state.cardCounts).filter((id) => (state.cardCounts[id] ?? 0) > 0).length
 }
 
+export function uniqueFoilCount(state: ProgressState): number {
+  return Object.keys(state.foilOwned).filter((id) => state.foilOwned[id]).length
+}
+
 export function albumUnlocked(state: ProgressState): boolean {
   return uniqueOwnedCount(state) > 0
+}
+
+export function isAlbumComplete(state: ProgressState): boolean {
+  const total = getCardCatalog().length
+  return total > 0 && uniqueOwnedCount(state) >= total
+}
+
+export function isFoilAlbumComplete(state: ProgressState): boolean {
+  const total = getCardCatalog().length
+  return total > 0 && uniqueFoilCount(state) >= total
+}
+
+export function profileTitleLabel(state: ProgressState): string | null {
+  if (!state.profileTitleId) return null
+  return PROFILE_TITLES.find((t) => t.id === state.profileTitleId)?.label ?? null
 }
 
 function defaultState(): ProgressState {
@@ -162,6 +215,7 @@ function defaultState(): ProgressState {
     points: 0,
     packsOpened: 0,
     cardCounts: {},
+    foilOwned: {},
     trophies: {},
     perfectCats: { facile: [], difficile: [], hardcore: [] },
     duelWins: 0,
@@ -169,6 +223,8 @@ function defaultState(): ProgressState {
     pseudo: '',
     color: PROFILE_COLORS[0],
     starterCreditsGranted: false,
+    profileFrame: 'none',
+    profileTitleId: null,
   }
 }
 
@@ -183,6 +239,13 @@ function migrateCounts(
     counts[id] = (counts[id] ?? 0) + 1
   }
   return counts
+}
+
+function migrateFoil(parsed: Partial<ProgressState>): Record<string, boolean> {
+  if (parsed.foilOwned && typeof parsed.foilOwned === 'object') {
+    return { ...parsed.foilOwned }
+  }
+  return {}
 }
 
 function migrateProfile(parsed: Partial<ProgressState>): {
@@ -212,6 +275,7 @@ function read(): ProgressState {
       ...parsed,
       ...profile,
       cardCounts: migrateCounts(parsed),
+      foilOwned: migrateFoil(parsed),
       perfectCats: {
         facile: parsed.perfectCats?.facile ?? [],
         difficile: parsed.perfectCats?.difficile ?? [],
@@ -219,8 +283,11 @@ function read(): ProgressState {
       },
       trophies: parsed.trophies ?? {},
       starterCreditsGranted: Boolean(parsed.starterCreditsGranted),
+      profileFrame: parsed.profileFrame === 'album' || parsed.profileFrame === 'foil'
+        ? parsed.profileFrame
+        : 'none',
+      profileTitleId: parsed.profileTitleId ?? null,
     }
-    // Crédit de test une seule fois
     if (!state.starterCreditsGranted) {
       state = {
         ...state,
@@ -255,7 +322,6 @@ export function clearProgress() {
   localStorage.removeItem(KEY)
 }
 
-/** Force un crédit (dev / test). */
 export function grantCredits(amount: number): ProgressState {
   const state = { ...read(), points: read().points + amount }
   write(state)
@@ -310,10 +376,37 @@ function evalDuelTrophies(state: ProgressState): ProgressState {
   return next
 }
 
+function applyCosmetics(state: ProgressState): ProgressState {
+  let next = state
+  let frame: ProfileFrame = next.profileFrame
+  let titleId = next.profileTitleId
+
+  if (isAlbumComplete(next)) {
+    next = unlock(next, 'collec_all')
+    if (frame === 'none') frame = 'album'
+    if (!titleId) titleId = 'album_complete'
+  }
+
+  if (isFoilAlbumComplete(next)) {
+    next = unlock(next, 'foil_album')
+    frame = 'foil'
+    titleId = 'foil_album_complete'
+  }
+
+  return { ...next, profileFrame: frame, profileTitleId: titleId }
+}
+
 function evalCollectionTrophies(state: ProgressState): ProgressState {
   let next = state
   if (state.packsOpened >= 1) next = unlock(next, 'collec_start')
   if (uniqueOwnedCount(state) >= 20) next = unlock(next, 'collec_mid')
+
+  const foils = uniqueFoilCount(next)
+  if (foils >= 1) next = unlock(next, 'foil_1')
+  if (foils >= 10) next = unlock(next, 'foil_10')
+  if (foils >= 100) next = unlock(next, 'foil_100')
+
+  next = applyCosmetics(next)
   return next
 }
 
@@ -373,13 +466,16 @@ export function setOnboardingDone(): ProgressState {
 export type PackDraw = {
   card: CollectibleCard
   duplicate: boolean
+  foil: boolean
+  /** Première foil de cette carte. */
+  newFoil: boolean
 }
 
 export type PackResult =
   | { ok: true; draws: PackDraw[]; state: ProgressState }
   | { ok: false; reason: 'points' | 'empty' }
 
-/** Pack global : 3 tirages au hasard sur tout le catalogue. */
+/** Pack global : 3 tirages hasard, chance foil indépendante. */
 export function openPack(): PackResult {
   const before = read()
   if (before.points < PACK_COST) return { ok: false, reason: 'points' }
@@ -388,13 +484,22 @@ export function openPack(): PackResult {
 
   const draws: PackDraw[] = []
   const counts = { ...before.cardCounts }
+  const foils = { ...before.foilOwned }
 
   for (let i = 0; i < CARDS_PER_PACK; i++) {
     const pick = pool[Math.floor(Math.random() * pool.length)]!
     const prev = counts[pick.id] ?? 0
     const duplicate = prev > 0
+    const foil = Math.random() < FOIL_CHANCE
+    const hadFoil = Boolean(foils[pick.id])
     counts[pick.id] = prev + 1
-    draws.push({ card: pick, duplicate })
+    if (foil) foils[pick.id] = true
+    draws.push({
+      card: pick,
+      duplicate,
+      foil,
+      newFoil: foil && !hadFoil,
+    })
   }
 
   let state: ProgressState = {
@@ -402,13 +507,14 @@ export function openPack(): PackResult {
     points: before.points - PACK_COST,
     packsOpened: before.packsOpened + 1,
     cardCounts: counts,
+    foilOwned: foils,
   }
   state = evalCollectionTrophies(state)
   write(state)
   return { ok: true, draws, state }
 }
 
-/** Défausse 1 doublon (count > 1) → +DUP_DISCARD_CREDIT. */
+/** Défausse 1 doublon (count > 1) → +DUP_DISCARD_CREDIT. Foil conservée. */
 export function discardDuplicate(cardId: string): ProgressState | null {
   const before = read()
   const n = before.cardCounts[cardId] ?? 0
@@ -431,7 +537,7 @@ export function canOpenPack(state: ProgressState = read()): boolean {
   return state.points >= PACK_COST
 }
 
-export type OwnedEntry = CollectibleCard & { count: number }
+export type OwnedEntry = CollectibleCard & { count: number; foil: boolean }
 
 export function ownedCards(state: ProgressState = read()): OwnedEntry[] {
   const map = new Map(getCardCatalog().map((c) => [c.id, c]))
@@ -439,7 +545,10 @@ export function ownedCards(state: ProgressState = read()): OwnedEntry[] {
   for (const [id, count] of Object.entries(state.cardCounts)) {
     if (count < 1) continue
     const card = map.get(id)
-    if (card) list.push({ ...card, count })
+    if (card) list.push({ ...card, count, foil: Boolean(state.foilOwned[id]) })
   }
-  return list.sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  return list.sort((a, b) => {
+    if (a.foil !== b.foil) return a.foil ? -1 : 1
+    return a.name.localeCompare(b.name, 'fr')
+  })
 }

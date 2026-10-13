@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import {
   PROFILE_COLORS,
+  PROFILE_TITLES,
   loadProgress,
   profileInitial,
+  profileTitleLabel,
   trophyLevel,
+  uniqueFoilCount,
   uniqueOwnedCount,
+  getCardCatalog,
   setProfile,
   type ProgressState,
 } from '../lib/progression'
@@ -29,7 +33,16 @@ export function ProfileView({
   const [saved, setSaved] = useState(false)
   const stats = loadProgress()
   const owned = uniqueOwnedCount(stats)
+  const foils = uniqueFoilCount(stats)
   const level = trophyLevel(stats)
+  const total = getCardCatalog().length
+  const title = profileTitleLabel(stats)
+  const frameClass =
+    stats.profileFrame === 'foil'
+      ? 'is-frame-foil'
+      : stats.profileFrame === 'album'
+        ? 'is-frame-album'
+        : ''
 
   function save() {
     const next = setProfile({ pseudo, color })
@@ -44,11 +57,16 @@ export function ProfileView({
       </button>
 
       <header className="profile-hero">
-        <span className="home-avatar profile-hero-avatar" style={{ background: color }} aria-hidden>
+        <span
+          className={`home-avatar profile-hero-avatar ${frameClass}`.trim()}
+          style={{ background: color }}
+          aria-hidden
+        >
           {profileInitial(pseudo)}
         </span>
         <div>
           <h1>{pseudo.trim() || 'Ton profil'}</h1>
+          {title ? <p className="profile-title-badge">{title}</p> : null}
           <p className="profile-lead">Local sur cet appareil — pas de compte.</p>
         </div>
       </header>
@@ -63,14 +81,45 @@ export function ProfileView({
           <span>Packs</span>
         </li>
         <li>
-          <strong>{owned}</strong>
+          <strong>
+            {owned}/{total}
+          </strong>
           <span>Album</span>
         </li>
         <li>
-          <strong>{level}</strong>
-          <span>Trophées</span>
+          <strong>{foils}</strong>
+          <span>Foil</span>
         </li>
       </ul>
+
+      <section className="profile-rewards">
+        <h2>Récompenses collection</h2>
+        <ul>
+          {PROFILE_TITLES.map((t) => {
+            const got =
+              (t.id === 'album_complete' && stats.profileFrame !== 'none') ||
+              (t.id === 'foil_album_complete' && stats.profileFrame === 'foil') ||
+              stats.profileTitleId === t.id ||
+              Boolean(stats.trophies[t.id === 'album_complete' ? 'collec_all' : 'foil_album'])
+            return (
+              <li key={t.id} className={got ? 'is-on' : 'is-off'}>
+                <strong>{t.label}</strong>
+                <span>{t.blurb}</span>
+                <em>{got ? 'Débloqué' : 'À débloquer'}</em>
+              </li>
+            )
+          })}
+        </ul>
+        <p className="profile-rewards-note">
+          Contour profil :{' '}
+          {stats.profileFrame === 'foil'
+            ? 'foil (stylé)'
+            : stats.profileFrame === 'album'
+              ? 'album'
+              : 'aucun'}
+          {level > 0 ? ` · ${level} trophées` : ''}
+        </p>
+      </section>
 
       <section className="profile-edit">
         <h2>Personnaliser</h2>

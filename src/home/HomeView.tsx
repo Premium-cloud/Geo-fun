@@ -3,7 +3,9 @@ import {
   loadProgress,
   profileInitial,
   profileLabel,
+  profileTitleLabel,
   trophyLevel,
+  uniqueFoilCount,
   uniqueOwnedCount,
   type ProgressState,
 } from '../lib/progression'
@@ -30,7 +32,15 @@ export function HomeView({
   const label = profileLabel(progress)
   const initial = profileInitial(progress.pseudo)
   const owned = uniqueOwnedCount(progress)
+  const foils = uniqueFoilCount(progress)
   const albumOk = albumUnlocked(progress)
+  const title = profileTitleLabel(progress)
+  const frameClass =
+    progress.profileFrame === 'foil'
+      ? 'is-frame-foil'
+      : progress.profileFrame === 'album'
+        ? 'is-frame-album'
+        : ''
 
   return (
     <div className="home-view">
@@ -46,7 +56,7 @@ export function HomeView({
           onClick={() => onGo('profil')}
         >
           <span
-            className="home-avatar"
+            className={`home-avatar ${frameClass}`.trim()}
             style={{ background: progress.color }}
             aria-hidden
           >
@@ -54,8 +64,10 @@ export function HomeView({
           </span>
           <span>
             <strong>{label}</strong>
+            {title ? <span className="home-profile-title">{title}</span> : null}
             <em>
-              Niv. {level} · {progress.points} crédits · album {owned}
+              Niv. {level} · {progress.points} cr. · {owned} cartes
+              {foils > 0 ? ` · ${foils} foil` : ''}
             </em>
           </span>
         </button>
@@ -80,8 +92,9 @@ export function HomeView({
         <span className="home-packs-promo-copy">
           <strong>Ouvrir un pack</strong>
           <em>
-            {progress.points} crédits · album {owned}
-            {albumOk ? '' : ' · verrouillé'}
+            {progress.points} crédits · {owned} cartes
+            {foils > 0 ? ` · ${foils} foil` : ''}
+            {albumOk ? '' : ' · album verrouillé'}
           </em>
         </span>
         <span className="home-packs-promo-go" aria-hidden>

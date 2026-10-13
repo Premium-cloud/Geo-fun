@@ -116,10 +116,24 @@
   flex-direction: column;
   gap: 0.25rem;
   border: 1px solid var(--line);
-  border-radius: 0.7rem;
+  border-radius: 0.35rem;
   padding: 0.55rem;
   background: var(--paper-elev);
   min-height: 8.5rem;
+}
+
+.album-card.is-foil {
+  border-color: #c9a227;
+  background:
+    linear-gradient(145deg, rgba(201, 162, 39, 0.12), transparent 60%),
+    var(--paper-elev);
+}
+
+.album-foil-tag {
+  font-style: normal;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #9a7a12;
 }
 
 .album-img {

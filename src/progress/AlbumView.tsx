@@ -6,6 +6,7 @@ import {
   getCardCatalog,
   loadProgress,
   ownedCards,
+  uniqueFoilCount,
   uniqueOwnedCount,
   type CardRegion,
   type ProgressState,
@@ -13,7 +14,7 @@ import {
 import { CardThumb } from './CardThumb'
 import './AlbumView.css'
 
-type Filter = 'all' | CardRegion
+type Filter = 'all' | 'foil' | CardRegion
 
 export function AlbumView({
   onBack,
@@ -29,9 +30,11 @@ export function AlbumView({
   const unlocked = albumUnlocked(state)
   const owned = useMemo(() => ownedCards(state), [state])
   const total = getCardCatalog().length
+  const foils = uniqueFoilCount(state)
 
   const list = useMemo(() => {
     if (filter === 'all') return owned
+    if (filter === 'foil') return owned.filter((c) => c.foil)
     return owned.filter((c) => c.region === filter)
   }, [owned, filter])
 
@@ -54,9 +57,7 @@ export function AlbumView({
         <h1>Mon album</h1>
         <div className="album-locked">
           <p className="album-locked-title">Album verrouillé</p>
-          <p>
-            Ouvre un pack pour obtenir ta première carte — ensuite l’album se débloque.
-          </p>
+          <p>Ouvre un pack pour ta première carte.</p>
           <button type="button" className="album-packs-btn" onClick={onOpenPacks}>
             Ouvrir un pack
           </button>
@@ -72,17 +73,18 @@ export function AlbumView({
       </button>
       <h1>Mon album</h1>
       <p className="album-lead">
-        {uniqueOwnedCount(state)} / {total} · {state.points} crédits
+        {uniqueOwnedCount(state)} / {total} · {foils} foil · {state.points} crédits
       </p>
       <p className="album-hint">
-        Cartes possédées. Doublon (×2+) → défausse = +{DUP_DISCARD_CREDIT} crédits. Le lexique
-        reste le catalogue complet.
+        Album complet → titre + contour. Album foil complet → titre + contour stylé. Doublon → +
+        {DUP_DISCARD_CREDIT} crédits.
       </p>
 
       <div className="album-filters" role="group" aria-label="Filtrer">
         {(
           [
             ['all', 'Tout'],
+            ['foil', 'Foil'],
             ['france', 'France'],
             ['monde', 'Monde'],
             ['territoires', 'Territoires'],
@@ -101,10 +103,11 @@ export function AlbumView({
 
       <ul className="album-grid">
         {list.map((c) => (
-          <li key={c.id} className="album-card is-owned">
+          <li key={c.id} className={`album-card is-owned ${c.foil ? 'is-foil' : ''}`}>
             <CardThumb card={c} className="album-img" emptyClassName="is-empty" />
             <strong>{c.name}</strong>
             <span>{c.sub}</span>
+            {c.foil ? <em className="album-foil-tag">Foil</em> : null}
             {c.count > 1 ? (
               <button
                 type="button"
