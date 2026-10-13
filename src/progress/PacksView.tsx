@@ -32,6 +32,7 @@ export function PacksView({
   const [err, setErr] = useState<string | null>(null)
   const timers = useRef<number[]>([])
   const owned = uniqueOwnedCount(state)
+  const firstOpen = state.packsOpened === 0
 
   function clearTimers() {
     for (const id of timers.current) window.clearTimeout(id)
@@ -45,6 +46,14 @@ export function PacksView({
     onProgressChange?.(next)
   }
 
+  function showPack() {
+    clearTimers()
+    setDraws(null)
+    setVisibleCount(0)
+    setPhase('idle')
+    setErr(null)
+  }
+
   function buy() {
     if (phase === 'opening') return
     setErr(null)
@@ -54,7 +63,7 @@ export function PacksView({
       setPhase('idle')
       setErr(
         res.reason === 'points'
-          ? `Il te faut ${PACK_COST} crédits (tu en as ${state.points}).`
+          ? `Pas assez de crédits (${PACK_COST}).`
           : 'Pack indisponible.',
       )
       return
@@ -66,6 +75,8 @@ export function PacksView({
     sync(res.state)
     playPackTear()
 
+    const tearMs = firstOpen ? 650 : 900
+    const stagger = firstOpen ? 240 : 340
     timers.current.push(
       window.setTimeout(() => {
         setPhase('reveal')
@@ -75,19 +86,11 @@ export function PacksView({
               setVisibleCount(i + 1)
               if (d.foil) playFoilReveal()
               else playCardReveal()
-            }, 220 + i * 380),
+            }, 120 + i * stagger),
           )
         })
-      }, 1000),
+      }, tearMs),
     )
-  }
-
-  function resetToIdle() {
-    clearTimers()
-    setDraws(null)
-    setVisibleCount(0)
-    setPhase('idle')
-    setErr(null)
   }
 
   const canBuy = canOpenPack(state) && phase !== 'opening'
@@ -109,7 +112,7 @@ export function PacksView({
       <div className="packs-intro">
         <h1>Packs</h1>
         <p>
-          {PACK_COST} crédits · {CARDS_PER_PACK} cartes · {owned}/{total}
+          {PACK_COST} · {CARDS_PER_PACK} cartes · {owned}/{total}
         </p>
       </div>
 
@@ -135,13 +138,13 @@ export function PacksView({
             </span>
             <span className="packs-booster-cost">{PACK_COST} crédits</span>
           </button>
-          <p className="packs-stage-hint">
-            {phase === 'opening'
-              ? 'Ouverture…'
-              : canBuy
-                ? 'Ouvre le booster'
-                : `${PACK_COST} crédits nécessaires`}
-          </p>
+          {phase === 'opening' ? (
+            <p className="packs-stage-hint">…</p>
+          ) : firstOpen && canBuy ? (
+            <p className="packs-stage-hint">Touche pour ouvrir</p>
+          ) : !canBuy ? (
+            <p className="packs-stage-hint">{PACK_COST} crédits</p>
+          ) : null}
         </section>
       ) : null}
 
@@ -149,7 +152,6 @@ export function PacksView({
 
       {phase === 'reveal' && draws ? (
         <section className="packs-reveal" aria-live="polite">
-          <h2>{revealDone ? 'Résultat' : '…'}</h2>
           <ul className="packs-reveal-list">
             {draws.map((d, i) => {
               const shown = i < visibleCount
@@ -194,29 +196,18 @@ export function PacksView({
                 type="button"
                 className="packs-again"
                 disabled={!canOpenPack(state)}
-                onClick={buy}
+                onClick={showPack}
               >
-                Rouvrir · {PACK_COST}
+                Rouvrir
               </button>
               {owned > 0 ? (
                 <button type="button" className="packs-album-btn" onClick={onOpenAlbum}>
                   Album
                 </button>
               ) : null}
-              <button type="button" className="packs-done" onClick={resetToIdle}>
-                Fermer
-              </button>
             </div>
           ) : null}
         </section>
-      ) : null}
-
-      {phase === 'idle' && owned > 0 ? (
-        <p className="packs-footnote">
-          <button type="button" className="packs-inline" onClick={onOpenAlbum}>
-            Voir l’album
-          </button>
-        </p>
       ) : null}
     </div>
   )
