@@ -123,17 +123,41 @@
 }
 
 .album-card.is-foil {
-  border-color: #c9a227;
-  background:
-    linear-gradient(145deg, rgba(201, 162, 39, 0.12), transparent 60%),
-    var(--paper-elev);
+  border-color: #b8922a;
+  background: #1c1712;
+  color: #f7f1e2;
+  box-shadow: 0 0 0 1px rgba(232, 208, 138, 0.28) inset;
+}
+
+.album-card.is-foil span {
+  color: rgba(247, 241, 226, 0.65);
+}
+
+.album-card.is-foil .album-img {
+  background: #2a2218;
+  box-shadow: 0 0 0 1px rgba(232, 208, 138, 0.4);
 }
 
 .album-foil-tag {
   font-style: normal;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
-  color: #9a7a12;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1c1712;
+  background: linear-gradient(135deg, #f0d78a, #c9a24a);
+  align-self: flex-start;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+}
+
+.album-card.is-foil .album-discard {
+  border-color: rgba(232, 208, 138, 0.35);
+  color: #e8d08a;
+}
+
+.album-card.is-foil .album-once {
+  color: rgba(247, 241, 226, 0.55);
 }
 
 .album-img {

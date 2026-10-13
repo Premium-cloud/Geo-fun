@@ -122,28 +122,31 @@ export function PacksView({
 
       {phase === 'idle' || phase === 'opening' ? (
         <section className="packs-stage" aria-label="Ouverture de pack">
-          <div className={`packs-stage-ring ${phase === 'opening' ? 'is-opening' : ''}`}>
-            <button
-              type="button"
-              className={`packs-seal ${phase === 'opening' ? 'is-opening' : ''}`}
-              disabled={!canBuy}
-              onClick={buy}
-              aria-label={`Ouvrir un pack pour ${PACK_COST} crédits`}
-            >
-              <span className="packs-seal-band" aria-hidden />
-              <span className="packs-seal-body">
-                <span className="packs-seal-brand">GeoFun</span>
-                <span className="packs-seal-title">Pack</span>
-                <span className="packs-seal-sub">{CARDS_PER_PACK} cartes</span>
-              </span>
-              <span className="packs-seal-cost">{PACK_COST}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className={`packs-booster ${phase === 'opening' ? 'is-opening' : ''}`}
+            disabled={!canBuy}
+            onClick={buy}
+            aria-label={`Ouvrir un pack pour ${PACK_COST} crédits`}
+          >
+            <span className="packs-booster-edge" aria-hidden />
+            <span className="packs-booster-foil" aria-hidden />
+            <span className="packs-booster-grain" aria-hidden />
+            <span className="packs-booster-body">
+              <span className="packs-booster-brand">GeoFun</span>
+              <span className="packs-booster-title">Booster</span>
+              <span className="packs-booster-sub">{CARDS_PER_PACK} cartes · chance foil</span>
+            </span>
+            <span className="packs-booster-wax" aria-hidden>
+              <span>{CARDS_PER_PACK}</span>
+            </span>
+            <span className="packs-booster-cost">{PACK_COST} crédits</span>
+          </button>
           <p className="packs-stage-hint">
             {phase === 'opening'
               ? 'Ouverture…'
               : canBuy
-                ? 'Ouvre le pack'
+                ? 'Ouvre le booster'
                 : `${PACK_COST} crédits nécessaires`}
           </p>
         </section>
@@ -161,6 +164,7 @@ export function PacksView({
                 <li
                   key={`${i}-${d.card.id}-${d.foil ? 'f' : 'n'}`}
                   className={[
+                    'packs-draw',
                     shown ? 'is-shown' : 'is-hidden',
                     d.duplicate ? 'is-dup' : 'is-new',
                     d.foil ? 'is-foil' : '',
@@ -169,17 +173,25 @@ export function PacksView({
                     .join(' ')}
                 >
                   <div className="packs-flip">
-                    {d.foil ? <span className="packs-foil-sheen" aria-hidden /> : null}
-                    <CardThumb card={d.card} />
+                    <div className={`packs-art ${d.foil ? 'is-foil' : ''}`}>
+                      {d.foil ? (
+                        <>
+                          <span className="packs-holo" aria-hidden />
+                          <span className="packs-holo-glint" aria-hidden />
+                        </>
+                      ) : null}
+                      <CardThumb card={d.card} />
+                    </div>
                     <div className="packs-flip-meta">
+                      {d.foil ? <span className="packs-foil-badge">Foil</span> : null}
                       <strong>{d.card.name}</strong>
                       <span>{d.card.sub}</span>
                       {shown ? (
-                        <em className={d.foil ? 'is-foil-tag' : undefined}>
+                        <em>
                           {d.foil
                             ? d.newFoil
-                              ? 'Foil !'
-                              : 'Foil (doublon)'
+                              ? 'Nouvelle foil'
+                              : 'Foil déjà eue'
                             : d.duplicate
                               ? 'Doublon'
                               : 'Nouvelle'}
