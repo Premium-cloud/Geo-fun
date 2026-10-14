@@ -22,17 +22,27 @@ npm run dev
 
 L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
-## App téléphone (PWA)
+## App téléphone (PWA) & hors ligne
 
 GeoFun est une **PWA** : installable comme une app, sans App Store.
 
 1. Ouvre la **prod HTTPS** (Vercel) sur le téléphone — pas `localhost`.
 2. **iPhone (Safari)** : Partager → **Sur l’écran d’accueil**.
 3. **Android (Chrome)** : menu → **Installer l’application** (ou icône install).
+4. Laisse l’app se charger **une fois en ligne** (le service worker met ~drapeaux, blasons, maps en cache).
 
-Ça ouvre en plein écran (`standalone`), avec icône GeoFun. Les données restent locales (même stockage navigateur).
+### Si tu coupes le réseau / Vercel demain ?
 
-Pour une vraie fiche Play Store / App Store plus tard : wrapper type **Capacitor** (autre étape).
+| Situation | Ça marche ? |
+|-----------|-------------|
+| App **installée** + déjà ouverte 1× en ligne, puis **mode avion** | Oui — quiz, lexique, packs, album, duel **même écran** |
+| Profil / crédits / collection | Oui — tout est en `localStorage` sur l’appareil |
+| Duel **en ligne** (PeerJS) | Non — il faut le réseau |
+| Jamais installée / cache vidé / nouvel iPhone | Non — il faut recharger la prod HTTPS une fois |
+
+En résumé : ce n’est **pas** un binaire App Store autonome, mais une app **hors ligne après installation**. Si tu supprimes le site Vercel, les téléphones qui ont déjà le cache continuent ; les nouveaux ne pourront plus l’installer.
+
+Pour une vraie fiche Play Store / App Store (indépendante de Vercel) : wrapper type **Capacitor** (autre étape).
 
 ## Duel
 

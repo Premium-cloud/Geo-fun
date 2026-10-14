@@ -10,8 +10,9 @@
   --header: #25282e;
   --header-ink: #ffffff;
   --header-muted: #9aa0a8;
-  --font-display: Inter, system-ui, sans-serif;
-  font-family: Inter, system-ui, sans-serif;
+  /* Polices système = OK hors ligne (pas de Google Fonts) */
+  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-display);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

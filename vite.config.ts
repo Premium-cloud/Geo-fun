@@ -44,31 +44,20 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Assets app + blasons/drapeaux courants ; le reste en réseau
-        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
+        // Hors-ligne après 1 ouverture en ligne : shell + drapeaux/blasons/cartes/maps
+        globPatterns: ['**/*.{js,css,html,ico,svg,png,json,webmanifest,woff2}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        navigateFallback: 'index.html',
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-css',
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-            },
-          },
-          {
-            urlPattern: /\/(blasons|flags|mockups)\/.*/i,
+            urlPattern: /\/(blasons|flags|mockups|maps)\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'geofun-media',
-              expiration: { maxEntries: 800, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              expiration: {
+                maxEntries: 1200,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
             },
           },
         ],
