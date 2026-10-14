@@ -22,6 +22,18 @@ npm run dev
 
 L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
+## App téléphone (PWA)
+
+GeoFun est une **PWA** : installable comme une app, sans App Store.
+
+1. Ouvre la **prod HTTPS** (Vercel) sur le téléphone — pas `localhost`.
+2. **iPhone (Safari)** : Partager → **Sur l’écran d’accueil**.
+3. **Android (Chrome)** : menu → **Installer l’application** (ou icône install).
+
+Ça ouvre en plein écran (`standalone`), avec icône GeoFun. Les données restent locales (même stockage navigateur).
+
+Pour une vraie fiche Play Store / App Store plus tard : wrapper type **Capacitor** (autre étape).
+
 ## Duel
 
 Onglet **Jeux → Duel** :
