@@ -13,6 +13,8 @@
     "maps:dom": "node scripts/generate-dom-tom-shapes.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/sora": "^5.3.0",
+    "@fontsource-variable/source-sans-3": "^5.3.1",
     "peerjs": "^1.5.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

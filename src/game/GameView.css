@@ -581,11 +581,19 @@ html.is-night .game-idle-title {
 }
 
 .game-choice.is-flag-choice {
-  padding: 0.7rem;
+  padding: 0.55rem 0.5rem 0.45rem;
   min-height: 5.2rem;
   display: grid;
   place-items: center;
   background: #ebe6dc;
+}
+
+.game-flag-choice-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
 }
 
 .game-choice-flag {
@@ -598,6 +606,38 @@ html.is-night .game-idle-title {
   box-shadow: none;
   background: #d9d2c5;
   box-sizing: border-box;
+}
+
+.game-choice-flag-name {
+  display: block;
+  width: 100%;
+  max-width: 9.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: var(--ink);
+  animation: flag-name-in 0.22s ease;
+}
+
+.game-choice.is-flag-choice.is-correct .game-choice-flag-name {
+  color: #1e4d38;
+}
+
+.game-choice.is-flag-choice.is-wrong .game-choice-flag-name {
+  color: #6b2a36;
+}
+
+@keyframes flag-name-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .game-choice:hover:not(:disabled) {

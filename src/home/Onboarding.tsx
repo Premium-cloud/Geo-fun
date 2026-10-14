@@ -5,11 +5,11 @@ import './Onboarding.css'
 const STEPS = [
   {
     title: 'GeoFun',
-    body: 'Apprends, joue, défie. Profil local — pas de compte.',
+    body: 'Le monde en cartes — entraîne-toi, chronomètre-toi, défie un ami. Tout reste sur le téléphone.',
   },
   {
     title: 'Packs & album',
-    body: 'Ouvre des packs pour collectionner. Lexique = tout voir.',
+    body: 'Gagne des crédits, ouvre des packs, remplis l’album. Le lexique montre tout, sans collection.',
   },
 ] as const
 

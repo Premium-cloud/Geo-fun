@@ -595,15 +595,31 @@ function PromptVisual({ round }: { round: Round }) {
   return null
 }
 
-function FlagChoice({ code }: { code: string }) {
+function flagChoiceLabel(code: string): string {
+  const c = COUNTRIES.find((x) => x.code === code)
+  return c?.shortName ?? c?.name ?? code
+}
+
+function FlagChoice({
+  code,
+  showName,
+}: {
+  code: string
+  showName?: boolean
+}) {
+  const name = flagChoiceLabel(code)
   return (
-    <img className="game-choice-flag" src={flagUrl(code)} alt="" decoding="async" />
+    <span className="game-flag-choice-inner">
+      <img className="game-choice-flag" src={flagUrl(code)} alt="" decoding="async" />
+      {showName ? <span className="game-choice-flag-name">{name}</span> : null}
+    </span>
   )
 }
 
 export type PlayVariant = 'entrainement' | 'jeu'
 
 const AUTO_NEXT_MS = 900
+const AUTO_NEXT_FLAG_MS = 1800
 const AUTO_NEXT_WRONG_HARDCORE_MS = 2400
 
 type RunEntry = {
@@ -887,8 +903,13 @@ export function GameView({
     const wrong =
       picked === '__timeout__' ||
       !(picked === round?.answer || answersMatch(picked, round?.answer ?? '', 'loose'))
+    const flagReveal = round?.choiceKind === 'flag'
     const delay =
-      difficulty === 'hardcore' && wrong ? AUTO_NEXT_WRONG_HARDCORE_MS : AUTO_NEXT_MS
+      difficulty === 'hardcore' && wrong
+        ? AUTO_NEXT_WRONG_HARDCORE_MS
+        : flagReveal
+          ? AUTO_NEXT_FLAG_MS
+          : AUTO_NEXT_MS
     const t = window.setTimeout(() => {
       if (endAfterFeedback.current || sessionDone) {
         const snap = runSnapshot.current
@@ -1501,15 +1522,17 @@ export function GameView({
                   disabled={revealed}
                   onClick={() => answer(choice)}
                   aria-label={
-                    round.choiceKind === 'flag'
-                      ? (COUNTRIES.find((c) => c.code === choice)?.name ?? choice)
-                      : choice
+                    round.choiceKind === 'flag' ? flagChoiceLabel(choice) : choice
                   }
                 >
                   <span className="game-choice-key" aria-hidden>
                     {idx + 1}
                   </span>
-                  {round.choiceKind === 'flag' ? <FlagChoice code={choice} /> : choice}
+                  {round.choiceKind === 'flag' ? (
+                    <FlagChoice code={choice} showName={revealed} />
+                  ) : (
+                    choice
+                  )}
                 </button>
               )
             })}
@@ -1522,7 +1545,9 @@ export function GameView({
               {picked === '__timeout__'
                 ? `Temps écoulé. Réponse : ${round.answerLabel}`
                 : correct
-                  ? 'Exact.'
+                  ? round.choiceKind === 'flag'
+                    ? `Exact. — ${round.answerLabel}`
+                    : 'Exact.'
                   : `La bonne réponse : ${round.answerLabel}`}
             </p>
             {!isPlay ? (

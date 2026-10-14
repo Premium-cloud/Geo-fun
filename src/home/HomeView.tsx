@@ -45,10 +45,14 @@ export function HomeView({
   return (
     <div className="home-view">
       <header className="home-hero">
-        <p className="home-kicker">GeoFun</p>
-        <h1 className="home-title">Cartes & défis</h1>
+        <p className="home-brand" aria-label="GeoFun">
+          <span className="home-brand-mark" aria-hidden />
+          GeoFun
+        </p>
+        <h1 className="home-title">Le monde en cartes</h1>
         <p className="home-lead">
-          Apprends les pays et territoires, joue chronométré, défie un ami.
+          Entraîne-toi, chronomètre-toi, défie un ami. Tes packs restent sur le
+          téléphone.
         </p>
         <button
           type="button"
@@ -76,7 +80,7 @@ export function HomeView({
       <div className="home-actions" role="navigation" aria-label="Modes">
         <button type="button" className="home-cta is-learn" onClick={() => onGo('apprendre')}>
           <span className="home-cta-label">Apprendre</span>
-          <span className="home-cta-sub">Entraînement sans pression</span>
+          <span className="home-cta-sub">Sans chrono, à ton rythme</span>
         </button>
         <button type="button" className="home-cta is-play" onClick={() => onGo('jouer')}>
           <span className="home-cta-label">Jouer</span>
@@ -84,7 +88,7 @@ export function HomeView({
         </button>
         <button type="button" className="home-cta is-duel" onClick={() => onGo('defier')}>
           <span className="home-cta-label">Défier</span>
-          <span className="home-cta-sub">Duel même écran ou en ligne</span>
+          <span className="home-cta-sub">Même écran ou en ligne</span>
         </button>
       </div>
 
