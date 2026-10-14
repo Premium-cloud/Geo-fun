@@ -101,6 +101,17 @@ export function OptionsModal({ open, onClose, onOptionsChange }: Props) {
               onChange={(e) => patch({ night: e.target.checked })}
             />
           </label>
+          <label className="opt-row">
+            <span>Roast</span>
+            <input
+              type="checkbox"
+              checked={options.roast}
+              onChange={(e) => patch({ roast: e.target.checked })}
+            />
+          </label>
+          <p className="opt-hint">
+            Punchlines après les réponses (critique pour rire). Activé par défaut.
+          </p>
         </section>
 
         <section className="opt-section">

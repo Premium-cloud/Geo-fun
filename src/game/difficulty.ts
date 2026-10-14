@@ -221,6 +221,22 @@ function clusterMates(code: string): Set<string> {
   return mates
 }
 
+/** Helpers roast / classification (tags sûrs). */
+export function isFamousCode(code: string): boolean {
+  return FAMOUS.has(code)
+}
+
+export function isObscureCode(code: string): boolean {
+  if (FAMOUS.has(code)) return false
+  if (OBSCURE.has(code)) return true
+  return false
+}
+
+export function sameFlagCluster(a: string, b: string): boolean {
+  if (a === b) return false
+  return clusterMates(a).has(b)
+}
+
 function metroOnly(answer: DeptCard, d: DeptCard): boolean {
   if (d.code === answer.code) return false
   if (!isOverseas(answer) && isOverseas(d)) return false

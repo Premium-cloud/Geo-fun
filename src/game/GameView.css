@@ -688,6 +688,10 @@ html.is-night .game-idle-title {
 .game-feedback p {
   margin: 0;
   font-weight: 600;
+  max-width: 28rem;
+  text-align: center;
+  line-height: 1.35;
+  font-size: 1.02rem;
 }
 
 .game-feedback.is-ok p {
