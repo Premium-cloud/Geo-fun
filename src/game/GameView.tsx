@@ -33,7 +33,6 @@ import {
 } from './difficulty'
 import { FranceMapQuiz } from './FranceMapQuiz'
 import { WORLD_MAP_CODES } from './mapCodes'
-import { pickRoastLine } from './roast'
 import { TerritoryMapQuiz } from './TerritoryMapQuiz'
 import {
   defaultTerritoryMode,
@@ -722,7 +721,6 @@ export function GameView({
   const [runLog, setRunLog] = useState<RunEntry[]>([])
   const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
   const [missHint, setMissHint] = useState(false)
-  const [roastLine, setRoastLine] = useState<string | null>(null)
   const [moreOptions, setMoreOptions] = useState(false)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
@@ -834,7 +832,6 @@ export function GameView({
     setLives(LIVES_FOR[difficulty])
     setGameOver(false)
     setPicked(null)
-    setRoastLine(null)
     setTyped('')
     setRunLog([])
     setRecapFilter('all')
@@ -860,11 +857,9 @@ export function GameView({
       finishRun(snap.score, snap.asked, snap.peak, timeMs)
       setGameOver(true)
       setPicked(null)
-      setRoastLine(null)
       return
     }
     setPicked(null)
-    setRoastLine(null)
     setTyped('')
     timedOut.current = false
     setSecondsLeft(timerMax)
@@ -923,7 +918,6 @@ export function GameView({
         finishRun(snap.score, snap.asked, snap.peak, timeMs)
         setGameOver(true)
         setPicked(null)
-        setRoastLine(null)
       } else {
         next()
       }
@@ -1098,16 +1092,6 @@ export function GameView({
     if (!round || picked || gameOver || (isPlay && !runActive)) return
     setMissHint(false)
     setPicked(choice)
-    const roast = pickRoastLine({
-      enabled: loadOptions().roast,
-      correct: isCorrect,
-      picked: choice,
-      answerCode: round.itemId,
-      answerLabel: round.answerLabel,
-      choices: round.choices,
-      countries: COUNTRIES,
-    })
-    setRoastLine(roast)
     const nextAsked = asked + 1
     setAsked(nextAsked)
     beep(isCorrect)
@@ -1558,15 +1542,11 @@ export function GameView({
         {revealed ? (
           <div className={`game-feedback ${correct ? 'is-ok' : 'is-ko'}`}>
             <p>
-              {roastLine
-                ? roastLine
-                : picked === '__timeout__'
-                  ? `Temps écoulé. Réponse : ${round.answerLabel}`
-                  : correct
-                    ? round.choiceKind === 'flag'
-                      ? `Exact. — ${round.answerLabel}`
-                      : 'Exact.'
-                    : `La bonne réponse : ${round.answerLabel}`}
+              {picked === '__timeout__'
+                ? `Temps écoulé. Réponse : ${round.answerLabel}`
+                : correct
+                  ? round.answerLabel
+                  : `La bonne réponse : ${round.answerLabel}`}
             </p>
             {!isPlay ? (
               <button type="button" className="game-next" onClick={next}>

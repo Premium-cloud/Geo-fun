@@ -21,8 +21,6 @@ export type OptionsState = {
   night: boolean
   /** Mode Carte France : inclure les DOM-TOM (silhouettes, sans spoil). */
   mapDomTom: boolean
-  /** Punchlines après réponse (ON par défaut). */
-  roast: boolean
 }
 
 export type SaveBlob = {
@@ -42,7 +40,6 @@ export const DEFAULT_OPTIONS: OptionsState = {
   volume: 0.55,
   night: false,
   mapDomTom: false,
-  roast: true,
 }
 
 function emptyStats(): ModeStats {
@@ -76,7 +73,6 @@ export function loadOptions(): OptionsState {
     volume: typeof o.volume === 'number' ? Math.min(1, Math.max(0, o.volume)) : DEFAULT_OPTIONS.volume,
     night: o.night ?? DEFAULT_OPTIONS.night,
     mapDomTom: o.mapDomTom ?? DEFAULT_OPTIONS.mapDomTom,
-    roast: o.roast ?? DEFAULT_OPTIONS.roast,
   }
 }
 
