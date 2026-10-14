@@ -532,8 +532,10 @@ html.is-night .lexique-filter-btn.is-active {
   }
 
   /*
-   * Cartes à découper à la main :
-   * feuille blanche + cartes crème = le bord de couleur = ligne de coupe.
+   * Cartes à découper — grille 3×3 symétrique (recto = verso).
+   * Duplex : retournement bord long → miroir horizontal des colonnes
+   * (backOrder [2,1,0, 5,4,3, 8,7,6] dans le TS).
+   * Marges & gaps identiques des deux côtés pour l’alignement.
    */
   .print-sheet {
     width: 210mm;
@@ -545,17 +547,24 @@ html.is-night .lexique-filter-btn.is-active {
     page-break-inside: avoid;
     break-inside: avoid;
     display: grid;
-    grid-template-columns: repeat(3, 63.5mm);
-    grid-template-rows: repeat(3, 88.9mm);
-    column-gap: 5mm;
-    row-gap: 5mm;
-    justify-content: center;
-    align-content: center;
-    padding: 10mm 8mm;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4mm;
+    padding: 10mm;
+    margin: 0;
     overflow: hidden;
     background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .print-sheet.print-front,
+  .print-sheet.print-back {
+    /* Même boîte exacte — pas de décalage entre faces */
+    width: 210mm;
+    height: 297mm;
+    padding: 10mm;
+    gap: 4mm;
   }
 
   /* Évite une page blanche à la fin */
@@ -566,8 +575,10 @@ html.is-night .lexique-filter-btn.is-active {
 
   .print-card {
     position: relative;
-    width: 63.5mm;
-    height: 88.9mm;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
     overflow: hidden;
     box-sizing: border-box;
     border: 0;

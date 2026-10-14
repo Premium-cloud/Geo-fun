@@ -6,6 +6,7 @@ import {
   type Continent,
   type Country,
 } from '../data/countries'
+import { capitalMatchRank, matchesSearch } from '../lib/searchFold'
 import { GLOBE_LAND_PATH } from './globeLandPath'
 import './CartesMondeView.css'
 
@@ -210,18 +211,26 @@ export function CartesMondeView() {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 
   const cards = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return COUNTRIES.filter((c) => {
+    const q = query.trim()
+    const list = COUNTRIES.filter((c) => {
       if (continent !== 'Tous' && c.continent !== continent) return false
       if (!q) return true
       return (
-        c.name.toLowerCase().includes(q) ||
-        (c.shortName?.toLowerCase().includes(q) ?? false) ||
-        c.capital.toLowerCase().includes(q) ||
-        c.code.toLowerCase().includes(q) ||
-        c.continent.toLowerCase().includes(q) ||
-        c.language.toLowerCase().includes(q)
+        matchesSearch(c.name, q) ||
+        matchesSearch(c.shortName ?? '', q) ||
+        matchesSearch(c.capital, q) ||
+        matchesSearch(c.code, q) ||
+        matchesSearch(c.continent, q) ||
+        matchesSearch(c.language, q)
       )
+    })
+    if (!q) return list
+    // Capitale d’abord (taper « Paris » → France en tête)
+    return [...list].sort((a, b) => {
+      const ra = capitalMatchRank(a.capital, q)
+      const rb = capitalMatchRank(b.capital, q)
+      if (ra !== rb) return ra - rb
+      return a.name.localeCompare(b.name, 'fr')
     })
   }, [query, continent])
 
@@ -244,7 +253,7 @@ export function CartesMondeView() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Pays, capitale, code…"
+            placeholder="Capitale, pays, code…"
             autoComplete="off"
           />
         </label>

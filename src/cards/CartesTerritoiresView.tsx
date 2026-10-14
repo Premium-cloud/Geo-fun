@@ -8,6 +8,7 @@ import {
   type TerritoryPackId,
   type TerritoryUnit,
 } from '../data/territories'
+import { capitalMatchRank, matchesSearch } from '../lib/searchFold'
 import { buildBackScatter } from './backScatterSlots'
 import { Picto } from './pictos'
 import './CartesMondeView.css'
@@ -254,14 +255,21 @@ export function CartesTerritoiresView() {
   const pack = TERRITORY_PACKS[packId]
 
   const units = useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = query.trim()
     if (!q) return pack.units
-    return pack.units.filter(
+    const list = pack.units.filter(
       (u) =>
-        u.name.toLowerCase().includes(q) ||
-        u.capital.toLowerCase().includes(q) ||
-        u.code.toLowerCase().includes(q),
+        matchesSearch(u.name, q) ||
+        matchesSearch(u.capital, q) ||
+        matchesSearch(u.code, q) ||
+        matchesSearch(u.region ?? '', q),
     )
+    return [...list].sort((a, b) => {
+      const ra = capitalMatchRank(a.capital, q)
+      const rb = capitalMatchRank(b.capital, q)
+      if (ra !== rb) return ra - rb
+      return a.name.localeCompare(b.name, 'fr')
+    })
   }, [pack, query])
 
   function selectPack(id: TerritoryPackId) {
@@ -278,7 +286,7 @@ export function CartesTerritoiresView() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`${pack.unitKind}, capital, code…`}
+            placeholder={`${pack.subLabel}, ${pack.unitKind.toLowerCase()}, code…`}
             autoComplete="off"
           />
         </label>

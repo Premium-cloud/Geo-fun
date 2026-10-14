@@ -7,6 +7,7 @@ import {
 } from '../data/cartes'
 import { DEPARTEMENTS } from '../data/departements'
 import { DEPT_PICTOS } from '../data/deptPictos'
+import { capitalMatchRank, matchesSearch } from '../lib/searchFold'
 import { FranceBackPictos } from './FranceBackIcons'
 import { Picto } from './pictos'
 import './CartesMondeView.css'
@@ -249,17 +250,24 @@ export function CartesFranceView() {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 
   const cards = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return DEPT_CARDS.filter((c) => {
+    const q = query.trim()
+    const list = DEPT_CARDS.filter((c) => {
       if (region !== 'Tous' && c.region !== region) return false
       if (group !== 'Tous' && c.group !== group) return false
       if (!q) return true
       return (
-        c.name.toLowerCase().includes(q) ||
-        c.chefLieu.toLowerCase().includes(q) ||
-        c.code.toLowerCase().includes(q) ||
-        c.region.toLowerCase().includes(q)
+        matchesSearch(c.name, q) ||
+        matchesSearch(c.chefLieu, q) ||
+        matchesSearch(c.code, q) ||
+        matchesSearch(c.region, q)
       )
+    })
+    if (!q) return list
+    return [...list].sort((a, b) => {
+      const ra = capitalMatchRank(a.chefLieu, q)
+      const rb = capitalMatchRank(b.chefLieu, q)
+      if (ra !== rb) return ra - rb
+      return a.name.localeCompare(b.name, 'fr')
     })
   }, [query, region, group])
 
@@ -312,7 +320,7 @@ export function CartesFranceView() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Département, chef-lieu, code…"
+            placeholder="Chef-lieu, département, code…"
             autoComplete="off"
           />
         </label>

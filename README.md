@@ -55,9 +55,10 @@ Ne pas utiliser `vercel deploy --temporary` ni les déploiements anonymes « pre
 ## Impression recto-verso
 
 1. Onglet **France** (blasons) ou **Monde** (drapeaux) → **Imprimer**
-2. Options d’impression navigateur : **duplex**, retournement **bord long**
+2. Options d’impression navigateur : **recto-verso**, retournement sur le **bord long**
+   (pas bord court — sinon le dos ne tombe pas en face du recto).
 
-Chaque paire de pages = 1 feuille (9 cartes face + dos miroir).
+Chaque paire de pages = 1 feuille (9 cartes face + dos en miroir horizontal).
 
 Le recto France affiche 2–3 pictos de spécialité sous le blason ; le verso reprend le scatter Game Icons. Le verso Monde : globe. Même typo Fraunces.
 
