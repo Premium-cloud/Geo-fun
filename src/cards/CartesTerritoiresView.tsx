@@ -246,10 +246,18 @@ function PrintDeck({ pack }: { pack: TerritoryPack }) {
   )
 }
 
+type LexiqueViewMode = 'list' | 'cards'
+
+function defaultLexiqueView(): LexiqueViewMode {
+  if (typeof window === 'undefined') return 'list'
+  return window.matchMedia('(max-width: 720px)').matches ? 'list' : 'cards'
+}
+
 export function CartesTerritoiresView() {
   const [packId, setPackId] = useState<TerritoryPackId>('fr')
   const [query, setQuery] = useState('')
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<LexiqueViewMode>(defaultLexiqueView)
+  const [expanded, setExpanded] = useState<string | null>(null)
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 
   const pack = TERRITORY_PACKS[packId]
@@ -275,56 +283,59 @@ export function CartesTerritoiresView() {
   function selectPack(id: TerritoryPackId) {
     setPackId(id)
     setQuery('')
+    setExpanded(null)
     setFlipped({})
   }
 
   return (
     <div className="cartes-view cartes-france cartes-territoires">
-      <div className="lexique-toolbar no-print">
-        <label className="search">
-          <span className="sr-only">Rechercher</span>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={`${pack.subLabel}, ${pack.unitKind.toLowerCase()}, code…`}
-            autoComplete="off"
-          />
-        </label>
-        <button
-          type="button"
-          className={`lexique-filter-btn ${filtersOpen ? 'is-open' : ''} is-active`}
-          aria-expanded={filtersOpen}
-          onClick={() => setFiltersOpen((o) => !o)}
-        >
-          Filtre
-          <em>{pack.country}</em>
-        </button>
-      </div>
-
-      {filtersOpen ? (
-        <div className="lexique-filter-panel no-print">
-          <div className="lexique-filter-section">
-            <p className="lexique-filter-label">Pays</p>
-            <div className="chips" role="tablist" aria-label="Pays">
-              {TERRITORY_PACK_ORDER.map((id) => {
-                const p = TERRITORY_PACKS[id]
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    className={`chip ${packId === id ? 'is-active' : ''}`}
-                    aria-selected={packId === id}
-                    onClick={() => selectPack(id)}
-                  >
-                    {p.country} <em>{p.units.length}</em>
-                  </button>
-                )
-              })}
-            </div>
+      <div className="lexique-pocket-head no-print">
+        <div className="lexique-toolbar">
+          <label className="search">
+            <span className="sr-only">Rechercher</span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`${pack.subLabel}, ${pack.unitKind.toLowerCase()}, code…`}
+              autoComplete="off"
+              enterKeyHint="search"
+            />
+          </label>
+          <div className="lexique-view-toggle" role="group" aria-label="Affichage">
+            <button
+              type="button"
+              className={`lexique-view-btn ${viewMode === 'list' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('list')}
+            >
+              Liste
+            </button>
+            <button
+              type="button"
+              className={`lexique-view-btn ${viewMode === 'cards' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('cards')}
+            >
+              Cartes
+            </button>
           </div>
         </div>
-      ) : null}
+        <div className="lexique-chips-row" role="tablist" aria-label="Pays">
+          {TERRITORY_PACK_ORDER.map((id) => {
+            const p = TERRITORY_PACKS[id]
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                className={`chip ${packId === id ? 'is-active' : ''}`}
+                aria-selected={packId === id}
+                onClick={() => selectPack(id)}
+              >
+                {p.country} <em>{p.units.length}</em>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       <div className="lexique-body no-print">
         <aside className="lexique-side" aria-label="Packs territoires">
@@ -353,6 +364,60 @@ export function CartesTerritoiresView() {
           </div>
           {units.length === 0 ? (
             <p className="empty">Aucune zone ne correspond à votre recherche.</p>
+          ) : viewMode === 'list' ? (
+            <ul className="lexique-pocket-list">
+              {units.map((unit) => {
+                const open = expanded === unit.code
+                return (
+                  <li
+                    key={`${pack.id}-${unit.code}`}
+                    className={`lexique-pocket-item ${open ? 'is-open' : ''}`}
+                  >
+                    <button
+                      type="button"
+                      className="lexique-pocket-row"
+                      onClick={() =>
+                        setExpanded((cur) => (cur === unit.code ? null : unit.code))
+                      }
+                      aria-expanded={open}
+                    >
+                      <span className="lexique-pocket-emblem">
+                        <EmblemImg
+                          packId={pack.id}
+                          code={unit.code}
+                          name={unit.name}
+                          kind={pack.emblemKind}
+                        />
+                      </span>
+                      <span className="lexique-pocket-copy">
+                        <strong>{unit.name}</strong>
+                        <em>{unit.capital}</em>
+                      </span>
+                      <span className="lexique-pocket-meta" aria-hidden>
+                        {unit.code}
+                      </span>
+                    </button>
+                    {open ? (
+                      <div className="lexique-pocket-detail">
+                        {unit.region ? <p>{unit.region}</p> : null}
+                        <TerritoryPlayingCard
+                          pack={pack}
+                          unit={unit}
+                          flipped={!!flipped[unit.code]}
+                          onFlip={() =>
+                            setFlipped((prev) => ({
+                              ...prev,
+                              [unit.code]: !prev[unit.code],
+                            }))
+                          }
+                          className="lexique-pocket-card"
+                        />
+                      </div>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
           ) : (
             <div className="grid">
               {units.map((unit) => (

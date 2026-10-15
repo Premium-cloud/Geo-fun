@@ -204,10 +204,18 @@ function PrintDeck({ cards }: { cards: Country[] }) {
   )
 }
 
+type LexiqueViewMode = 'list' | 'cards'
+
+function defaultLexiqueView(): LexiqueViewMode {
+  if (typeof window === 'undefined') return 'list'
+  return window.matchMedia('(max-width: 720px)').matches ? 'list' : 'cards'
+}
+
 export function CartesMondeView() {
   const [query, setQuery] = useState('')
   const [continent, setContinent] = useState<Continent | 'Tous'>('Tous')
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<LexiqueViewMode>(defaultLexiqueView)
+  const [expanded, setExpanded] = useState<string | null>(null)
   const [flipped, setFlipped] = useState<Record<string, boolean>>({})
 
   const cards = useMemo(() => {
@@ -243,57 +251,57 @@ export function CartesMondeView() {
     return map
   }, [])
 
-  const filterActive = continent !== 'Tous'
-
   return (
     <div className="cartes-view cartes-monde">
-      <div className="lexique-toolbar no-print">
-        <label className="search">
-          <span className="sr-only">Rechercher</span>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Capitale, pays, code…"
-            autoComplete="off"
-          />
-        </label>
-        <button
-          type="button"
-          className={`lexique-filter-btn ${filtersOpen ? 'is-open' : ''} ${filterActive ? 'is-active' : ''}`}
-          aria-expanded={filtersOpen}
-          onClick={() => setFiltersOpen((o) => !o)}
-        >
-          Filtre
-          {filterActive ? <em>{continent}</em> : null}
-        </button>
-      </div>
-
-      {filtersOpen ? (
-        <div className="lexique-filter-panel no-print">
-          <div className="lexique-filter-section">
-            <p className="lexique-filter-label">Continent</p>
-            <div className="chips" role="group" aria-label="Continents">
-              <button
-                type="button"
-                className={`chip ${continent === 'Tous' ? 'is-active' : ''}`}
-                onClick={() => setContinent('Tous')}
-              >
-                Tous <em>{COUNTRIES.length}</em>
-              </button>
-              {CONTINENT_ORDER.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`chip ${continent === c ? 'is-active' : ''}`}
-                  onClick={() => setContinent(c)}
-                >
-                  {c} <em>{counts[c]}</em>
-                </button>
-              ))}
-            </div>
+      <div className="lexique-pocket-head no-print">
+        <div className="lexique-toolbar">
+          <label className="search">
+            <span className="sr-only">Rechercher</span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Capitale, pays, code…"
+              autoComplete="off"
+              enterKeyHint="search"
+            />
+          </label>
+          <div className="lexique-view-toggle" role="group" aria-label="Affichage">
+            <button
+              type="button"
+              className={`lexique-view-btn ${viewMode === 'list' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('list')}
+            >
+              Liste
+            </button>
+            <button
+              type="button"
+              className={`lexique-view-btn ${viewMode === 'cards' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('cards')}
+            >
+              Cartes
+            </button>
           </div>
         </div>
-      ) : null}
+        <div className="lexique-chips-row" role="group" aria-label="Continents">
+          <button
+            type="button"
+            className={`chip ${continent === 'Tous' ? 'is-active' : ''}`}
+            onClick={() => setContinent('Tous')}
+          >
+            Tous <em>{COUNTRIES.length}</em>
+          </button>
+          {CONTINENT_ORDER.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className={`chip ${continent === c ? 'is-active' : ''}`}
+              onClick={() => setContinent(c)}
+            >
+              {c} <em>{counts[c]}</em>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="lexique-body no-print">
         <aside className="lexique-side" aria-label="Continents">
@@ -326,6 +334,61 @@ export function CartesMondeView() {
           </div>
           {cards.length === 0 ? (
             <p className="empty">Aucun pays ne correspond à votre recherche.</p>
+          ) : viewMode === 'list' ? (
+            <ul className="lexique-pocket-list">
+              {cards.map((card) => {
+                const open = expanded === card.code
+                return (
+                  <li key={card.code} className={`lexique-pocket-item ${open ? 'is-open' : ''}`}>
+                    <button
+                      type="button"
+                      className="lexique-pocket-row"
+                      onClick={() =>
+                        setExpanded((cur) => (cur === card.code ? null : card.code))
+                      }
+                      aria-expanded={open}
+                    >
+                      <img
+                        className="lexique-pocket-flag"
+                        src={flagUrl(card.code)}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span className="lexique-pocket-copy">
+                        <strong>{card.shortName ?? card.name}</strong>
+                        <em>{card.capital}</em>
+                      </span>
+                      <span className="lexique-pocket-meta" aria-hidden>
+                        {card.code}
+                      </span>
+                    </button>
+                    {open ? (
+                      <div className="lexique-pocket-detail">
+                        <p>
+                          {card.continent}
+                          {card.population.includes('—')
+                            ? ''
+                            : ` · ${card.population}`}
+                          {card.language ? ` · ${card.language}` : ''}
+                        </p>
+                        <MondePlayingCard
+                          card={card}
+                          flipped={!!flipped[card.code]}
+                          onFlip={() =>
+                            setFlipped((prev) => ({
+                              ...prev,
+                              [card.code]: !prev[card.code],
+                            }))
+                          }
+                          className="lexique-pocket-card"
+                        />
+                      </div>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
           ) : (
             <div className="grid">
               {cards.map((card) => (

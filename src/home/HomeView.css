@@ -196,7 +196,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   width: 100%;
-  margin-top: 1.15rem;
+  margin-top: 0.75rem;
   border: 1px solid var(--line);
   border-radius: 0.55rem;
   padding: 0.9rem 1.05rem;
@@ -206,6 +206,12 @@
   background: color-mix(in srgb, var(--paper-elev) 92%, transparent);
   transition: border-color 0.15s ease, transform 0.12s ease;
   animation: home-actions-in 0.55s ease 0.14s both;
+}
+
+.home-packs-promo.is-lexique {
+  margin-top: 1.15rem;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, var(--paper-elev));
 }
 
 .home-packs-promo:hover {

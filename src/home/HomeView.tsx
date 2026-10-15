@@ -92,6 +92,16 @@ export function HomeView({
         </button>
       </div>
 
+      <button type="button" className="home-packs-promo is-lexique" onClick={() => onGo('lexique')}>
+        <span className="home-packs-promo-copy">
+          <strong>Lexique</strong>
+          <em>Pays & territoires — recherche rapide, même hors ligne</em>
+        </span>
+        <span className="home-packs-promo-go" aria-hidden>
+          →
+        </span>
+      </button>
+
       <button type="button" className="home-packs-promo" onClick={() => onGo('packs')}>
         <span className="home-packs-promo-copy">
           <strong>Ouvrir un pack</strong>
@@ -113,9 +123,6 @@ export function HomeView({
           onClick={() => onGo('album')}
         >
           Album{albumOk ? '' : ' (verrouillé)'}
-        </button>
-        <button type="button" className="home-link" onClick={() => onGo('lexique')}>
-          Lexique
         </button>
         <button type="button" className="home-link" onClick={() => onGo('trophees')}>
           Trophées

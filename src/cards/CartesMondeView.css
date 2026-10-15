@@ -3,14 +3,201 @@
   font-family: var(--font-display);
 }
 
+.lexique-pocket-head {
+  position: sticky;
+  /* Sous la topbar sticky */
+  top: 3.55rem;
+  z-index: 12;
+  background: color-mix(in srgb, var(--paper-elev) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 901px) {
+  /* Desktop : sidebar continents/packs suffit */
+  .lexique-chips-row {
+    display: none;
+  }
+}
+
 .lexique-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1rem;
-  padding: 0.85rem 1.25rem;
+  padding: 0.85rem 1.25rem 0.55rem;
+  background: transparent;
+  border-bottom: 0;
+}
+
+.lexique-chips-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+  padding: 0 1.25rem 0.75rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.lexique-chips-row .chip {
+  flex: 0 0 auto;
+}
+
+.lexique-view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  overflow: hidden;
   background: var(--paper-elev);
-  border-bottom: 1px solid var(--line);
+}
+
+.lexique-view-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.lexique-view-btn.is-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.lexique-pocket-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lexique-pocket-item {
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: var(--paper-elev);
+  overflow: hidden;
+}
+
+.lexique-pocket-item.is-open {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
+.lexique-pocket-row {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  font-family: inherit;
+}
+
+.lexique-pocket-flag {
+  width: 2.4rem;
+  height: 1.6rem;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 0.15rem;
+  background: #e8e4dc;
+}
+
+.lexique-pocket-emblem {
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+}
+
+.lexique-pocket-emblem .blason,
+.lexique-pocket-emblem .territoire-flag,
+.lexique-pocket-emblem img {
+  max-width: 2.2rem;
+  max-height: 2.2rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.lexique-pocket-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.lexique-pocket-copy strong {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lexique-pocket-copy em {
+  font-style: normal;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lexique-pocket-meta {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.lexique-pocket-detail {
+  padding: 0 0.8rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  border-top: 1px solid var(--line);
+  animation: lexique-detail-in 0.22s ease;
+}
+
+.lexique-pocket-detail p {
+  margin: 0;
+  align-self: stretch;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+  padding-top: 0.55rem;
+}
+
+.lexique-pocket-card {
+  margin: 0.15rem auto 0.25rem;
+}
+
+@keyframes lexique-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html.is-night .lexique-view-btn.is-active {
+  color: #141210;
 }
 
 .lexique-filter-btn {
