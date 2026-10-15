@@ -86,9 +86,9 @@ export function HomeView({
           <span className="home-cta-label">Jouer</span>
           <span className="home-cta-sub">Vies, timer, score</span>
         </button>
-        <button type="button" className="home-cta is-duel" onClick={() => onGo('defier')}>
+        <button type="button" className="home-cta is-duel is-locked" disabled aria-disabled>
           <span className="home-cta-label">Défier</span>
-          <span className="home-cta-sub">Même écran ou en ligne</span>
+          <span className="home-cta-sub">Verrouillé — retour le 17</span>
         </button>
       </div>
 

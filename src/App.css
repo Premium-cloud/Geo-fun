@@ -408,6 +408,49 @@
   font-weight: 800;
 }
 
+.tab.is-locked,
+.tab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.tab.is-locked:hover,
+.tab:disabled:hover {
+  color: var(--muted);
+}
+
+.duel-locked-panel {
+  max-width: 28rem;
+  margin: 2.5rem auto;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  color: var(--ink);
+}
+
+.duel-locked-panel h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.duel-locked-panel p {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.duel-locked-back {
+  border: 0;
+  border-radius: 0.45rem;
+  padding: 0.7rem 1.1rem;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+}
+
 .topbar.is-quiz .tab.is-active {
   color: var(--header-ink);
 }

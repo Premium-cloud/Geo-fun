@@ -177,6 +177,20 @@
   background: linear-gradient(135deg, #243d5c 0%, #3a5f8a 100%);
 }
 
+.home-cta.is-locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+}
+
+.home-cta.is-locked:active {
+  transform: none;
+}
+
+.home-cta.is-locked::after {
+  display: none;
+}
+
 .home-cta-label {
   font-family: var(--font-display);
   font-size: 1.35rem;
