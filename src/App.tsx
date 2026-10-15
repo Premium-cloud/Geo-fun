@@ -3,7 +3,6 @@ import { CardMockupsPreview } from './cards/CardMockupsPreview'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { CartesTerritoiresView } from './cards/CartesTerritoiresView'
 import { DuelView } from './duel/DuelView'
-import { clearDuelInviteParam } from './duel/peerSync'
 import { GameView, type PlayVariant } from './game/GameView'
 import { HistoryPanel } from './game/HistoryPanel'
 import { HomeView, type HomeDest } from './home/HomeView'
@@ -75,20 +74,14 @@ function TrophyIcon() {
 
 const HUB_TABS: Tab[] = ['progres', 'packs', 'album', 'profil']
 
-/** Duel en pause (sync) — réouverture prévue le 17. */
-const DUEL_LOCKED = true
-
 export default function App() {
   const [tab, setTab] = useState<Tab>(() => {
-    if (typeof window === 'undefined') return 'home'
-    const duel = new URL(window.location.href).searchParams.get('duel')
-    if (duel && !DUEL_LOCKED) return 'duel'
+    if (typeof window !== 'undefined') {
+      const duel = new URL(window.location.href).searchParams.get('duel')
+      if (duel) return 'duel'
+    }
     return 'home'
   })
-
-  useEffect(() => {
-    if (DUEL_LOCKED) clearDuelInviteParam()
-  }, [])
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [options, setOptions] = useState<OptionsState>(() => loadOptions())
@@ -117,10 +110,8 @@ export default function App() {
   function goHomeDest(dest: HomeDest) {
     if (dest === 'apprendre') setTab('entrainement')
     else if (dest === 'jouer') setTab('jeu')
-    else if (dest === 'defier') {
-      if (DUEL_LOCKED) return
-      setTab('duel')
-    } else if (dest === 'lexique') setTab('territoires')
+    else if (dest === 'defier') setTab('duel')
+    else if (dest === 'lexique') setTab('territoires')
     else if (dest === 'packs') setTab('packs')
     else if (dest === 'album') setTab('album')
     else if (dest === 'trophees') setTab('progres')
@@ -228,25 +219,17 @@ export default function App() {
                   ['jeu', 'Jouer'],
                   ['duel', 'Défier'],
                 ] as const
-              ).map(([t, label]) => {
-                const locked = DUEL_LOCKED && t === 'duel'
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    className={`tab ${tab === t ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`}
-                    onClick={() => {
-                      if (locked) return
-                      setTab(t)
-                    }}
-                    disabled={locked}
-                    title={locked ? 'Duel verrouillé — retour le 17' : undefined}
-                    aria-current={tab === t ? 'page' : undefined}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
+              ).map(([t, label]) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`tab ${tab === t ? 'is-active' : ''}`}
+                  onClick={() => setTab(t)}
+                  aria-current={tab === t ? 'page' : undefined}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </nav>
         ) : (
@@ -377,26 +360,7 @@ export default function App() {
             onProgressChange={setProgress}
           />
         ) : null}
-        {tab === 'duel' ? (
-          DUEL_LOCKED ? (
-            <div className="duel-locked-panel">
-              <h2>Duel en pause</h2>
-              <p>
-                Mode verrouillé le temps de corriger la synchro. Réouverture prévue
-                le <strong>17</strong>.
-              </p>
-              <button
-                type="button"
-                className="duel-locked-back"
-                onClick={() => setTab('home')}
-              >
-                ← Accueil
-              </button>
-            </div>
-          ) : (
-            <DuelView />
-          )
-        ) : null}
+        {tab === 'duel' ? <DuelView /> : null}
       </main>
 
       <OptionsModal

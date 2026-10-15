@@ -3,17 +3,38 @@ import type { DuelConfig, DuelRound } from './types'
 
 export type NetMsg =
   | { type: 'hello'; role: 'host' | 'guest'; name: string }
+  /** Lobby : aperçu optionnel (ne lance pas la partie). */
   | { type: 'config'; config: DuelConfig; deck: DuelRound[] }
   | { type: 'ready' }
-  | { type: 'start' }
+  /** Hôte → invité : un seul message atomique pour démarrer (évite 2 decks). */
+  | { type: 'start'; config: DuelConfig; deck: DuelRound[] }
   | { type: 'answer'; roundId: string; player: 0 | 1; value: string; at: number }
   /** Host → guest : aligne le timer (ex. clamp 5 s). */
   | { type: 'clamp'; roundId: string; timeLeft: number }
   /**
-   * Host → guest : fin de manche autoritaire (scores + index suivant).
-   * nextIdx === total ⇒ partie terminée.
+   * Host → guest : fin de manche autoritaire.
+   * `idx` = manche qui vient de finir ; `nextIdx` = suivante (ou === total ⇒ fin).
    */
-  | { type: 'round-result'; roundId: string; scores: [number, number]; combos: [number, number]; nextIdx: number }
+  | {
+      type: 'round-result'
+      roundId: string
+      idx: number
+      scores: [number, number]
+      combos: [number, number]
+      nextIdx: number
+    }
+  /** Invité bloqué → demande l’état à l’hôte. */
+  | { type: 'sync-req' }
+  /** Hôte → invité : resync d’urgence. */
+  | {
+      type: 'sync'
+      idx: number
+      roundId: string
+      scores: [number, number]
+      combos: [number, number]
+      timeLeft: number
+      over: boolean
+    }
   | { type: 'ping' }
 
 export function createHostPeer(): Promise<{ peer: Peer; id: string }> {

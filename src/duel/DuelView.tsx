@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type MutableRefObject,
+} from 'react'
 import type { DataConnection } from 'peerjs'
 import { answersMatch } from '../lib/answerMatch'
 import { loadProgress, profileLabel, recordDuelWin } from '../lib/progression'
@@ -79,6 +86,30 @@ export function DuelView() {
   const [peerReady, setPeerReady] = useState(false)
   const peerRef = useRef<import('peerjs').default | null>(null)
   const connRef = useRef<DataConnection | null>(null)
+  const deckRef = useRef<DuelRound[]>([])
+  const idxRef = useRef(0)
+  const scoresRef = useRef<[number, number]>([0, 0])
+  const combosRef = useRef<[number, number]>([0, 0])
+  const phaseRef = useRef<Phase>('setup')
+  const isHostRef = useRef(true)
+  /** RacePlay expose l’état courant pour sync / anti-freeze. */
+  const raceSnapRef = useRef<{
+    roundId: string
+    timeLeft: number
+    onRemoteResult: ((msg: {
+      scores: [number, number]
+      combos: [number, number]
+      nextIdx: number
+    }) => void) | null
+  }>({ roundId: '', timeLeft: 0, onRemoteResult: null })
+  const lastResultKeyRef = useRef('')
+
+  deckRef.current = deck
+  idxRef.current = idx
+  scoresRef.current = scores
+  combosRef.current = combos
+  phaseRef.current = phase
+  isHostRef.current = isHost
 
   // Auto-join si ?duel=
   useEffect(() => {
@@ -112,6 +143,38 @@ export function DuelView() {
     })
   }
 
+  function applyRoundResult(msg: {
+    scores: [number, number]
+    combos: [number, number]
+    nextIdx: number
+    idx?: number
+  }) {
+    const key = `${msg.idx ?? '?'}→${msg.nextIdx}:${msg.scores.join('-')}`
+    if (lastResultKeyRef.current === key) return
+    lastResultKeyRef.current = key
+    setScores(msg.scores)
+    setCombos(msg.combos)
+    raceSnapRef.current.onRemoteResult?.(msg)
+    window.setTimeout(() => {
+      if (msg.nextIdx >= deckRef.current.length) finish()
+      else setIdx(msg.nextIdx)
+    }, 900)
+  }
+
+  function replySync() {
+    const snap = raceSnapRef.current
+    const over = phaseRef.current === 'over'
+    send(connRef.current, {
+      type: 'sync',
+      idx: idxRef.current,
+      roundId: snap.roundId || deckRef.current[idxRef.current]?.id || '',
+      scores: scoresRef.current,
+      combos: combosRef.current,
+      timeLeft: snap.timeLeft,
+      over,
+    })
+  }
+
   async function hostOnline() {
     setStatus('Création du salon…')
     setIsHost(true)
@@ -127,9 +190,7 @@ export function DuelView() {
         conn.on('open', () => {
           setPeerReady(true)
           setStatus('Adversaire connecté — lance la partie')
-          const nextDeck = makeDuelDeck(config.category, config.answerMode, config.rounds)
-          setDeck(nextDeck)
-          send(conn, { type: 'config', config, deck: nextDeck })
+          // Pas de deck ici : un seul deck atomique au « Lancer »
         })
         conn.on('data', (raw) => onNet(raw as NetMsg))
       })
@@ -164,11 +225,34 @@ export function DuelView() {
       setStatus('Partie reçue — prêt')
     }
     if (msg.type === 'start') {
+      lastResultKeyRef.current = ''
+      setConfig(msg.config)
+      setDeck(msg.deck)
       setIdx(0)
       setScores([0, 0])
       setCombos([0, 0])
       setOverTitle('Fin du duel')
       setPhase('play')
+      setStatus('')
+    }
+    // Parent stable : ne dépend pas du remount RacePlay (anti-freeze)
+    if (msg.type === 'round-result' && !isHostRef.current) {
+      applyRoundResult(msg)
+    }
+    if (msg.type === 'sync-req' && isHostRef.current) {
+      replySync()
+    }
+    if (msg.type === 'sync' && !isHostRef.current) {
+      setScores(msg.scores)
+      setCombos(msg.combos)
+      if (msg.over) {
+        finish()
+        return
+      }
+      // Hôte déjà passé à la manche suivante → on rattrape
+      if (msg.idx !== idxRef.current) {
+        setIdx(msg.idx)
+      }
     }
   }
 
@@ -183,12 +267,14 @@ export function DuelView() {
   }
 
   function startOnlineHost() {
-    if (!connRef.current || !deck.length) {
-      const nextDeck = makeDuelDeck(config.category, config.answerMode, config.rounds)
-      setDeck(nextDeck)
-      send(connRef.current, { type: 'config', config, deck: nextDeck })
+    if (!connRef.current?.open) {
+      setStatus('Adversaire pas encore connecté')
+      return
     }
-    send(connRef.current, { type: 'start' })
+    // Un seul deck, envoyé avec start (même contenu hôte / invité)
+    const nextDeck = makeDuelDeck(config.category, config.answerMode, config.rounds)
+    setDeck(nextDeck)
+    send(connRef.current, { type: 'start', config, deck: nextDeck })
     setIdx(0)
     setScores([0, 0])
     setCombos([0, 0])
@@ -492,6 +578,8 @@ export function DuelView() {
         total={deck.length}
         online
         conn={connRef.current}
+        raceSnapRef={raceSnapRef}
+        parentHandlesAdvance={!isHost}
         onScore={(p, pts) => addScore(p, pts)}
         onCombo={bumpCombo}
         onApplyState={(next) => {
@@ -715,6 +803,8 @@ function RacePlay({
   split,
   mirror,
   conn,
+  raceSnapRef,
+  parentHandlesAdvance,
   onScore,
   onCombo,
   onApplyState,
@@ -735,6 +825,17 @@ function RacePlay({
   /** Téléphone : deux moitiés, J2 en haut retourné à 180°. */
   mirror?: boolean
   conn: DataConnection | null
+  raceSnapRef?: MutableRefObject<{
+    roundId: string
+    timeLeft: number
+    onRemoteResult: ((msg: {
+      scores: [number, number]
+      combos: [number, number]
+      nextIdx: number
+    }) => void) | null
+  }>
+  /** Invité : le parent avance déjà via round-result (listener stable). */
+  parentHandlesAdvance?: boolean
   onScore: (p: 0 | 1, pts: number) => void
   onCombo: (p: 0 | 1, ok: boolean) => void
   onApplyState?: (next: { scores: [number, number]; combos: [number, number] }) => void
@@ -756,13 +857,18 @@ function RacePlay({
   const correctRef = useRef(correctAt)
   const scoresRef = useRef(scores)
   const combosRef = useRef(combos)
+  const endsAtRef = useRef(0)
   lockedRef.current = locked
   correctRef.current = correctAt
   scoresRef.current = scores
   combosRef.current = combos
 
   function clampTimer() {
-    setTimeLeft((t) => (t > 5 ? 5 : t))
+    setTimeLeft((t) => {
+      const next = t > 5 ? 5 : t
+      if (next !== t) endsAtRef.current = Date.now() + next * 1000
+      return next
+    })
     if (online && isHost) {
       send(conn, { type: 'clamp', roundId: round.id, timeLeft: 5 })
     }
@@ -786,6 +892,36 @@ function RacePlay({
     if (nextLocked[0] && nextLocked[1] && isHost) endRound()
   }
 
+  function applyRemoteEnd(msg: {
+    scores: [number, number]
+    combos: [number, number]
+    nextIdx: number
+  }) {
+    if (ended.current) return
+    ended.current = true
+    scored.current = true
+    onApplyState?.({ scores: msg.scores, combos: msg.combos })
+    // Avance gérée par le parent si parentHandlesAdvance
+    if (!parentHandlesAdvance) {
+      window.setTimeout(() => {
+        onGoToIdx?.(msg.nextIdx)
+      }, 900)
+    }
+  }
+
+  useEffect(() => {
+    if (!raceSnapRef) return
+    raceSnapRef.current.roundId = round.id
+    raceSnapRef.current.timeLeft = timeLeft
+    raceSnapRef.current.onRemoteResult = applyRemoteEnd
+    return () => {
+      if (raceSnapRef.current.onRemoteResult === applyRemoteEnd) {
+        raceSnapRef.current.onRemoteResult = null
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [raceSnapRef, round.id, timeLeft])
+
   useEffect(() => {
     if (!conn) return
     const handler = (raw: unknown) => {
@@ -794,16 +930,19 @@ function RacePlay({
         markAnswer(msg.player, msg.value, msg.at)
       }
       if (msg.type === 'clamp' && msg.roundId === round.id && !isHost) {
-        setTimeLeft((t) => (t > msg.timeLeft ? msg.timeLeft : t))
+        setTimeLeft((t) => {
+          const next = t > msg.timeLeft ? msg.timeLeft : t
+          endsAtRef.current = Date.now() + next * 1000
+          return next
+        })
       }
-      if (msg.type === 'round-result' && msg.roundId === round.id && !isHost) {
-        if (ended.current) return
-        ended.current = true
-        scored.current = true
-        onApplyState?.({ scores: msg.scores, combos: msg.combos })
-        window.setTimeout(() => {
-          onGoToIdx?.(msg.nextIdx)
-        }, 900)
+      // Guest : round-result aussi ici (UI), parent gère l’avance
+      if (
+        msg.type === 'round-result' &&
+        !isHost &&
+        (msg.roundId === round.id || msg.idx === idx)
+      ) {
+        applyRemoteEnd(msg)
       }
     }
     conn.on('data', handler)
@@ -811,12 +950,13 @@ function RacePlay({
       conn.off('data', handler)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conn, round.id, isHost])
+  }, [conn, round.id, isHost, idx])
 
   useEffect(() => {
     ended.current = false
     scored.current = false
     setTimeLeft(config.timerSec)
+    endsAtRef.current = Date.now() + config.timerSec * 1000
     setLocked([false, false])
     setCorrectAt([null, null])
     lockedRef.current = [false, false]
@@ -824,22 +964,32 @@ function RacePlay({
     setInputs(['', ''])
   }, [round.id, config.timerSec])
 
-  // Timer : l’hôte (ou split local) décide la fin ; le guest affiche seulement
+  // Timer basé sur Date.now (moins fragile si onglet en arrière-plan)
   useEffect(() => {
     if (ended.current) return
-    const t = window.setInterval(() => {
-      setTimeLeft((s) => {
-        if (s <= 1) {
-          window.clearInterval(t)
-          if (isHost) endRound()
-          return 0
-        }
-        return s - 1
-      })
-    }, 1000)
+    const tick = () => {
+      if (ended.current) return
+      const left = Math.max(0, Math.ceil((endsAtRef.current - Date.now()) / 1000))
+      setTimeLeft(left)
+      if (raceSnapRef) raceSnapRef.current.timeLeft = left
+      if (left <= 0 && isHost) endRound()
+    }
+    tick()
+    const t = window.setInterval(tick, 250)
     return () => window.clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round.id, isHost])
+
+  // Invité : si timer à 0 sans fin de manche → demande sync (anti-freeze)
+  useEffect(() => {
+    if (!online || isHost || ended.current) return
+    if (timeLeft > 0) return
+    const t = window.setTimeout(() => {
+      if (ended.current) return
+      send(conn, { type: 'sync-req' })
+    }, 3500)
+    return () => window.clearTimeout(t)
+  }, [online, isHost, timeLeft, conn, round.id])
 
   function tryAnswer(player: 0 | 1, value: string) {
     if (ended.current || lockedRef.current[player]) return
@@ -925,6 +1075,7 @@ function RacePlay({
       send(conn, {
         type: 'round-result',
         roundId: round.id,
+        idx,
         scores: nextScores,
         combos: nextCombos,
         nextIdx,
