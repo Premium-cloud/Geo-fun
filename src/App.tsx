@@ -388,9 +388,13 @@ export default function App() {
       {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
       {showOnboarding ? (
         <Onboarding
-          onDone={() => {
+          onDone={(start) => {
             setShowOnboarding(false)
             setProgress(loadProgress())
+            if (start === 'quick') {
+              setGameLaunch('quick')
+              setTab('jeu')
+            }
           }}
         />
       ) : null}

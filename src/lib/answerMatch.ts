@@ -144,3 +144,24 @@ export function answersMatch(
 
   return false
 }
+
+/**
+ * Faux mais très proche (typo / 1–2 lettres) — pour le feedback « Presque ».
+ * Ne déclenche pas si `answersMatch(..., 'loose')` est déjà vrai.
+ */
+export function isNearMiss(userInput: string, expected: string): boolean {
+  if (!userInput || userInput.startsWith('__')) return false
+  if (answersMatch(userInput, expected, 'loose')) return false
+  const u = softenSpelling(normalizeAnswer(userInput))
+  const e = softenSpelling(normalizeAnswer(expected))
+  if (!u || !e) return false
+  const dist = levenshtein(u, e)
+  if (dist <= 0) return false
+  const longer = Math.max(u.length, e.length)
+  // Typo courte ; un peu plus large sur les noms longs (Slovaquie / Slovénie)
+  const limit = longer <= 5 ? 1 : longer <= 8 ? 2 : 3
+  if (dist > limit) return false
+  // Évite les faux positifs type Brésil / Belgique
+  const share = longer > 0 ? 1 - dist / longer : 0
+  return share >= 0.6
+}

@@ -1,48 +1,35 @@
-import { useState } from 'react'
 import { setOnboardingDone } from '../lib/progression'
 import './Onboarding.css'
 
-const STEPS = [
-  {
-    title: 'GeoFun',
-    body: 'Le monde en cartes — entraîne-toi, chronomètre-toi, défie un ami. Tout reste sur le téléphone.',
-  },
-  {
-    title: 'Packs & album',
-    body: 'Gagne des crédits, ouvre des packs, remplis l’album. Le lexique montre tout, sans collection.',
-  },
-] as const
+export type OnboardingStart = 'quick' | null
 
-export function Onboarding({ onDone }: { onDone: () => void }) {
-  const [step, setStep] = useState(0)
-  const last = step >= STEPS.length - 1
-  const cur = STEPS[step]!
-
-  function finish() {
+export function Onboarding({
+  onDone,
+}: {
+  onDone: (start?: OnboardingStart) => void
+}) {
+  function finish(start: OnboardingStart = null) {
     setOnboardingDone()
-    onDone()
+    onDone(start)
   }
 
   return (
     <div className="ob-overlay" role="dialog" aria-modal aria-labelledby="ob-title">
       <div className="ob-card">
-        <p className="ob-step">
-          {step + 1}/{STEPS.length}
+        <p className="ob-brand" aria-hidden>
+          GeoFun
         </p>
-        <h2 id="ob-title">{cur.title}</h2>
-        <p className="ob-body">{cur.body}</p>
+        <h2 id="ob-title">Deux minutes pour commencer</h2>
+        <p className="ob-body">
+          10 questions MIX, un score, des crédits pour les packs. Tout reste sur
+          le téléphone — même hors ligne après une première ouverture.
+        </p>
         <div className="ob-actions">
-          {!last ? (
-            <button type="button" className="ob-btn" onClick={() => setStep((s) => s + 1)}>
-              Suite
-            </button>
-          ) : (
-            <button type="button" className="ob-btn" onClick={finish}>
-              Go
-            </button>
-          )}
-          <button type="button" className="ob-skip" onClick={finish}>
-            Passer
+          <button type="button" className="ob-btn" onClick={() => finish('quick')}>
+            Partie rapide · 2 min
+          </button>
+          <button type="button" className="ob-skip" onClick={() => finish(null)}>
+            Voir l’accueil
           </button>
         </div>
       </div>

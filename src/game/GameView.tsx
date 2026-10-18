@@ -7,6 +7,7 @@ import {
   type TerritoryPackId,
 } from '../data/territories'
 import { answersMatch } from '../lib/answerMatch'
+import { feedbackLine } from '../lib/feedbackCopy'
 import { pickWeightedItem } from '../lib/pickWeighted'
 import {
   loadProgress,
@@ -1687,20 +1688,32 @@ export function GameView({
         ) : null}
 
         {revealed ? (
-          <div className={`game-feedback ${correct ? 'is-ok' : 'is-ko'}`}>
-            <p>
-              {picked === '__timeout__'
-                ? `Temps écoulé. Réponse : ${round.answerLabel}`
-                : correct
-                  ? round.answerLabel
-                  : `La bonne réponse : ${round.answerLabel}`}
-            </p>
-            {!isPlay ? (
-              <button type="button" className="game-next" onClick={next}>
-                Question suivante
-              </button>
-            ) : null}
-          </div>
+          (() => {
+            const line = feedbackLine({
+              ok: correct,
+              answerLabel: round.answerLabel,
+              picked: picked ?? '',
+              givenLabel: labelForChoice(picked ?? '', round),
+            })
+            return (
+              <div
+                className={`game-feedback is-${line.kind === 'ok' ? 'ok' : 'ko'} is-${line.kind}`}
+              >
+                <p>
+                  {line.kind === 'ok' ? (
+                    <span className="game-feedback-answer">{line.text}</span>
+                  ) : (
+                    line.text
+                  )}
+                </p>
+                {!isPlay ? (
+                  <button type="button" className="game-next" onClick={next}>
+                    Question suivante
+                  </button>
+                ) : null}
+              </div>
+            )
+          })()
         ) : null}
 
         {!isPlay && asked > 0 ? (
