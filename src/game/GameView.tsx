@@ -1228,11 +1228,8 @@ export function GameView({
         const nextLives = Math.max(0, lives - 1)
         setLives(nextLives)
         endAfterFeedback.current = nextLives <= 0
-      } else if (isPlay && sessionFormat === 'session10') {
-        const nextLives = Math.max(0, lives - 1)
-        setLives(nextLives)
-        endAfterFeedback.current = nextLives <= 0 || nextAsked >= SESSION_LEN
       } else {
+        // session10 / rapidité : on va jusqu’au bout (pas de game over sur vies)
         endAfterFeedback.current = false
       }
     }
