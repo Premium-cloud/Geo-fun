@@ -100,11 +100,8 @@ export function HistoryPanel({ onClose }: { onClose: () => void }) {
             ✕
           </button>
         </header>
-        <p className="hist-hint">
-          Meilleurs scores et séries sur cet appareil, classés par réussite.
-        </p>
         {rows.length === 0 ? (
-          <p className="hist-empty">Aucune partie enregistrée pour l’instant.</p>
+          <p className="hist-empty">Aucune partie</p>
         ) : (
           <div className="hist-groups">
             {[...byCat.entries()].map(([cat, list]) => (

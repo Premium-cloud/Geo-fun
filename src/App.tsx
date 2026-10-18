@@ -113,10 +113,7 @@ export default function App() {
   }
 
   function goHomeDest(dest: HomeDest) {
-    if (dest === 'rapide') {
-      setGameLaunch('quick')
-      setTab('jeu')
-    } else if (dest === 'faiblesses') {
+    if (dest === 'faiblesses') {
       setGameLaunch('weaknesses')
       setTab('jeu')
     } else if (dest === 'apprendre') {
@@ -351,9 +348,6 @@ export default function App() {
               </button>
             </div>
             <div className="lexique-banner no-print">
-              <p>
-                <strong>Catalogue</strong> — tout est visible, rien n’est possédé ici.
-              </p>
               <div className="lexique-banner-actions">
                 <button type="button" className="lexique-banner-btn is-pack" onClick={() => setTab('packs')}>
                   Packs
@@ -388,13 +382,9 @@ export default function App() {
       {historyOpen ? <HistoryPanel onClose={() => setHistoryOpen(false)} /> : null}
       {showOnboarding ? (
         <Onboarding
-          onDone={(start) => {
+          onDone={() => {
             setShowOnboarding(false)
             setProgress(loadProgress())
-            if (start === 'quick') {
-              setGameLaunch('quick')
-              setTab('jeu')
-            }
           }}
         />
       ) : null}

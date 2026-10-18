@@ -58,9 +58,8 @@ export function AlbumView({
         <h1>Mon album</h1>
         <div className="album-locked">
           <p className="album-locked-title">Album verrouillé</p>
-          <p>Ouvre un pack pour ta première carte.</p>
           <button type="button" className="album-packs-btn" onClick={onOpenPacks}>
-            Ouvrir un pack
+            Packs
           </button>
         </div>
       </div>

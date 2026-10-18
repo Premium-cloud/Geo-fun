@@ -138,26 +138,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.65rem 1rem;
   margin: 0;
-  padding: 0.7rem 1.15rem;
+  padding: 0.55rem 1.15rem;
   background: var(--paper-elev);
   border-bottom: 1px solid var(--line);
-}
-
-.lexique-banner p {
-  margin: 0;
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: var(--muted);
-  line-height: 1.35;
-  max-width: 28rem;
-}
-
-.lexique-banner strong {
-  color: var(--ink);
-  font-weight: 800;
 }
 
 .lexique-banner-actions {

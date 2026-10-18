@@ -34,11 +34,7 @@ export function ProgressView({
         </button>
         <h1>Trophées</h1>
         <p className="prog-lead">
-          Niveau {level} · {Object.keys(state.trophies).length} / {TROPHIES.length} obtenus
-        </p>
-        <p className="prog-hint">
-          Packs et album sont à part : les trophées suivent tes sans-fautes, duels et
-          collection.
+          Niv. {level} · {Object.keys(state.trophies).length}/{TROPHIES.length}
         </p>
       </div>
 

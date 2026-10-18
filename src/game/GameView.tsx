@@ -661,8 +661,8 @@ function FlagChoice({
 }
 
 export type PlayVariant = 'entrainement' | 'jeu'
-/** Lancement depuis l’accueil : session 2 min ou rejeu faiblesses. */
-export type GameLaunch = 'quick' | 'weaknesses' | null
+/** Lancement depuis l’accueil (rejeu faiblesses). */
+export type GameLaunch = 'weaknesses' | null
 
 const AUTO_NEXT_MS = 900
 const AUTO_NEXT_FLAG_MS = 1800
@@ -957,31 +957,20 @@ export function GameView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
-  // Accueil → Partie rapide / Rejouer mes erreurs
+  // Accueil → Mes erreurs
   useEffect(() => {
-    if (!launch || variant !== 'jeu') return
+    if (launch !== 'weaknesses' || variant !== 'jeu') return
     let cancelled = false
-    const nextDiff: Difficulty = launch === 'quick' ? 'difficile' : 'facile'
-    if (launch === 'quick') {
-      setCategory('mixte')
-      setMode('flagToName')
-      setSessionFormat('session10')
-      setDifficulty(nextDiff)
-      setAnswerMode('qcm')
-      setPreferCodes([])
-      setWeaknessFocus(false)
-      setLastGained(0)
-    } else if (launch === 'weaknesses') {
-      const codes = weakCountryCodes(16)
-      setCategory('pays')
-      setMode('flagToName')
-      setSessionFormat('session10')
-      setDifficulty(nextDiff)
-      setAnswerMode('qcm')
-      setPreferCodes(codes)
-      setWeaknessFocus(true)
-      setLastGained(0)
-    }
+    const nextDiff: Difficulty = 'facile'
+    const codes = weakCountryCodes(16)
+    setCategory('pays')
+    setMode('flagToName')
+    setSessionFormat('session10')
+    setDifficulty(nextDiff)
+    setAnswerMode('qcm')
+    setPreferCodes(codes)
+    setWeaknessFocus(true)
+    setLastGained(0)
     const t = window.setTimeout(() => {
       if (!cancelled) resetRun({ start: true, difficulty: nextDiff })
     }, 0)
@@ -1310,11 +1299,7 @@ export function GameView({
         <div className="game-board game-over">
           <p className="game-prompt">Partie terminée</p>
           <p className="game-over-format">
-            {weaknessFocus
-              ? 'Mes erreurs'
-              : sessionFormat === 'session10'
-                ? 'Session 2 min · 10 questions'
-                : FORMAT_LABEL[sessionFormat]}
+            {weaknessFocus ? 'Mes erreurs' : FORMAT_LABEL[sessionFormat]}
           </p>
           <p className="game-over-score">
             Score <strong>{score}</strong> / {asked}
@@ -1322,10 +1307,7 @@ export function GameView({
           </p>
           {lastGained > 0 ? (
             <p className="game-over-credits">
-              +{lastGained} crédits · total {creditsNow}
-              {!packReady ? (
-                <> · encore {Math.max(0, PACK_COST - creditsNow)} pour un pack</>
-              ) : null}
+              +{lastGained} cr. · {creditsNow}
             </p>
           ) : null}
           {isRapidite ? (
@@ -1412,7 +1394,7 @@ export function GameView({
                   window.setTimeout(() => resetRun({ start: true }), 0)
                 }}
               >
-                Rejouer mes erreurs
+                Mes erreurs
                 {weakLeft > 0 ? ` (${Math.min(weakLeft, 12)})` : ''}
               </button>
             ) : null}
@@ -1448,9 +1430,7 @@ export function GameView({
                 </button>
               ))}
             </div>
-          ) : (
-            <p className="game-mixte-hint">MIX · drapeau · capitale · chiffre</p>
-          )}
+          ) : null}
           <div className="game-chip-row" role="group" aria-label="Difficulté">
             {difficultyOptions.map((d) => (
               <button
@@ -1543,18 +1523,12 @@ export function GameView({
       >
         {isPlay && !runActive ? (
           <div className="game-idle">
-            <p className="game-idle-title">Prêt</p>
-            {isRapidite ? (
-              <p className="game-idle-hint">
-                10 questions - Réponds le plus rapidement possible !
-              </p>
-            ) : null}
             <button
               type="button"
               className="game-next game-lancer"
               onClick={() => resetRun({ start: true })}
             >
-              Commencer la partie
+              Commencer
             </button>
           </div>
         ) : (

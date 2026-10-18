@@ -117,14 +117,8 @@ export function DuelView() {
     setPeerReady(false)
     setLinkLost(true)
     const ph = phaseRef.current
-    if (ph === 'lobby') {
-      setStatus(
-        isHostRef.current
-          ? 'Adversaire parti — en attente d’une nouvelle connexion…'
-          : 'Connexion perdue — demande un nouveau lien à l’hôte',
-      )
-    } else if (ph === 'play') {
-      setStatus('Adversaire déconnecté — la manche peut rester figée. Quitte ou attends.')
+    if (ph === 'lobby' || ph === 'play') {
+      setStatus(isHostRef.current ? 'Adversaire parti' : 'Déconnecté')
     }
   }
 
@@ -135,7 +129,7 @@ export function DuelView() {
     conn.on('data', (raw) => onNet(raw as NetMsg))
     conn.on('close', onConnClosed)
     conn.on('error', () => {
-      setStatus('Erreur réseau — vérifie la connexion')
+      setStatus('Erreur réseau')
     })
   }
 
@@ -167,7 +161,7 @@ export function DuelView() {
       send(conn, { type: 'ping' })
       if (Date.now() - lastPongRef.current > 18000) {
         setLinkLost(true)
-        setStatus('Lien instable — garde les deux onglets ouverts')
+        setStatus('Lien coupé')
       }
     }, 5000)
     return () => window.clearInterval(tick)
@@ -234,12 +228,12 @@ export function DuelView() {
       setInviteId(id)
       setInviteUrl(duelInviteUrl(id))
       setPhase('lobby')
-      setStatus('En attente d’un adversaire… garde cet onglet ouvert')
+      setStatus('En attente…')
       peer.on('connection', (conn) => {
         conn.on('open', () => {
           wireConn(conn)
           setPeerReady(true)
-          setStatus('Adversaire connecté — lance quand tu es prêt')
+          setStatus('Connecté')
           // Pas de deck ici : un seul deck atomique au « Lancer »
         })
       })
@@ -259,7 +253,7 @@ export function DuelView() {
       peerRef.current = peer
       wireConn(conn)
       setPeerReady(true)
-      setStatus('Connecté — reste ici, l’hôte lance')
+      setStatus('Connecté')
       clearDuelInviteParam()
       send(conn, { type: 'hello', role: 'guest', name: 'Joueur 2' })
     } catch (e) {
@@ -283,7 +277,7 @@ export function DuelView() {
     if (msg.type === 'config') {
       setConfig(msg.config)
       setDeck(msg.deck)
-      setStatus('Partie reçue — prêt')
+      setStatus('Prêt')
     }
     if (msg.type === 'start') {
       lastResultKeyRef.current = ''
@@ -330,7 +324,7 @@ export function DuelView() {
 
   function startOnlineHost() {
     if (!connRef.current?.open) {
-      setStatus('Adversaire pas encore connecté')
+      setStatus('Pas connecté')
       return
     }
     // Un seul deck, envoyé avec start (même contenu hôte / invité)
@@ -392,11 +386,6 @@ export function DuelView() {
                 </button>
               ))}
             </div>
-            <p className="duel-hint">
-              {config.venue === 'local'
-                ? 'Le plus fiable : un seul téléphone ou PC partagé.'
-                : 'Deux appareils · garde les deux onglets ouverts (pas en veille).'}
-            </p>
           </div>
 
           {config.venue === 'local' ? (
@@ -422,25 +411,11 @@ export function DuelView() {
                   className={`duel-chip ${config.localFormat === 'split' ? 'is-active' : ''}`}
                   onClick={() => patchConfig({ localFormat: 'split' })}
                 >
-                  Split{wide ? '' : ' (téléphone)'}
+                  Split
                 </button>
               </div>
-              <p className="duel-hint">
-                {config.localFormat === 'battleroyal'
-                  ? 'Premier qui se trompe a perdu. Bonne réponse → ça passe à l’autre.'
-                  : config.localFormat === 'tours'
-                    ? 'Chacun sa question (pas la même). 1 point si correct.'
-                    : wide
-                      ? 'Course simultanée — 1 pt par bonne réponse. PC : J1 = 1–2–3–4, J2 = A–Z–E–R. Timer → 5 s dès qu’un trouve.'
-                      : 'Téléphone au milieu : moitié d’écran chacun, J2 en haut (miroir). 1 pt par bonne réponse.'}
-              </p>
             </div>
-          ) : (
-            <p className="duel-hint">
-              Course en ligne : lien d’invitation, 1 pt par bonne réponse. Timer → 5 s dès qu’un
-              trouve. Si ça freeze, l’invité se resynchronise tout seul.
-            </p>
-          )}
+          ) : null}
 
           <div className="duel-field">
             <span className="duel-label">Catégorie</span>
@@ -456,12 +431,6 @@ export function DuelView() {
                 </button>
               ))}
             </div>
-            <p className="duel-hint">
-              {config.category === 'departements' && 'Numéro → département'}
-              {config.category === 'pays' && 'Drapeau → pays'}
-              {config.category === 'capitale' && 'Pays → capitale'}
-              {config.category === 'mixte' && 'Les 3 types'}
-            </p>
           </div>
 
           <div className="duel-field">
@@ -529,14 +498,13 @@ export function DuelView() {
         <div className="duel-lobby">
           {isHost && inviteUrl ? (
             <>
-              <p className="duel-hint">Envoie ce lien — reste sur cet écran :</p>
               <code className="duel-invite">{inviteUrl}</code>
               <button
                 type="button"
                 className="duel-chip"
                 onClick={() => void navigator.clipboard?.writeText(inviteUrl)}
               >
-                Copier le lien
+                Copier
               </button>
             </>
           ) : null}
@@ -550,10 +518,8 @@ export function DuelView() {
             >
               Démarrer
             </button>
-          ) : (
-            <p className="duel-hint">Ne quitte pas cet onglet — l’hôte lance la partie.</p>
-          )}
-          {inviteId ? <p className="duel-meta">ID salon : {inviteId}</p> : null}
+          ) : null}
+          {inviteId ? <p className="duel-meta">{inviteId}</p> : null}
         </div>
       </div>
     )

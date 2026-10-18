@@ -113,10 +113,6 @@ export function OptionsModal({ open, onClose, onOptionsChange }: Props) {
               onChange={(e) => patch({ mapDomTom: e.target.checked })}
             />
           </label>
-          <p className="opt-hint">
-            Silhouettes sans nom ni code (révélés après réponse). Sinon métropole
-            seulement.
-          </p>
         </section>
 
         <section className="opt-section">
@@ -145,10 +141,6 @@ export function OptionsModal({ open, onClose, onOptionsChange }: Props) {
 
         <section className="opt-section opt-section-data">
           <h3>Données</h3>
-          <p className="opt-hint">
-            Scores et options sont stockés sur cet appareil. Import / export pour
-            sauvegarder ou changer de téléphone.
-          </p>
           <div className="opt-data-actions">
             <button type="button" className="opt-btn" onClick={wipe}>
               Supprimer les données

@@ -67,7 +67,6 @@ export function ProfileView({
         <div>
           <h1>{pseudo.trim() || 'Ton profil'}</h1>
           {title ? <p className="profile-title-badge">{title}</p> : null}
-          <p className="profile-lead">Local sur cet appareil — pas de compte.</p>
         </div>
       </header>
 

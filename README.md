@@ -4,9 +4,8 @@ Collection de cartes à collectionner et mode jeu :
 - **France** — 108 départements / territoires (blason, chef-lieu, région, pictos de spécialité)
 - **Territoires** — départements FR, cantons CH, communautés ES, États US, Länder DE, préfectures JP, provinces CA, États BR (lexique + quiz)
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
-- **Partie rapide** (accueil) — 2 min · 10 questions MIX → score → crédits / pack
-- **Rejouer mes erreurs** — boucle locale sur les pays que tu rates
-- **Entraînement** — quiz pour apprendre (validation manuelle)
+- **Mes erreurs** — rejeu des pays ratés
+- **Entraînement** — quiz sans chrono
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
 - **MIX** — uniquement drapeau→pays, nom→capitale, chiffre→département
 - **Carte** — pointer le pays ou une subdivision (Territoires) ; zoom / pinch ; timers allongés
@@ -51,7 +50,7 @@ Pour une vraie fiche Play Store / App Store (indépendante de Vercel) : wrapper 
 Onglet **Jeux → Duel** :
 
 - **Même écran** : Battle royale (premier faux = perdu), Chacun son tour (question différente par joueur), Split (même question — téléphone miroir moitié/moitié ; PC : J1 = 1–2–3–4, J2 = A–Z–E–R)
-- **En ligne** : salon + lien d’invitation (PeerJS) ; heartbeat, resync invité, détection déconnexion ; l’hôte synchronise timer, scores et question (1 pt par bonne réponse, timer → 5 s dès qu’un trouve). **Même écran** reste le mode le plus fiable.
+- **En ligne** : salon PeerJS + sync hôte
 - Catégories : Départements (n°) · Pays (drapeau) · Capitales · MIX — QCM ou saisie, pas de carte
 
 ## Déploiement Vercel (prod stable)

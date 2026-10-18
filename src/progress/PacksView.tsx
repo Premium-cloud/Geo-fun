@@ -141,7 +141,7 @@ export function PacksView({
           {phase === 'opening' ? (
             <p className="packs-stage-hint">…</p>
           ) : firstOpen && canBuy ? (
-            <p className="packs-stage-hint">Touche pour ouvrir</p>
+            <p className="packs-stage-hint">Ouvrir</p>
           ) : !canBuy ? (
             <p className="packs-stage-hint">{PACK_COST} crédits</p>
           ) : null}
