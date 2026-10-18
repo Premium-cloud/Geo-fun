@@ -1566,7 +1566,9 @@ export function GameView({
           ) : null}
           {usePerQuestionTimer ? (
             <>
-              <Lives lives={lives} max={maxLives} />
+              {sessionFormat === 'libre' ? (
+                <Lives lives={lives} max={maxLives} />
+              ) : null}
               <span
                 className={`game-timer ${secondsLeft <= 5 ? 'is-urgent' : ''}`}
                 aria-label={`${secondsLeft} secondes`}
