@@ -880,13 +880,14 @@ export function GameView({
     setStatsTick((t) => t + 1)
   }
 
-  function resetRun(opts?: { start?: boolean }) {
+  function resetRun(opts?: { start?: boolean; difficulty?: Difficulty }) {
+    const d = opts?.difficulty ?? difficulty
     flushTrainingSession()
     setScore(0)
     setAsked(0)
     setStreak(0)
     setStreakPeak(0)
-    setLives(LIVES_FOR[difficulty])
+    setLives(LIVES_FOR[d])
     setGameOver(false)
     setPicked(null)
     setTyped('')
@@ -898,7 +899,7 @@ export function GameView({
     endAfterFeedback.current = false
     runSnapshot.current = { score: 0, asked: 0, peak: 0, timeMs: 0 }
     setSecondsLeft(
-      (mode === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[difficulty],
+      (mode === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[d],
     )
     const start = isPlay ? Boolean(opts?.start) : true
     setRunActive(start)
@@ -959,11 +960,12 @@ export function GameView({
   useEffect(() => {
     if (!launch || variant !== 'jeu') return
     let cancelled = false
+    const nextDiff: Difficulty = launch === 'quick' ? 'difficile' : 'facile'
     if (launch === 'quick') {
       setCategory('mixte')
       setMode('flagToName')
       setSessionFormat('session10')
-      setDifficulty('facile')
+      setDifficulty(nextDiff)
       setAnswerMode('qcm')
       setPreferCodes([])
       setWeaknessFocus(false)
@@ -973,14 +975,14 @@ export function GameView({
       setCategory('pays')
       setMode('flagToName')
       setSessionFormat('session10')
-      setDifficulty('facile')
+      setDifficulty(nextDiff)
       setAnswerMode('qcm')
       setPreferCodes(codes)
       setWeaknessFocus(true)
       setLastGained(0)
     }
     const t = window.setTimeout(() => {
-      if (!cancelled) resetRun({ start: true })
+      if (!cancelled) resetRun({ start: true, difficulty: nextDiff })
     }, 0)
     return () => {
       cancelled = true
