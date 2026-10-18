@@ -167,11 +167,18 @@
   transform: scale(0.985);
 }
 
+.home-cta.is-quick {
+  background: linear-gradient(135deg, #c4473a 0%, #e2553d 55%, #f07a3a 100%);
+  box-shadow: 0 8px 22px color-mix(in srgb, #c4473a 28%, transparent);
+}
+.home-cta.is-weak {
+  background: linear-gradient(135deg, #8a4b1f 0%, #b86a28 100%);
+}
 .home-cta.is-learn {
   background: linear-gradient(135deg, #0e6b7a 0%, #148a7c 100%);
 }
 .home-cta.is-play {
-  background: linear-gradient(135deg, #c4473a 0%, #e2553d 100%);
+  background: linear-gradient(135deg, #a33a30 0%, #c4473a 100%);
 }
 .home-cta.is-duel {
   background: linear-gradient(135deg, #243d5c 0%, #3a5f8a 100%);

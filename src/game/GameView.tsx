@@ -9,9 +9,16 @@ import {
 import { answersMatch } from '../lib/answerMatch'
 import { pickWeightedItem } from '../lib/pickWeighted'
 import {
+  loadProgress,
+  PACK_COST,
   recordQuizFinish,
   type ProgressState,
 } from '../lib/progression'
+import {
+  recordAnswerOutcome,
+  weakCountryCodes,
+  weaknessCount,
+} from '../lib/weaknesses'
 import {
   getModeStats,
   loadOptions,
@@ -297,12 +304,17 @@ function makePaysRound(
   difficulty: Difficulty,
   preferUnseen: boolean,
   answerMode: AnswerMode,
+  preferCodes: string[] = [],
 ): Round | null {
   if (mode === 'carte') {
     if (MAP_COUNTRIES.length < 4) return null
+    const preferMap = preferCodes.length
+      ? MAP_COUNTRIES.filter((c) => preferCodes.includes(c.code))
+      : []
+    const mapPool = preferMap.length >= 4 ? preferMap : MAP_COUNTRIES
     const card = pickWeightedItem(
-      `pays:carte`,
-      MAP_COUNTRIES,
+      preferMap.length >= 4 ? `pays:carte:weak` : `pays:carte`,
+      mapPool,
       (c) => c.code,
       preferUnseen,
     )
@@ -321,9 +333,13 @@ function makePaysRound(
   }
 
   if (COUNTRIES.length < 4) return null
+  const preferPool = preferCodes.length
+    ? COUNTRIES.filter((c) => preferCodes.includes(c.code))
+    : []
+  const pool = preferPool.length >= 4 ? preferPool : COUNTRIES
   const card = pickWeightedItem(
-    `pays:${mode}`,
-    COUNTRIES,
+    preferPool.length >= 4 ? `pays:${mode}:weak` : `pays:${mode}`,
+    pool,
     (c) => c.code,
     preferUnseen,
   )
@@ -416,11 +432,16 @@ function makeCapitaleRound(
   difficulty: Difficulty,
   preferUnseen: boolean,
   answerMode: AnswerMode,
+  preferCodes: string[] = [],
 ): Round | null {
   if (COUNTRIES.length < 4) return null
+  const preferPool = preferCodes.length
+    ? COUNTRIES.filter((c) => preferCodes.includes(c.code))
+    : []
+  const pool = preferPool.length >= 4 ? preferPool : COUNTRIES
   const card = pickWeightedItem(
-    `capitale:${mode}`,
-    COUNTRIES,
+    preferPool.length >= 4 ? `capitale:${mode}:weak` : `capitale:${mode}`,
+    pool,
     (c) => c.code,
     preferUnseen,
   )
@@ -465,9 +486,16 @@ function makeRound(
   answerMode: AnswerMode,
   includeDomTom: boolean,
   territoryPackId: TerritoryPackId = 'fr',
+  preferCodes: string[] = [],
 ): Round | null {
   if (category === 'mixte') {
-    return makeMixedRound(difficulty, preferUnseen, answerMode, includeDomTom)
+    return makeMixedRound(
+      difficulty,
+      preferUnseen,
+      answerMode,
+      includeDomTom,
+      preferCodes,
+    )
   }
   if (category === 'departements') {
     return makeDeptRound(
@@ -479,7 +507,13 @@ function makeRound(
     )
   }
   if (category === 'pays') {
-    return makePaysRound(mode as PaysMode, difficulty, preferUnseen, answerMode)
+    return makePaysRound(
+      mode as PaysMode,
+      difficulty,
+      preferUnseen,
+      answerMode,
+      preferCodes,
+    )
   }
   if (category === 'territoires') {
     return makeTerritoryRound(
@@ -490,7 +524,13 @@ function makeRound(
       preferUnseen,
     )
   }
-  return makeCapitaleRound(mode as CapitaleMode, difficulty, preferUnseen, answerMode)
+  return makeCapitaleRound(
+    mode as CapitaleMode,
+    difficulty,
+    preferUnseen,
+    answerMode,
+    preferCodes,
+  )
 }
 
 /** MIX = uniquement drapeau→pays, nom→capitale, chiffre→département. */
@@ -508,6 +548,7 @@ function makeMixedRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
   includeDomTom: boolean,
+  preferCodes: string[] = [],
 ): Round | null {
   for (let i = 0; i < 10; i++) {
     const pick = MIXTE_POOL[Math.floor(Math.random() * MIXTE_POOL.length)]!
@@ -519,6 +560,8 @@ function makeMixedRound(
       preferUnseen,
       am,
       includeDomTom,
+      'fr',
+      preferCodes,
     )
     if (round) return round
   }
@@ -617,6 +660,8 @@ function FlagChoice({
 }
 
 export type PlayVariant = 'entrainement' | 'jeu'
+/** Lancement depuis l’accueil : session 2 min ou rejeu faiblesses. */
+export type GameLaunch = 'quick' | 'weaknesses' | null
 
 const AUTO_NEXT_MS = 900
 const AUTO_NEXT_FLAG_MS = 1800
@@ -691,11 +736,15 @@ export function GameView({
   mapDomTom,
   onOpenHistory,
   onProgressChange,
+  launch = null,
+  onOpenPacks,
 }: {
   variant: PlayVariant
   mapDomTom: boolean
   onOpenHistory?: () => void
   onProgressChange?: (p: ProgressState) => void
+  launch?: GameLaunch
+  onOpenPacks?: () => void
 }) {
   const isPlay = variant === 'jeu'
   const [category, setCategory] = useState<Category>('pays')
@@ -722,6 +771,10 @@ export function GameView({
   const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
   const [missHint, setMissHint] = useState(false)
   const [moreOptions, setMoreOptions] = useState(false)
+  const [preferCodes, setPreferCodes] = useState<string[]>([])
+  const [weaknessFocus, setWeaknessFocus] = useState(false)
+  const [lastGained, setLastGained] = useState(0)
+  const [creditsNow, setCreditsNow] = useState(() => loadProgress().points)
   const timedOut = useRef(false)
   const endAfterFeedback = useRef(false)
   const runSnapshot = useRef({ score: 0, asked: 0, peak: 0, timeMs: 0 })
@@ -779,6 +832,7 @@ export function GameView({
             effectiveAnswerMode,
             mapDomTom,
             territoryPackId,
+            preferCodes,
           )
         : null,
     [
@@ -789,6 +843,7 @@ export function GameView({
       effectiveAnswerMode,
       mapDomTom,
       territoryPackId,
+      preferCodes,
     ],
   )
 
@@ -806,13 +861,15 @@ export function GameView({
   }, [mapDomTom, timerMax])
 
   function awardProgress(finalScore: number, finalAsked: number) {
-    const { state } = recordQuizFinish({
+    const { state, gained } = recordQuizFinish({
       category: isMixte ? 'mixte' : category,
       difficulty,
       score: finalScore,
       asked: finalAsked,
       countPerfect: isBounded || finalAsked >= 5,
     })
+    setLastGained(gained)
+    setCreditsNow(state.points)
     onProgressChange?.(state)
   }
 
@@ -887,12 +944,50 @@ export function GameView({
     if (variant === 'entrainement' && sessionFormat === 'rapidite') {
       setSessionFormat('libre')
     }
-    // Nouveau mode → repart sur Pays par défaut
-    setCategory('pays')
-    setMode('flagToName')
-    resetRun({ start: false })
+    // Nouveau mode → repart sur Pays par défaut (sauf launch home)
+    if (!launch) {
+      setCategory('pays')
+      setMode('flagToName')
+      setPreferCodes([])
+      setWeaknessFocus(false)
+      resetRun({ start: false })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
+
+  // Accueil → Partie rapide / Rejouer mes erreurs
+  useEffect(() => {
+    if (!launch || variant !== 'jeu') return
+    let cancelled = false
+    if (launch === 'quick') {
+      setCategory('mixte')
+      setMode('flagToName')
+      setSessionFormat('session10')
+      setDifficulty('facile')
+      setAnswerMode('qcm')
+      setPreferCodes([])
+      setWeaknessFocus(false)
+      setLastGained(0)
+    } else if (launch === 'weaknesses') {
+      const codes = weakCountryCodes(16)
+      setCategory('pays')
+      setMode('flagToName')
+      setSessionFormat('session10')
+      setDifficulty('facile')
+      setAnswerMode('qcm')
+      setPreferCodes(codes)
+      setWeaknessFocus(true)
+      setLastGained(0)
+    }
+    const t = window.setTimeout(() => {
+      if (!cancelled) resetRun({ start: true })
+    }, 0)
+    return () => {
+      cancelled = true
+      window.clearTimeout(t)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [launch, variant])
 
   // Auto-suite : Jeu toujours ; Entraînement seulement à la fin d’une session 10Q
   useEffect(() => {
@@ -1095,6 +1190,12 @@ export function GameView({
     const nextAsked = asked + 1
     setAsked(nextAsked)
     beep(isCorrect)
+    recordAnswerOutcome({
+      id: round.itemId,
+      label: round.answerLabel,
+      bucket: isMixte ? 'mixte' : category,
+      ok: isCorrect,
+    })
     setRunLog((prev) => [
       ...prev,
       {
@@ -1201,15 +1302,32 @@ export function GameView({
         : runLog.filter((e) => (recapFilter === 'ok' ? e.ok : !e.ok))
     const timeMs = runSnapshot.current.timeMs || elapsedSec * 1000
     const timeLabel = formatDuration(Math.round(timeMs / 1000))
+    const packReady = creditsNow >= PACK_COST
+    const weakLeft = weaknessCount()
+    const showWeakCta = koCount > 0 || weakLeft >= 3
     return (
       <div className="game-view">
         <div className="game-board game-over">
           <p className="game-prompt">Partie terminée</p>
-          <p className="game-over-format">{FORMAT_LABEL[sessionFormat]}</p>
+          <p className="game-over-format">
+            {weaknessFocus
+              ? 'Mes erreurs'
+              : sessionFormat === 'session10'
+                ? 'Session 2 min · 10 questions'
+                : FORMAT_LABEL[sessionFormat]}
+          </p>
           <p className="game-over-score">
             Score <strong>{score}</strong> / {asked}
             <span className="game-pct"> · {pct} %</span>
           </p>
+          {lastGained > 0 ? (
+            <p className="game-over-credits">
+              +{lastGained} crédits · total {creditsNow}
+              {!packReady ? (
+                <> · encore {Math.max(0, PACK_COST - creditsNow)} pour un pack</>
+              ) : null}
+            </p>
+          ) : null}
           {isRapidite ? (
             <p className="game-over-time">
               Temps <strong>{timeLabel}</strong>
@@ -1270,6 +1388,34 @@ export function GameView({
             >
               {isBounded ? `Rejouer (${SESSION_LEN} Q)` : 'Rejouer'}
             </button>
+            {packReady && onOpenPacks ? (
+              <button
+                type="button"
+                className="game-next"
+                onClick={() => onOpenPacks()}
+              >
+                Ouvrir un pack
+              </button>
+            ) : null}
+            {showWeakCta ? (
+              <button
+                type="button"
+                className="game-next game-next-quiet"
+                onClick={() => {
+                  const codes = weakCountryCodes(16)
+                  setCategory('pays')
+                  setMode('flagToName')
+                  setSessionFormat('session10')
+                  setPreferCodes(codes.length ? codes : preferCodes)
+                  setWeaknessFocus(true)
+                  setLastGained(0)
+                  window.setTimeout(() => resetRun({ start: true }), 0)
+                }}
+              >
+                Rejouer mes erreurs
+                {weakLeft > 0 ? ` (${Math.min(weakLeft, 12)})` : ''}
+              </button>
+            ) : null}
             <button
               type="button"
               className="game-next game-next-quiet"

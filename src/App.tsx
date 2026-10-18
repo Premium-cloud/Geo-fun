@@ -3,7 +3,7 @@ import { CardMockupsPreview } from './cards/CardMockupsPreview'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { CartesTerritoiresView } from './cards/CartesTerritoiresView'
 import { DuelView } from './duel/DuelView'
-import { GameView, type PlayVariant } from './game/GameView'
+import { GameView, type GameLaunch, type PlayVariant } from './game/GameView'
 import { HistoryPanel } from './game/HistoryPanel'
 import { HomeView, type HomeDest } from './home/HomeView'
 import { Onboarding } from './home/Onboarding'
@@ -89,6 +89,11 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(
     () => !loadProgress().onboardingDone,
   )
+  const [gameLaunch, setGameLaunch] = useState<GameLaunch>(null)
+
+  useEffect(() => {
+    if (tab !== 'jeu') setGameLaunch(null)
+  }, [tab])
 
   const previewCartes =
     typeof window !== 'undefined' &&
@@ -108,9 +113,19 @@ export default function App() {
   }
 
   function goHomeDest(dest: HomeDest) {
-    if (dest === 'apprendre') setTab('entrainement')
-    else if (dest === 'jouer') setTab('jeu')
-    else if (dest === 'defier') setTab('duel')
+    if (dest === 'rapide') {
+      setGameLaunch('quick')
+      setTab('jeu')
+    } else if (dest === 'faiblesses') {
+      setGameLaunch('weaknesses')
+      setTab('jeu')
+    } else if (dest === 'apprendre') {
+      setGameLaunch(null)
+      setTab('entrainement')
+    } else if (dest === 'jouer') {
+      setGameLaunch(null)
+      setTab('jeu')
+    } else if (dest === 'defier') setTab('duel')
     else if (dest === 'lexique') setTab('territoires')
     else if (dest === 'packs') setTab('packs')
     else if (dest === 'album') setTab('album')
@@ -358,6 +373,8 @@ export default function App() {
             mapDomTom={options.mapDomTom}
             onOpenHistory={() => setHistoryOpen(true)}
             onProgressChange={setProgress}
+            launch={tab === 'jeu' ? gameLaunch : null}
+            onOpenPacks={() => setTab('packs')}
           />
         ) : null}
         {tab === 'duel' ? <DuelView /> : null}

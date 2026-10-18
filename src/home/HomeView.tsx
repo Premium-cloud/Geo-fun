@@ -9,9 +9,12 @@ import {
   uniqueOwnedCount,
   type ProgressState,
 } from '../lib/progression'
+import { weaknessCount } from '../lib/weaknesses'
 import './HomeView.css'
 
 export type HomeDest =
+  | 'rapide'
+  | 'faiblesses'
   | 'apprendre'
   | 'jouer'
   | 'defier'
@@ -35,6 +38,7 @@ export function HomeView({
   const foils = uniqueFoilCount(progress)
   const albumOk = albumUnlocked(progress)
   const title = profileTitleLabel(progress)
+  const weakN = weaknessCount()
   const frameClass =
     progress.profileFrame === 'foil'
       ? 'is-frame-foil'
@@ -51,8 +55,7 @@ export function HomeView({
         </p>
         <h1 className="home-title">Le monde en cartes</h1>
         <p className="home-lead">
-          Entraîne-toi, chronomètre-toi, défie un ami. Tes packs restent sur le
-          téléphone.
+          Deux minutes, un score, un pack. Défie un ami quand tu veux.
         </p>
         <button
           type="button"
@@ -78,17 +81,37 @@ export function HomeView({
       </header>
 
       <div className="home-actions" role="navigation" aria-label="Modes">
+        <button
+          type="button"
+          className="home-cta is-quick"
+          onClick={() => onGo('rapide')}
+        >
+          <span className="home-cta-label">Partie rapide</span>
+          <span className="home-cta-sub">2 min · 10 questions · MIX</span>
+        </button>
+        {weakN >= 3 ? (
+          <button
+            type="button"
+            className="home-cta is-weak"
+            onClick={() => onGo('faiblesses')}
+          >
+            <span className="home-cta-label">Rejouer mes erreurs</span>
+            <span className="home-cta-sub">
+              {Math.min(weakN, 12)} points à revoir
+            </span>
+          </button>
+        ) : null}
         <button type="button" className="home-cta is-learn" onClick={() => onGo('apprendre')}>
           <span className="home-cta-label">Apprendre</span>
           <span className="home-cta-sub">Sans chrono, à ton rythme</span>
         </button>
         <button type="button" className="home-cta is-play" onClick={() => onGo('jouer')}>
           <span className="home-cta-label">Jouer</span>
-          <span className="home-cta-sub">Vies, timer, score</span>
+          <span className="home-cta-sub">Vies, timer, formats</span>
         </button>
         <button type="button" className="home-cta is-duel" onClick={() => onGo('defier')}>
           <span className="home-cta-label">Défier</span>
-          <span className="home-cta-sub">Même écran ou en ligne</span>
+          <span className="home-cta-sub">Même écran (fiable) ou en ligne</span>
         </button>
       </div>
 

@@ -36,6 +36,7 @@ export type NetMsg =
       over: boolean
     }
   | { type: 'ping' }
+  | { type: 'pong' }
 
 export function createHostPeer(): Promise<{ peer: Peer; id: string }> {
   return new Promise((resolve, reject) => {

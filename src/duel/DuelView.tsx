@@ -103,6 +103,8 @@ export function DuelView() {
     }) => void) | null
   }>({ roundId: '', timeLeft: 0, onRemoteResult: null })
   const lastResultKeyRef = useRef('')
+  const lastPongRef = useRef(Date.now())
+  const [linkLost, setLinkLost] = useState(false)
 
   deckRef.current = deck
   idxRef.current = idx
@@ -110,6 +112,32 @@ export function DuelView() {
   combosRef.current = combos
   phaseRef.current = phase
   isHostRef.current = isHost
+
+  function onConnClosed() {
+    setPeerReady(false)
+    setLinkLost(true)
+    const ph = phaseRef.current
+    if (ph === 'lobby') {
+      setStatus(
+        isHostRef.current
+          ? 'Adversaire parti — en attente d’une nouvelle connexion…'
+          : 'Connexion perdue — demande un nouveau lien à l’hôte',
+      )
+    } else if (ph === 'play') {
+      setStatus('Adversaire déconnecté — la manche peut rester figée. Quitte ou attends.')
+    }
+  }
+
+  function wireConn(conn: DataConnection) {
+    connRef.current = conn
+    setLinkLost(false)
+    lastPongRef.current = Date.now()
+    conn.on('data', (raw) => onNet(raw as NetMsg))
+    conn.on('close', onConnClosed)
+    conn.on('error', () => {
+      setStatus('Erreur réseau — vérifie la connexion')
+    })
+  }
 
   // Auto-join si ?duel=
   useEffect(() => {
@@ -124,6 +152,27 @@ export function DuelView() {
       peerRef.current?.destroy()
     }
   }, [])
+
+  // Heartbeat online : ping / pong + détection silence
+  useEffect(() => {
+    if (config.venue !== 'online') return
+    if (phase !== 'lobby' && phase !== 'play') return
+    if (!peerReady && !connRef.current) return
+    const tick = window.setInterval(() => {
+      const conn = connRef.current
+      if (!conn?.open) {
+        if (peerReady) onConnClosed()
+        return
+      }
+      send(conn, { type: 'ping' })
+      if (Date.now() - lastPongRef.current > 18000) {
+        setLinkLost(true)
+        setStatus('Lien instable — garde les deux onglets ouverts')
+      }
+    }, 5000)
+    return () => window.clearInterval(tick)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.venue, phase, peerReady])
 
   // 1 victoire trophée par duel terminé (même écran — pas d’égalité)
   useEffect(() => {
@@ -178,21 +227,21 @@ export function DuelView() {
   async function hostOnline() {
     setStatus('Création du salon…')
     setIsHost(true)
+    setLinkLost(false)
     try {
       const { peer, id } = await createHostPeer()
       peerRef.current = peer
       setInviteId(id)
       setInviteUrl(duelInviteUrl(id))
       setPhase('lobby')
-      setStatus('En attente d’un adversaire…')
+      setStatus('En attente d’un adversaire… garde cet onglet ouvert')
       peer.on('connection', (conn) => {
-        connRef.current = conn
         conn.on('open', () => {
+          wireConn(conn)
           setPeerReady(true)
-          setStatus('Adversaire connecté — lance la partie')
+          setStatus('Adversaire connecté — lance quand tu es prêt')
           // Pas de deck ici : un seul deck atomique au « Lancer »
         })
-        conn.on('data', (raw) => onNet(raw as NetMsg))
       })
     } catch (e) {
       setStatus(e instanceof Error ? e.message : 'Erreur réseau')
@@ -202,16 +251,16 @@ export function DuelView() {
   async function joinOnline(hostId: string) {
     setStatus('Connexion…')
     setIsHost(false)
+    setLinkLost(false)
     setConfig((c) => ({ ...c, venue: 'online' }))
     setPhase('lobby')
     try {
       const { peer, conn } = await connectToHost(hostId.trim())
       peerRef.current = peer
-      connRef.current = conn
+      wireConn(conn)
       setPeerReady(true)
-      setStatus('Connecté — en attente du début…')
+      setStatus('Connecté — reste ici, l’hôte lance')
       clearDuelInviteParam()
-      conn.on('data', (raw) => onNet(raw as NetMsg))
       send(conn, { type: 'hello', role: 'guest', name: 'Joueur 2' })
     } catch (e) {
       setStatus(e instanceof Error ? e.message : 'Connexion impossible')
@@ -219,6 +268,18 @@ export function DuelView() {
   }
 
   function onNet(msg: NetMsg) {
+    if (msg.type === 'ping') {
+      send(connRef.current, { type: 'pong' })
+      return
+    }
+    if (msg.type === 'pong') {
+      lastPongRef.current = Date.now()
+      if (linkLost) {
+        setLinkLost(false)
+        if (phaseRef.current === 'play') setStatus('')
+      }
+      return
+    }
     if (msg.type === 'config') {
       setConfig(msg.config)
       setDeck(msg.deck)
@@ -226,6 +287,7 @@ export function DuelView() {
     }
     if (msg.type === 'start') {
       lastResultKeyRef.current = ''
+      setLinkLost(false)
       setConfig(msg.config)
       setDeck(msg.deck)
       setIdx(0)
@@ -330,6 +392,11 @@ export function DuelView() {
                 </button>
               ))}
             </div>
+            <p className="duel-hint">
+              {config.venue === 'local'
+                ? 'Le plus fiable : un seul téléphone ou PC partagé.'
+                : 'Deux appareils · garde les deux onglets ouverts (pas en veille).'}
+            </p>
           </div>
 
           {config.venue === 'local' ? (
@@ -371,7 +438,7 @@ export function DuelView() {
           ) : (
             <p className="duel-hint">
               Course en ligne : lien d’invitation, 1 pt par bonne réponse. Timer → 5 s dès qu’un
-              trouve.
+              trouve. Si ça freeze, l’invité se resynchronise tout seul.
             </p>
           )}
 
@@ -462,7 +529,7 @@ export function DuelView() {
         <div className="duel-lobby">
           {isHost && inviteUrl ? (
             <>
-              <p className="duel-hint">Envoie ce lien à l’autre joueur :</p>
+              <p className="duel-hint">Envoie ce lien — reste sur cet écran :</p>
               <code className="duel-invite">{inviteUrl}</code>
               <button
                 type="button"
@@ -473,18 +540,18 @@ export function DuelView() {
               </button>
             </>
           ) : null}
-          <p className="duel-status">{status}</p>
+          <p className={`duel-status ${linkLost ? 'is-warn' : ''}`}>{status}</p>
           {isHost ? (
             <button
               type="button"
               className="duel-btn-primary"
-              disabled={!peerReady}
+              disabled={!peerReady || linkLost}
               onClick={startOnlineHost}
             >
               Démarrer
             </button>
           ) : (
-            <p className="duel-hint">L’hôte lance la partie…</p>
+            <p className="duel-hint">Ne quitte pas cet onglet — l’hôte lance la partie.</p>
           )}
           {inviteId ? <p className="duel-meta">ID salon : {inviteId}</p> : null}
         </div>
@@ -566,36 +633,43 @@ export function DuelView() {
 
   if (config.venue === 'online') {
     return (
-      <RacePlay
-        key={round.id}
-        label="En ligne"
-        me={isHost ? 0 : 1}
-        round={round}
-        config={config}
-        scores={scores}
-        combos={combos}
-        idx={idx}
-        total={deck.length}
-        online
-        conn={connRef.current}
-        raceSnapRef={raceSnapRef}
-        parentHandlesAdvance={!isHost}
-        onScore={(p, pts) => addScore(p, pts)}
-        onCombo={bumpCombo}
-        onApplyState={(next) => {
-          setScores(next.scores)
-          setCombos(next.combos)
-        }}
-        onNext={() => {
-          if (idx + 1 >= deck.length) finish()
-          else setIdx((i) => i + 1)
-        }}
-        onGoToIdx={(nextIdx) => {
-          if (nextIdx >= deck.length) finish()
-          else setIdx(nextIdx)
-        }}
-        onQuit={() => setPhase('setup')}
-      />
+      <>
+        {status ? (
+          <p className={`duel-status duel-status-banner ${linkLost ? 'is-warn' : ''}`}>
+            {status}
+          </p>
+        ) : null}
+        <RacePlay
+          key={round.id}
+          label="En ligne"
+          me={isHost ? 0 : 1}
+          round={round}
+          config={config}
+          scores={scores}
+          combos={combos}
+          idx={idx}
+          total={deck.length}
+          online
+          conn={connRef.current}
+          raceSnapRef={raceSnapRef}
+          parentHandlesAdvance={!isHost}
+          onScore={(p, pts) => addScore(p, pts)}
+          onCombo={bumpCombo}
+          onApplyState={(next) => {
+            setScores(next.scores)
+            setCombos(next.combos)
+          }}
+          onNext={() => {
+            if (idx + 1 >= deck.length) finish()
+            else setIdx((i) => i + 1)
+          }}
+          onGoToIdx={(nextIdx) => {
+            if (nextIdx >= deck.length) finish()
+            else setIdx(nextIdx)
+          }}
+          onQuit={() => setPhase('setup')}
+        />
+      </>
     )
   }
 
