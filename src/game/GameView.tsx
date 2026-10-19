@@ -1276,25 +1276,28 @@ export function GameView({
           </button>
         ))}
       </div>
+
+      {!isMixte ? (
+        <div className="game-filter-block">
+          <span className="game-filter-label">Mode</span>
+          <div className="game-filter-chips" role="group" aria-label="Mode">
+            {availableModes.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className={`game-filter-chip ${mode === m.id ? 'is-active' : ''}`}
+                onClick={() => selectMode(m.id)}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="game-filters-row">
-        {!isMixte ? (
-          <label className="game-filter-field">
-            <span className="game-filter-label">Mode</span>
-            <select
-              className="game-filter-select"
-              value={mode}
-              onChange={(e) => selectMode(e.target.value as Mode)}
-            >
-              {availableModes.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
         {isTerritoires ? (
-          <label className="game-filter-field">
+          <label className="game-filter-field is-pack">
             <span className="game-filter-label">Pays</span>
             <select
               className="game-filter-select"
@@ -1309,7 +1312,7 @@ export function GameView({
             </select>
           </label>
         ) : null}
-        <div className="game-filter-field">
+        <div className="game-filter-field is-level">
           <span className="game-filter-label">Niveau</span>
           <div className="game-filter-seg" role="group" aria-label="Difficulté">
             {difficultyOptions.map((d) => (
@@ -1333,34 +1336,49 @@ export function GameView({
           {moreOptions ? 'Moins' : 'Options'}
         </button>
       </div>
+
       {moreOptions ? (
         <div className="game-filters-extra">
-          <label className="game-filter-field">
+          <div className="game-filter-block">
             <span className="game-filter-label">Format</span>
-            <select
-              className="game-filter-select"
-              value={sessionFormat}
-              onChange={(e) => selectFormat(e.target.value as SessionFormatId)}
-            >
+            <div className="game-filter-chips" role="group" aria-label="Format">
               {formatOptions.map((f) => (
-                <option key={f} value={f}>
+                <button
+                  key={f}
+                  type="button"
+                  className={`game-filter-chip ${sessionFormat === f ? 'is-active' : ''}`}
+                  onClick={() => selectFormat(f)}
+                >
                   {FORMAT_LABEL[f]}
-                </option>
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </div>
           {!isMapMode ? (
-            <label className="game-filter-field">
+            <div className="game-filter-block">
               <span className="game-filter-label">Réponse</span>
-              <select
-                className="game-filter-select"
-                value={effectiveAnswerMode === 'saisie' ? 'saisie' : 'qcm'}
-                onChange={(e) => selectAnswerMode(e.target.value as AnswerMode)}
-              >
-                <option value="qcm">QCM</option>
-                <option value="saisie">Écrite</option>
-              </select>
-            </label>
+              <div className="game-filter-seg" role="group" aria-label="Réponse">
+                {(
+                  [
+                    ['qcm', 'QCM'],
+                    ['saisie', 'Écrite'],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`game-filter-seg-btn ${
+                      (effectiveAnswerMode === 'saisie' ? 'saisie' : 'qcm') === id
+                        ? 'is-active'
+                        : ''
+                    }`}
+                    onClick={() => selectAnswerMode(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : null}
           {best.bestStreak > 0 ? (
             <p className="game-record">Record ×{best.bestStreak}</p>
