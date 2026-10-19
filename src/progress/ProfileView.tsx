@@ -123,7 +123,7 @@ export function ProfileView({
       <section className="profile-edit">
         <h2>Personnaliser</h2>
         <label className="profile-field">
-          <span>Pseudo</span>
+          <span>Prénom / pseudo</span>
           <input
             value={pseudo}
             maxLength={20}
@@ -135,6 +135,9 @@ export function ProfileView({
             }}
           />
         </label>
+        <p className="profile-field-hint">
+          Affiché sur l’accueil et en duel (pas de compte requis).
+        </p>
 
         <div className="profile-field">
           <span>Couleur</span>

@@ -8,7 +8,8 @@ import {
 } from 'react'
 import type { DataConnection } from 'peerjs'
 import { answersMatch } from '../lib/answerMatch'
-import { loadProgress, profileLabel, recordDuelWin } from '../lib/progression'
+import { loadProgress, recordDuelWin, setProfile } from '../lib/progression'
+import { recordDuelResult } from '../lib/storage'
 import { DuelPrompt } from './DuelPrompt'
 import { makeDuelDeck } from './makeRound'
 import {
@@ -34,10 +35,20 @@ import './DuelView.css'
 
 type Phase = 'setup' | 'lobby' | 'play' | 'over'
 
+function displayName(raw: string, fallback: string) {
+  const t = raw.trim()
+  return t || fallback
+}
+
+/** Noms partagés avec les modes (battle / tours / split). */
+let duelDisplayNames: [string, string] = ['Joueur 1', 'Joueur 2']
+
 function playerLabels(): [string, string] {
-  const me = profileLabel(loadProgress())
-  const p0 = me === 'Ton profil' ? 'Joueur 1' : me
-  return [p0, 'Joueur 2']
+  return duelDisplayNames
+}
+
+function setDuelDisplayNames(a: string, b: string) {
+  duelDisplayNames = [displayName(a, 'Joueur 1'), displayName(b, 'Joueur 2')]
 }
 
 function useWideEnough() {
@@ -84,6 +95,8 @@ export function DuelView() {
   const [inviteUrl, setInviteUrl] = useState('')
   const [isHost, setIsHost] = useState(true)
   const [peerReady, setPeerReady] = useState(false)
+  const [name0, setName0] = useState(() => loadProgress().pseudo)
+  const [name1, setName1] = useState('Joueur 2')
   const peerRef = useRef<import('peerjs').default | null>(null)
   const connRef = useRef<DataConnection | null>(null)
   const deckRef = useRef<DuelRound[]>([])
@@ -92,6 +105,7 @@ export function DuelView() {
   const combosRef = useRef<[number, number]>([0, 0])
   const phaseRef = useRef<Phase>('setup')
   const isHostRef = useRef(true)
+  const namesRef = useRef<[string, string]>(['Joueur 1', 'Joueur 2'])
   /** RacePlay expose l’état courant pour sync / anti-freeze. */
   const raceSnapRef = useRef<{
     roundId: string
@@ -112,6 +126,22 @@ export function DuelView() {
   combosRef.current = combos
   phaseRef.current = phase
   isHostRef.current = isHost
+  namesRef.current = [
+    displayName(name0, 'Joueur 1'),
+    displayName(name1, 'Joueur 2'),
+  ]
+
+  useEffect(() => {
+    setDuelDisplayNames(name0, name1)
+  }, [name0, name1])
+
+  function persistMyName() {
+    const me = name0.trim().slice(0, 20)
+    if (!me) return
+    const cur = loadProgress()
+    if (cur.pseudo.trim() === me) return
+    setProfile({ pseudo: me, color: cur.color })
+  }
 
   function onConnClosed() {
     setPeerReady(false)
@@ -249,6 +279,8 @@ export function DuelView() {
   }
 
   async function hostOnline() {
+    persistMyName()
+    setDuelDisplayNames(name0, name1)
     setStatus('Création du salon…')
     setIsHost(true)
     setLinkLost(false)
@@ -273,6 +305,8 @@ export function DuelView() {
   }
 
   async function joinOnline(hostId: string) {
+    persistMyName()
+    setDuelDisplayNames(name0, name1)
     setStatus('Connexion…')
     setIsHost(false)
     setLinkLost(false)
@@ -285,7 +319,11 @@ export function DuelView() {
       setPeerReady(true)
       setStatus('Connecté')
       clearDuelInviteParam()
-      send(conn, { type: 'hello', role: 'guest', name: 'Joueur 2' })
+      send(conn, {
+        type: 'hello',
+        role: 'guest',
+        name: displayName(name0, 'Joueur 2'),
+      })
     } catch (e) {
       setStatus(e instanceof Error ? e.message : 'Connexion impossible')
     }
@@ -342,11 +380,15 @@ export function DuelView() {
   }
 
   function startLocal() {
+    persistMyName()
+    setDuelDisplayNames(name0, name1)
     const nextDeck = makeDuelDeck(config.category, config.answerMode, config.rounds)
     beginPlay(nextDeck, config)
   }
 
   function startOnlineHost() {
+    persistMyName()
+    setDuelDisplayNames(name0, name1)
     if (!connRef.current?.open) {
       setStatus('Pas connecté')
       return
@@ -369,6 +411,25 @@ export function DuelView() {
   }
 
   function finish(title = 'Fin du duel') {
+    const [a, b] = scoresRef.current
+    const names = namesRef.current
+    const low = title.toLowerCase()
+    let winner: 0 | 1 | null = null
+    if (low.includes('égal')) winner = null
+    else if (title.includes(names[0]) && !title.includes(names[1])) winner = 0
+    else if (title.includes(names[1]) && !title.includes(names[0])) winner = 1
+    else if (a !== b) winner = a > b ? 0 : 1
+    else if (!low.includes('égal') && a === b) winner = null
+
+    recordDuelResult({
+      venue: config.venue,
+      format: config.venue === 'online' ? 'race' : config.localFormat,
+      category: config.category,
+      names,
+      scores: [a, b],
+      winner,
+      title,
+    })
     setOverTitle(title)
     setPhase('over')
   }
@@ -397,6 +458,38 @@ export function DuelView() {
         </header>
 
         <section className="duel-setup">
+          <div className="duel-field">
+            <span className="duel-label">Prénom / pseudo</span>
+            <div className="duel-names">
+              <label className="duel-name-field">
+                <span>{config.venue === 'online' ? 'Toi' : 'Joueur 1'}</span>
+                <input
+                  value={name0}
+                  maxLength={20}
+                  placeholder="Ex. Alex"
+                  autoComplete="nickname"
+                  onChange={(e) => setName0(e.target.value)}
+                />
+              </label>
+              {config.venue === 'local' ? (
+                <label className="duel-name-field">
+                  <span>Joueur 2</span>
+                  <input
+                    value={name1}
+                    maxLength={20}
+                    placeholder="Ex. Sam"
+                    onChange={(e) => setName1(e.target.value)}
+                  />
+                </label>
+              ) : null}
+            </div>
+            {!name0.trim() ? (
+              <p className="duel-hint">
+                Sans compte : un prénom suffit — il sera aussi enregistré sur ton profil.
+              </p>
+            ) : null}
+          </div>
+
           <div className="duel-field">
             <span className="duel-label">Lieu</span>
             <div className="duel-chips">

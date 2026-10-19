@@ -34,6 +34,21 @@ export type SaveBlob = {
 const OPTIONS_KEY = 'cartes.options.v1'
 const STATS_KEY = 'cartes.stats.v1'
 const SEEN_KEY = 'cartes.seen.v1'
+const DUEL_HISTORY_KEY = 'cartes.duelHistory.v1'
+const DUEL_HISTORY_MAX = 40
+
+export type DuelHistoryEntry = {
+  id: string
+  at: string
+  venue: 'local' | 'online'
+  format: string
+  category: string
+  names: [string, string]
+  scores: [number, number]
+  /** null = égalité */
+  winner: 0 | 1 | null
+  title: string
+}
 
 export const DEFAULT_OPTIONS: OptionsState = {
   sound: true,
@@ -165,6 +180,22 @@ export function clearSeenBucket(bucket: string) {
   saveSeen(all)
 }
 
+export function loadDuelHistory(): DuelHistoryEntry[] {
+  const list = readJson<DuelHistoryEntry[]>(DUEL_HISTORY_KEY, [])
+  return Array.isArray(list) ? list : []
+}
+
+export function recordDuelResult(input: Omit<DuelHistoryEntry, 'id' | 'at'>): DuelHistoryEntry {
+  const entry: DuelHistoryEntry = {
+    ...input,
+    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    at: new Date().toISOString(),
+  }
+  const next = [entry, ...loadDuelHistory()].slice(0, DUEL_HISTORY_MAX)
+  writeJson(DUEL_HISTORY_KEY, next)
+  return entry
+}
+
 export function exportSave(): string {
   const blob: SaveBlob = {
     version: 1,
@@ -193,6 +224,7 @@ export function clearAllData() {
   localStorage.removeItem(OPTIONS_KEY)
   localStorage.removeItem(STATS_KEY)
   localStorage.removeItem(SEEN_KEY)
+  localStorage.removeItem(DUEL_HISTORY_KEY)
   localStorage.removeItem('cartes.bag.v1')
   localStorage.removeItem('cartes.progress.v1')
 }

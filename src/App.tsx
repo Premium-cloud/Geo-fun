@@ -90,7 +90,7 @@ export default function App() {
     () => !loadProgress().onboardingDone,
   )
   const [gameLaunch, setGameLaunch] = useState<GameLaunch>(null)
-  /** Recliquer Jouer (même onglet) → retour lobby / config. */
+  /** Recliquer Jouer (même onglet) → relance ou lobby selon l’état. */
   const [jeuBump, setJeuBump] = useState(0)
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function App() {
     typeof window !== 'undefined' &&
     new URL(window.location.href).searchParams.get('preview') === 'cartes'
   const lexique = isLexique(tab)
-  const showHistoryBtn = tab === 'entrainement' || tab === 'jeu'
+  const showHistoryBtn = true
   const isHome = tab === 'home'
   const hideMainTabs = isHome || lexique || HUB_TABS.includes(tab)
 

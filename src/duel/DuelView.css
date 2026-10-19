@@ -54,6 +54,38 @@
   color: var(--muted);
 }
 
+.duel-names {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.65rem;
+}
+
+.duel-name-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.duel-name-field input {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--ink);
+  background: #fff;
+}
+
+.duel-name-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(31, 111, 139, 0.16);
+}
+
 .duel-chips {
   display: flex;
   flex-wrap: wrap;

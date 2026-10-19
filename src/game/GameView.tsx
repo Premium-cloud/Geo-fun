@@ -991,10 +991,17 @@ export function GameView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
-  // Recliquer Jouer dans la topbar → lobby (pas de relance auto)
+  // Recliquer Jouer (topbar) :
+  // - fin de partie / lobby → lance (comme Rejouer)
+  // - partie en cours → retour config (pas de relance auto)
   useEffect(() => {
     if (!lobbyBump || variant !== 'jeu') return
-    goLobby()
+    if (gameOver || !runActive) {
+      setWeaknessFocus(false)
+      resetRun({ start: true })
+    } else {
+      goLobby()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobbyBump])
 
