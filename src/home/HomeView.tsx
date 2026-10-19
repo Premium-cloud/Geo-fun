@@ -10,6 +10,7 @@ import {
   type ProgressState,
 } from '../lib/progression'
 import { weaknessCount } from '../lib/weaknesses'
+import { InstallHint } from './InstallHint'
 import './HomeView.css'
 
 export type HomeDest =
@@ -53,6 +54,7 @@ export function HomeView({
           GeoFun
         </p>
         <h1 className="home-title">Le monde en cartes</h1>
+        <InstallHint />
         <button
           type="button"
           className="home-profile-chip"

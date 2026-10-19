@@ -782,6 +782,8 @@ export function GameView({
   const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
   const [missHint, setMissHint] = useState(false)
   const [moreOptions, setMoreOptions] = useState(false)
+  /** En partie : filtres repliés derrière un résumé. */
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [preferCodes, setPreferCodes] = useState<string[]>([])
   const [weaknessFocus, setWeaknessFocus] = useState(false)
   const [lastGained, setLastGained] = useState(0)
@@ -914,7 +916,10 @@ export function GameView({
     )
     const start = isPlay ? Boolean(opts?.start) : true
     setRunActive(start)
-    if (start) setLobby(false)
+    if (start) {
+      setLobby(false)
+      setFiltersOpen(false)
+    }
     sessionStartRef.current = start ? Date.now() : null
     setSeed((s) => s + 1)
   }
@@ -1260,8 +1265,25 @@ export function GameView({
   }
 
   const showLobbyCta = isPlay && !runActive && !gameOver
-  const filters = (
-    <div className="game-filters">
+  const filtersExpanded =
+    !isPlay || showLobbyCta || gameOver || filtersOpen || !runActive
+  const modeLabel =
+    availableModes.find((m) => m.id === mode)?.label ??
+    (isMixte ? 'MIX' : '')
+  const packLabel = isTerritoires ? TERRITORY_PACKS[territoryPackId].country : null
+  const diffLabel =
+    difficultyOptions.find((d) => d.id === difficulty)?.label ?? difficulty
+  const filtersSummary = [
+    CATEGORY_LABEL[category],
+    packLabel,
+    !isMixte ? modeLabel : null,
+    diffLabel,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
+  const filtersBody = (
+    <>
       <div className="game-filters-cats" role="tablist" aria-label="Catégorie">
         {categoryOptions.map((c) => (
           <button
@@ -1385,6 +1407,38 @@ export function GameView({
           ) : null}
         </div>
       ) : null}
+    </>
+  )
+
+  const filters = (
+    <div className={`game-filters ${filtersExpanded ? 'is-expanded' : 'is-compact'}`}>
+      {!filtersExpanded ? (
+        <button
+          type="button"
+          className="game-filters-summary"
+          onClick={() => setFiltersOpen(true)}
+          aria-expanded={false}
+        >
+          <span className="game-filters-summary-text">{filtersSummary}</span>
+          <span className="game-filters-summary-action">Régler</span>
+        </button>
+      ) : (
+        <>
+          {isPlay && runActive && !gameOver && !showLobbyCta ? (
+            <div className="game-filters-sheet-head">
+              <span className="game-filters-sheet-title">Réglages</span>
+              <button
+                type="button"
+                className="game-filters-sheet-close"
+                onClick={() => setFiltersOpen(false)}
+              >
+                Fermer
+              </button>
+            </div>
+          ) : null}
+          {filtersBody}
+        </>
+      )}
     </div>
   )
 
@@ -1414,7 +1468,20 @@ export function GameView({
     const timeLabel = formatDuration(Math.round(timeMs / 1000))
     const packReady = creditsNow >= PACK_COST
     const weakLeft = weaknessCount()
-    const showWeakCta = koCount > 0 || weakLeft >= 3
+    const showWeakCta =
+      isPlay && !weaknessFocus && (koCount >= 1 || weakLeft >= 3)
+    const weakPriority = koCount >= 2 || weakLeft >= 3
+    const startWeakSession = () => {
+      const codes = weakCountryCodes(16)
+      setCategory('pays')
+      setMode('flagToName')
+      setSessionFormat('session10')
+      setPreferCodes(codes.length ? codes : preferCodes)
+      setWeaknessFocus(true)
+      setLastGained(0)
+      setFiltersOpen(false)
+      window.setTimeout(() => resetRun({ start: true }), 0)
+    }
     return (
       <div className="game-view">
         {filters}
@@ -1452,6 +1519,27 @@ export function GameView({
             ) : null}
           </p>
 
+          {showWeakCta ? (
+            <div className={`game-weak-banner ${weakPriority ? 'is-priority' : ''}`}>
+              <p className="game-weak-banner-title">
+                {weakLeft > 0
+                  ? `${Math.min(weakLeft, 12)} pays à revoir`
+                  : `${koCount} erreur${koCount > 1 ? 's' : ''} à rejouer`}
+              </p>
+              <p className="game-weak-banner-hint">
+                Session ciblée · {SESSION_LEN} questions · drapeaux
+              </p>
+              <button
+                type="button"
+                className="game-next"
+                onClick={startWeakSession}
+              >
+                Mes erreurs
+                {weakLeft > 0 ? ` (${Math.min(weakLeft, 12)})` : ''}
+              </button>
+            </div>
+          ) : null}
+
           <div className="game-recap-filters" role="group" aria-label="Filtrer le récap">
             {(
               [
@@ -1487,7 +1575,7 @@ export function GameView({
           <div className="game-over-actions">
             <button
               type="button"
-              className="game-next"
+              className={`game-next ${weakPriority ? 'game-next-quiet' : ''}`}
               onClick={() => resetRun({ start: true })}
             >
               {isBounded ? `Rejouer (${SESSION_LEN} Q)` : 'Rejouer'}
@@ -1495,29 +1583,10 @@ export function GameView({
             {packReady && onOpenPacks ? (
               <button
                 type="button"
-                className="game-next"
+                className="game-next game-next-quiet"
                 onClick={() => onOpenPacks()}
               >
                 Ouvrir un pack
-              </button>
-            ) : null}
-            {showWeakCta ? (
-              <button
-                type="button"
-                className="game-next game-next-quiet"
-                onClick={() => {
-                  const codes = weakCountryCodes(16)
-                  setCategory('pays')
-                  setMode('flagToName')
-                  setSessionFormat('session10')
-                  setPreferCodes(codes.length ? codes : preferCodes)
-                  setWeaknessFocus(true)
-                  setLastGained(0)
-                  window.setTimeout(() => resetRun({ start: true }), 0)
-                }}
-              >
-                Mes erreurs
-                {weakLeft > 0 ? ` (${Math.min(weakLeft, 12)})` : ''}
               </button>
             ) : null}
             <button

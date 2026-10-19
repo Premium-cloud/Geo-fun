@@ -295,7 +295,9 @@ export function DuelView() {
         conn.on('open', () => {
           wireConn(conn)
           setPeerReady(true)
-          setStatus('Connecté')
+          const hostName = displayName(name0, 'Joueur 1')
+          send(conn, { type: 'hello', role: 'host', name: hostName })
+          setStatus('Connecté — en attente du pseudo…')
           // Pas de deck ici : un seul deck atomique au « Lancer »
         })
       })
@@ -340,6 +342,31 @@ export function DuelView() {
         if (lost && phaseRef.current === 'play') setStatus('')
         return false
       })
+      return
+    }
+    if (msg.type === 'hello') {
+      const remote = displayName(msg.name, msg.role === 'host' ? 'Joueur 1' : 'Joueur 2')
+      if (msg.role === 'guest' && isHostRef.current) {
+        // Hôte = p0, invité = p1
+        setName1(remote)
+        setDuelDisplayNames(namesRef.current[0], remote)
+        setStatus(`${remote} est là`)
+        send(connRef.current, {
+          type: 'hello',
+          role: 'host',
+          name: namesRef.current[0],
+        })
+        return
+      }
+      if (msg.role === 'host' && !isHostRef.current) {
+        // Invité : garder son pseudo en p1, hôte en p0
+        const self = namesRef.current[0]
+        setName0(remote)
+        setName1(self)
+        setDuelDisplayNames(remote, self)
+        setStatus(`Salon de ${remote}`)
+        return
+      }
       return
     }
     if (msg.type === 'config') {
@@ -632,6 +659,13 @@ export function DuelView() {
             </>
           ) : null}
           <p className={`duel-status ${linkLost ? 'is-warn' : ''}`}>{status}</p>
+          {peerReady ? (
+            <p className="duel-lobby-names" aria-live="polite">
+              <strong>{playerLabels()[0]}</strong>
+              {' vs '}
+              <strong>{playerLabels()[1]}</strong>
+            </p>
+          ) : null}
           {isHost ? (
             <button
               type="button"

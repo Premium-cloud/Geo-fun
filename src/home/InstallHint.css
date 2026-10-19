@@ -1,0 +1,77 @@
+.install-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin: 0 0 1.15rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 0.7rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 10%, #fff) 0%,
+    color-mix(in srgb, var(--accent-hot) 8%, #fff) 100%
+  );
+}
+
+.install-hint-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.install-hint-copy strong {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 750;
+  color: var(--ink);
+}
+
+.install-hint-copy span {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.install-hint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.install-hint-btn {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.install-hint-dismiss {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+html.is-night .install-hint {
+  background: linear-gradient(135deg, #243038 0%, #2a3038 100%);
+}
+
+html.is-night .install-hint-dismiss {
+  background: #1e2228;
+  color: #e8eaee;
+}

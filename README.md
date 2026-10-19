@@ -28,9 +28,10 @@ L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 GeoFun est une **PWA** : installable comme une app, sans App Store.
 
 1. Ouvre la **prod HTTPS** (Vercel) sur le téléphone — pas `localhost`.
-2. **iPhone (Safari)** : Partager → **Sur l’écran d’accueil**.
-3. **Android (Chrome)** : menu → **Installer l’application** (ou icône install).
+2. **iPhone (Safari)** : Partager → **Sur l’écran d’accueil** (un bandeau sur l’accueil le rappelle).
+3. **Android (Chrome)** : menu → **Installer l’application**, ou le bouton **Installer** du bandeau.
 4. Laisse l’app se charger **une fois en ligne** (le service worker met ~drapeaux, blasons, maps en cache).
+5. Vérif hors-ligne : mode avion → rouvre depuis l’icône → Accueil / Jouer / Lexique doivent répondre.
 
 ### Si tu coupes le réseau / Vercel demain ?
 
