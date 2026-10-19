@@ -42,7 +42,9 @@ export function territoryModesFor(packId: TerritoryPackId) {
 }
 
 export function defaultTerritoryMode(packId: TerritoryPackId): TerritoryMode {
-  return TERRITORY_MODES_BY_PACK[packId][0]!
+  const modes = TERRITORY_MODES_BY_PACK[packId]
+  if (modes.includes('code')) return 'code'
+  return modes[0]!
 }
 
 export function territoryEmblemUrl(packId: string, code: string): string {

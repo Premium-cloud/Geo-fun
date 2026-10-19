@@ -90,6 +90,8 @@ export default function App() {
     () => !loadProgress().onboardingDone,
   )
   const [gameLaunch, setGameLaunch] = useState<GameLaunch>(null)
+  /** Recliquer Jouer (même onglet) → retour lobby / config. */
+  const [jeuBump, setJeuBump] = useState(0)
 
   useEffect(() => {
     if (tab !== 'jeu') setGameLaunch(null)
@@ -236,7 +238,13 @@ export default function App() {
                   key={t}
                   type="button"
                   className={`tab ${tab === t ? 'is-active' : ''}`}
-                  onClick={() => setTab(t)}
+                  onClick={() => {
+                    if (t === 'jeu') {
+                      setGameLaunch(null)
+                      if (tab === 'jeu') setJeuBump((n) => n + 1)
+                    }
+                    setTab(t)
+                  }}
                   aria-current={tab === t ? 'page' : undefined}
                 >
                   {label}
@@ -368,6 +376,7 @@ export default function App() {
             onOpenHistory={() => setHistoryOpen(true)}
             onProgressChange={setProgress}
             launch={tab === 'jeu' ? gameLaunch : null}
+            lobbyBump={tab === 'jeu' ? jeuBump : 0}
             onOpenPacks={() => setTab('packs')}
           />
         ) : null}
