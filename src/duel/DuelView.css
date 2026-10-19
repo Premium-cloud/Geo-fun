@@ -155,6 +155,18 @@
   color: #a33a30;
 }
 
+.duel-lobby-names {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--ink);
+  text-align: center;
+}
+
+.duel-lobby-names strong {
+  font-family: var(--font-display);
+  font-weight: 750;
+}
+
 .duel-status-banner {
   margin: 0.5rem 1rem 0;
   padding: 0.55rem 0.85rem;
