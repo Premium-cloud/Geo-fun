@@ -126,11 +126,33 @@ export function DuelView() {
     connRef.current = conn
     setLinkLost(false)
     lastPongRef.current = Date.now()
+    // Évite les handlers empilés (reconnect / Strict Mode)
+    conn.off('data')
+    conn.off('close')
+    conn.off('error')
     conn.on('data', (raw) => onNet(raw as NetMsg))
     conn.on('close', onConnClosed)
     conn.on('error', () => {
       setStatus('Erreur réseau')
     })
+  }
+
+  function beginPlay(nextDeck: DuelRound[], nextConfig: DuelConfig) {
+    if (!Array.isArray(nextDeck) || nextDeck.length < 1) {
+      setStatus('Deck invalide')
+      return false
+    }
+    lastResultKeyRef.current = ''
+    setLinkLost(false)
+    setConfig(nextConfig)
+    setDeck(nextDeck)
+    setIdx(0)
+    setScores([0, 0])
+    setCombos([0, 0])
+    setOverTitle('Fin du duel')
+    setStatus('')
+    setPhase('play')
+    return true
   }
 
   // Auto-join si ?duel=
@@ -175,7 +197,15 @@ export function DuelView() {
     recordDuelWin()
   }, [phase, overTitle])
 
-  const round = deck[idx] ?? null
+  const round = Array.isArray(deck) ? (deck[idx] ?? null) : null
+
+  // Si play sans deck (état incohérent) → retour lobby, pas de setState pendant render
+  useEffect(() => {
+    if (phase !== 'play') return
+    if (Array.isArray(deck) && deck.length > 0) return
+    setStatus('Erreur de partie')
+    setPhase((p) => (p === 'play' ? 'lobby' : p))
+  }, [phase, deck])
 
   function patchConfig(partial: Partial<DuelConfig>) {
     setConfig((c) => {
@@ -268,35 +298,34 @@ export function DuelView() {
     }
     if (msg.type === 'pong') {
       lastPongRef.current = Date.now()
-      if (linkLost) {
-        setLinkLost(false)
-        if (phaseRef.current === 'play') setStatus('')
-      }
+      setLinkLost((lost) => {
+        if (lost && phaseRef.current === 'play') setStatus('')
+        return false
+      })
       return
     }
     if (msg.type === 'config') {
+      if (Array.isArray(msg.deck) && msg.deck.length) setDeck(msg.deck)
       setConfig(msg.config)
-      setDeck(msg.deck)
       setStatus('Prêt')
+      return
     }
     if (msg.type === 'start') {
-      lastResultKeyRef.current = ''
-      setLinkLost(false)
-      setConfig(msg.config)
-      setDeck(msg.deck)
-      setIdx(0)
-      setScores([0, 0])
-      setCombos([0, 0])
-      setOverTitle('Fin du duel')
-      setPhase('play')
-      setStatus('')
+      const deckIn = Array.isArray(msg.deck) ? msg.deck : []
+      if (!beginPlay(deckIn, msg.config)) {
+        setPhase('lobby')
+        setStatus('Deck invalide — relance')
+      }
+      return
     }
     // Parent stable : ne dépend pas du remount RacePlay (anti-freeze)
     if (msg.type === 'round-result' && !isHostRef.current) {
       applyRoundResult(msg)
+      return
     }
     if (msg.type === 'sync-req' && isHostRef.current) {
       replySync()
+      return
     }
     if (msg.type === 'sync' && !isHostRef.current) {
       setScores(msg.scores)
@@ -314,12 +343,7 @@ export function DuelView() {
 
   function startLocal() {
     const nextDeck = makeDuelDeck(config.category, config.answerMode, config.rounds)
-    setDeck(nextDeck)
-    setIdx(0)
-    setScores([0, 0])
-    setCombos([0, 0])
-    setOverTitle('Fin du duel')
-    setPhase('play')
+    beginPlay(nextDeck, config)
   }
 
   function startOnlineHost() {
@@ -329,13 +353,19 @@ export function DuelView() {
     }
     // Un seul deck, envoyé avec start (même contenu hôte / invité)
     const nextDeck = makeDuelDeck(config.category, config.answerMode, config.rounds)
-    setDeck(nextDeck)
-    send(connRef.current, { type: 'start', config, deck: nextDeck })
-    setIdx(0)
-    setScores([0, 0])
-    setCombos([0, 0])
-    setOverTitle('Fin du duel')
-    setPhase('play')
+    if (!nextDeck.length) {
+      setStatus('Deck invalide')
+      return
+    }
+    // Clone JSON : PeerJS + caractères spéciaux plus sûrs
+    let payload: DuelRound[]
+    try {
+      payload = JSON.parse(JSON.stringify(nextDeck)) as DuelRound[]
+    } catch {
+      payload = nextDeck
+    }
+    send(connRef.current, { type: 'start', config, deck: payload })
+    beginPlay(nextDeck, config)
   }
 
   function finish(title = 'Fin du duel') {
@@ -592,14 +622,27 @@ export function DuelView() {
     )
   }
 
+  // Jamais de setState pendant le render (ex. finish()) → page blanche bloquée
   if (!round) {
-    finish()
-    return null
+    return (
+      <div className="duel-view">
+        <header className="duel-head">
+          <button type="button" className="duel-back" onClick={() => setPhase('setup')}>
+            ← Retour
+          </button>
+          <h2>Duel</h2>
+        </header>
+        <p className="duel-status">Chargement…</p>
+        <button type="button" className="duel-btn-primary" onClick={() => setPhase('setup')}>
+          Retour
+        </button>
+      </div>
+    )
   }
 
   if (config.venue === 'online') {
     return (
-      <>
+      <div className="duel-online-wrap">
         {status ? (
           <p className={`duel-status duel-status-banner ${linkLost ? 'is-warn' : ''}`}>
             {status}
@@ -635,7 +678,7 @@ export function DuelView() {
           }}
           onQuit={() => setPhase('setup')}
         />
-      </>
+      </div>
     )
   }
 
