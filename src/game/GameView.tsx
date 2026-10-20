@@ -1317,23 +1317,25 @@ export function GameView({
         </div>
       ) : null}
 
+      {isTerritoires ? (
+        <div className="game-filter-block">
+          <span className="game-filter-label">Pays</span>
+          <div className="game-filter-chips" role="group" aria-label="Pack territoires">
+            {TERRITORY_PACK_ORDER.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={`game-filter-chip ${territoryPackId === id ? 'is-active' : ''}`}
+                onClick={() => selectTerritoryPack(id)}
+              >
+                {TERRITORY_PACKS[id].country}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="game-filters-row">
-        {isTerritoires ? (
-          <label className="game-filter-field is-pack">
-            <span className="game-filter-label">Pays</span>
-            <select
-              className="game-filter-select"
-              value={territoryPackId}
-              onChange={(e) => selectTerritoryPack(e.target.value as TerritoryPackId)}
-            >
-              {TERRITORY_PACK_ORDER.map((id) => (
-                <option key={id} value={id}>
-                  {TERRITORY_PACKS[id].country}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
         <div className="game-filter-field is-level">
           <span className="game-filter-label">Niveau</span>
           <div className="game-filter-seg" role="group" aria-label="Difficulté">
