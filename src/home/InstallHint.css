@@ -36,6 +36,13 @@
   color: var(--muted);
 }
 
+.install-hint-sw {
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 650;
+  color: var(--accent);
+}
+
 .install-hint-actions {
   display: flex;
   flex-wrap: wrap;

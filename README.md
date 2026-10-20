@@ -27,11 +27,21 @@ L’app tourne sur [http://127.0.0.1:43125](http://127.0.0.1:43125).
 
 GeoFun est une **PWA** : installable comme une app, sans App Store.
 
-1. Ouvre la **prod HTTPS** (Vercel) sur le téléphone — pas `localhost`.
-2. **iPhone (Safari)** : Partager → **Sur l’écran d’accueil** (un bandeau sur l’accueil le rappelle).
-3. **Android (Chrome)** : menu → **Installer l’application**, ou le bouton **Installer** du bandeau.
-4. Laisse l’app se charger **une fois en ligne** (le service worker met ~drapeaux, blasons, maps en cache).
-5. Vérif hors-ligne : mode avion → rouvre depuis l’icône → Accueil / Jouer / Lexique doivent répondre.
+**URL prod à utiliser :** [https://geo-fun-phi.vercel.app](https://geo-fun-phi.vercel.app)  
+(`geofun.vercel.app` n’est pas le bon projet — pas de manifest / SW.)
+
+### Checklist iPhone (Safari)
+
+1. Ouvre **https://geo-fun-phi.vercel.app** dans **Safari** (pas Chrome iOS pour l’install).
+2. Attends que la page charge (bandeau Accueil : « Cache prêt » si le SW est actif).
+3. **Partager** → **Sur l’écran d’accueil** → Ajouter.
+4. Ouvre GeoFun **depuis l’icône** (pas l’onglet Safari) une fois encore en Wi‑Fi.
+5. Mode avion → rouvre l’icône → Accueil, Jouer, Lexique, drapeaux doivent répondre.
+6. Duel **en ligne** ne marchera pas hors réseau (PeerJS) ; duel même écran oui.
+
+### Android (Chrome)
+
+Menu → **Installer l’application**, ou le bouton **Installer** du bandeau Accueil. Même test mode avion.
 
 ### Si tu coupes le réseau / Vercel demain ?
 
@@ -61,7 +71,7 @@ Ne pas utiliser `vercel deploy --temporary` ni les déploiements anonymes « pre
 1. Créer un dépôt GitHub pour ce projet (bouton **Create repo** dans Cursor si besoin).
 2. Sur [vercel.com/new](https://vercel.com/new) → **Import** ce dépôt.
 3. Nom du projet : `geofun` (Framework : Vite, détecté via `vercel.json`).
-4. Deploy. URL typique : `https://geofun.vercel.app` (ou `geofun-xxx` si le nom est pris).
+4. Deploy. Prod actuelle : `https://geo-fun-phi.vercel.app`.
 5. Ensuite : chaque `git push` sur `main` = nouveau déploiement Production. **Redeploy** marche aussi depuis le dashboard.
 
 ## Impression recto-verso
