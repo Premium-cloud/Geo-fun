@@ -22,17 +22,7 @@ type Format = (typeof FORMATS)[number]
 type Door = (typeof DOORS)[number]
 type Country = (typeof COUNTRIES)[number]
 
-type PickKey = 'mode' | 'cat' | 'answer' | 'level' | 'venue' | 'format' | 'door' | 'country' | 'night' | 'map' | 'sound'
-
-type View =
-  | { name: 'home' }
-  | { name: 'play' }
-  | { name: 'duel' }
-  | { name: 'lex' }
-  | { name: 'profil' }
-  | { name: 'settings' }
-  | { name: 'pick'; key: PickKey }
-  | { name: 'leaf'; title: string; meta: string }
+type View = 'home' | 'play' | 'lex' | 'profil' | 'settings' | 'leaf'
 
 const PROFIL = [
   ['Ouvrir un pack', '400 cr.'],
@@ -42,16 +32,60 @@ const PROFIL = [
 ] as const
 
 function heroClass(word: string) {
-  if (word.length > 9) return 'live-hero is-long'
+  if (word.length > 8) return 'live-hero is-long'
   if (word.length > 5) return 'live-hero is-mid'
   return 'live-hero'
 }
 
+function roundLine(cat: Cat, answer: Answer) {
+  if (cat === 'Pays' && answer === 'Par drapeau') return 'Quel pays\u00a0?'
+  if (cat === 'Pays' && answer === 'Par nom') return 'Italie'
+  if (cat === 'Pays') return 'Où est-ce ?'
+  if (cat === 'Capitales' && answer === 'Par nom') return 'Capitale de l’Italie'
+  if (cat === 'Capitales' && answer === 'Carte') return 'La capitale'
+  if (cat === 'Capitales') return 'Quelle capitale\u00a0?'
+  if (answer === 'Par nom') return 'Le Rhône'
+  if (answer === 'Carte') return 'Où est-ce ?'
+  return 'Quel département\u00a0?'
+}
+
+function FilterRow<T extends string>({
+  value,
+  options,
+  open,
+  onOpen,
+  onChange,
+}: {
+  value: T
+  options: readonly T[]
+  open: boolean
+  onOpen: () => void
+  onChange: (next: T) => void
+}) {
+  const others = options.filter((option) => option !== value)
+  return (
+    <div className="live-row">
+      <button type="button" className="is-on" onClick={onOpen}>
+        {value}
+      </button>
+      {open
+        ? others.map((option) => (
+            <button key={option} type="button" className="is-off" onClick={() => onChange(option)}>
+              {option}
+            </button>
+          ))
+        : null}
+    </div>
+  )
+}
+
 export function AfficheBoard() {
-  const [view, setView] = useState<View>({ name: 'home' })
+  const [view, setView] = useState<View>('home')
   const [ask, setAsk] = useState(true)
+  const [open, setOpen] = useState<string | null>(null)
+  const [leaf, setLeaf] = useState<{ title: string; meta: string } | null>(null)
   const [mode, setMode] = useState<Mode>('Jouer')
-  const [cat, setCat] = useState<Cat>('Pays')
+  const [cat, setCat] = useState<Cat>('Capitales')
   const [answer, setAnswer] = useState<Answer>('Par drapeau')
   const [level, setLevel] = useState<Level>('Facile')
   const [venue, setVenue] = useState<Venue>('Même écran')
@@ -62,75 +96,52 @@ export function AfficheBoard() {
   const [map, setMap] = useState<(typeof MAPS)[number]>('Métropole')
   const [sound, setSound] = useState<(typeof SOUNDS)[number]>('Son')
 
-  function chooseMode(next: Mode) {
-    setMode(next)
-    setView(next === 'Défier' ? { name: 'duel' } : { name: 'play' })
+  function toggle(id: string) {
+    setOpen((current) => (current === id ? null : id))
   }
 
-  function sheet(node: {
-    back?: string
-    onBack?: () => void
-    top?: ReactNode
-    hero: string
-    onHero?: () => void
-    lines?: { label: string; onClick: () => void }[]
-    foot?: ReactNode
-  }) {
-    return (
+  function enter(next: Mode) {
+    setMode(next)
+    setOpen(null)
+    setView('play')
+  }
+
+  const round = roundLine(cat, answer)
+
+  let body: ReactNode
+  if (view === 'home') {
+    body = (
       <div
-        className="live"
-        onClick={(e) => {
-          if (view.name !== 'home' || !ask) return
-          const target = e.target as HTMLElement
+        className="live is-home"
+        onClick={(event) => {
+          if (!ask) return
+          const target = event.target as HTMLElement
           if (target.closest('button')) return
           setAsk(false)
         }}
       >
-        {node.top ?? (
-          <button type="button" className="live-back" onClick={node.onBack}>
-            {node.back}
-          </button>
-        )}
-        {node.onHero ? (
-          <button type="button" className={heroClass(node.hero)} onClick={node.onHero}>
-            {node.hero}
-          </button>
-        ) : (
-          <p className={heroClass(node.hero)}>{node.hero}</p>
-        )}
-        {node.lines && node.lines.length > 0 ? (
-          <div className="live-lines">
-            {node.lines.map((line) => (
-              <button key={line.label} type="button" onClick={line.onClick}>
-                {line.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <span />
-        )}
-        {node.foot ?? <span />}
-      </div>
-    )
-  }
-
-  function home() {
-    return sheet({
-      top: (
         <header className="live-top">
-          <button type="button" onClick={() => setView({ name: 'profil' })}>
+          <button type="button" onClick={() => setView('profil')}>
             Ton profil
           </button>
-          <button type="button" onClick={() => setView({ name: 'settings' })}>
+          <button type="button" onClick={() => setView('settings')}>
             Réglages
           </button>
         </header>
-      ),
-      hero: 'Jouer',
-      onHero: () => setView({ name: 'play' }),
-      foot: (
+        <div className="live-stack">
+          <button type="button" className={heroClass(mode)} onClick={() => enter(mode)}>
+            {mode}
+          </button>
+          <div className="live-carousel" aria-label="Autres modes">
+            {MODES.filter((item) => item !== mode).map((item) => (
+              <button key={item} type="button" onClick={() => setMode(item)}>
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
         <footer className="live-foot">
-          <button type="button" onClick={() => setView({ name: 'lex' })}>
+          <button type="button" onClick={() => setView('lex')}>
             Lexique
           </button>
           {ask ? (
@@ -139,234 +150,238 @@ export function AfficheBoard() {
             </button>
           ) : null}
         </footer>
-      ),
-    })
-  }
-
-  function play() {
-    return sheet({
-      back: 'Accueil',
-      onBack: () => setView({ name: 'home' }),
-      hero: mode,
-      onHero: () => setView({ name: 'pick', key: 'mode' }),
-      lines: [
-        { label: cat, onClick: () => setView({ name: 'pick', key: 'cat' }) },
-        { label: answer, onClick: () => setView({ name: 'pick', key: 'answer' }) },
-        { label: level, onClick: () => setView({ name: 'pick', key: 'level' }) },
-      ],
-    })
-  }
-
-  function duel() {
-    const lines = [
-      { label: venue, onClick: () => setView({ name: 'pick', key: 'venue' }) },
-      ...(venue === 'Même écran'
-        ? [{ label: format, onClick: () => setView({ name: 'pick', key: 'format' }) }]
-        : []),
-    ]
-    return sheet({
-      back: 'Accueil',
-      onBack: () => setView({ name: 'home' }),
-      hero: 'Défier',
-      onHero: () => setView({ name: 'pick', key: 'mode' }),
-      lines,
-      foot: <p className="live-foot">Alex · Sam</p>,
-    })
-  }
-
-  function lex() {
-    const lines = [
-      { label: door, onClick: () => setView({ name: 'pick', key: 'door' }) },
-      ...(door === 'Territoires'
-        ? [{ label: country, onClick: () => setView({ name: 'pick', key: 'country' }) }]
-        : []),
-    ]
-    return sheet({
-      back: 'Accueil',
-      onBack: () => setView({ name: 'home' }),
-      hero: 'Lexique',
-      lines,
-    })
-  }
-
-  function profil() {
-    return sheet({
-      back: 'Accueil',
-      onBack: () => setView({ name: 'home' }),
-      hero: 'Profil',
-      lines: PROFIL.map(([title, meta]) => ({
-        label: title,
-        onClick: () => setView({ name: 'leaf', title, meta }),
-      })),
-      foot: (
-        <button type="button" className="live-edit" onClick={() => setView({ name: 'leaf', title: 'Alex', meta: 'Ton prénom' })}>
+      </div>
+    )
+  } else if (view === 'play') {
+    body = (
+      <div className="live is-play">
+        <header className="live-top">
+          <div className="live-modes" role="tablist" aria-label="Mode">
+            {MODES.map((item) => (
+              <button
+                key={item}
+                type="button"
+                role="tab"
+                aria-selected={item === mode}
+                className={item === mode ? 'is-on' : 'is-off'}
+                onClick={() => {
+                  setMode(item)
+                  setOpen(null)
+                }}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="live-back"
+            onClick={() => {
+              setOpen(null)
+              setView('home')
+            }}
+          >
+            Accueil
+          </button>
+        </header>
+        <div className="live-stage">
+          {mode === 'Défier' ? (
+            <p className="live-vs">
+              <span>Alex</span>
+              <i>vs</i>
+              <span>Sam</span>
+            </p>
+          ) : null}
+          <p className={`${heroClass(round)} live-round`}>{round}</p>
+        </div>
+        <div className="live-filters">
+          {mode === 'Défier' ? (
+            <>
+              <FilterRow
+                value={venue}
+                options={VENUES}
+                open={open === 'venue'}
+                onOpen={() => toggle('venue')}
+                onChange={(next) => {
+                  setVenue(next)
+                  setOpen('venue')
+                }}
+              />
+              {venue === 'Même écran' ? (
+                <FilterRow
+                  value={format}
+                  options={FORMATS}
+                  open={open === 'format'}
+                  onOpen={() => toggle('format')}
+                  onChange={(next) => {
+                    setFormat(next)
+                    setOpen('format')
+                  }}
+                />
+              ) : null}
+            </>
+          ) : (
+            <>
+              <FilterRow
+                value={cat}
+                options={CATS}
+                open={open === 'cat'}
+                onOpen={() => toggle('cat')}
+                onChange={(next) => {
+                  setCat(next)
+                  setOpen('cat')
+                }}
+              />
+              <FilterRow
+                value={answer}
+                options={ANSWERS}
+                open={open === 'answer'}
+                onOpen={() => toggle('answer')}
+                onChange={(next) => {
+                  setAnswer(next)
+                  setOpen('answer')
+                }}
+              />
+              <FilterRow
+                value={level}
+                options={LEVELS}
+                open={open === 'level'}
+                onOpen={() => toggle('level')}
+                onChange={(next) => {
+                  setLevel(next)
+                  setOpen('level')
+                }}
+              />
+            </>
+          )}
+        </div>
+      </div>
+    )
+  } else if (view === 'lex') {
+    body = (
+      <div className="live is-play">
+        <button type="button" className="live-back" onClick={() => setView('home')}>
+          Accueil
+        </button>
+        <p className="live-hero is-mid">Lexique</p>
+        <div className="live-filters">
+          <FilterRow
+            value={door}
+            options={DOORS}
+            open={open === 'door'}
+            onOpen={() => toggle('door')}
+            onChange={(next) => {
+              setDoor(next)
+              setOpen('door')
+            }}
+          />
+          {door === 'Territoires' ? (
+            <FilterRow
+              value={country}
+              options={COUNTRIES}
+              open={open === 'country'}
+              onOpen={() => toggle('country')}
+              onChange={(next) => {
+                setCountry(next)
+                setOpen('country')
+              }}
+            />
+          ) : null}
+        </div>
+      </div>
+    )
+  } else if (view === 'settings') {
+    body = (
+      <div className="live is-play">
+        <button type="button" className="live-back" onClick={() => setView('home')}>
+          Accueil
+        </button>
+        <p className="live-hero is-mid">Réglages</p>
+        <div className="live-filters">
+          <FilterRow
+            value={night}
+            options={NIGHTS}
+            open={open === 'night'}
+            onOpen={() => toggle('night')}
+            onChange={(next) => {
+              setNight(next)
+              setOpen('night')
+            }}
+          />
+          <FilterRow
+            value={map}
+            options={MAPS}
+            open={open === 'map'}
+            onOpen={() => toggle('map')}
+            onChange={(next) => {
+              setMap(next)
+              setOpen('map')
+            }}
+          />
+          <FilterRow
+            value={sound}
+            options={SOUNDS}
+            open={open === 'sound'}
+            onOpen={() => toggle('sound')}
+            onChange={(next) => {
+              setSound(next)
+              setOpen('sound')
+            }}
+          />
+        </div>
+      </div>
+    )
+  } else if (view === 'profil') {
+    body = (
+      <div className="live is-index">
+        <button type="button" className="live-back" onClick={() => setView('home')}>
+          Accueil
+        </button>
+        <p className="live-hero">Profil</p>
+        <div className="live-lines">
+          {PROFIL.map(([title, meta]) => (
+            <button
+              key={title}
+              type="button"
+              onClick={() => {
+                setLeaf({ title, meta })
+                setView('leaf')
+              }}
+            >
+              {title}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="live-edit"
+          onClick={() => {
+            setLeaf({ title: 'Alex', meta: 'Ton prénom' })
+            setView('leaf')
+          }}
+        >
           Modifier le prénom
         </button>
-      ),
-    })
+      </div>
+    )
+  } else {
+    body = (
+      <div className="live is-play">
+        <button type="button" className="live-back" onClick={() => setView('profil')}>
+          Profil
+        </button>
+        <p className={heroClass(leaf?.title ?? '')}>{leaf?.title}</p>
+        <p className="live-foot">{leaf?.meta}</p>
+      </div>
+    )
   }
-
-  function settings() {
-    return sheet({
-      back: 'Accueil',
-      onBack: () => setView({ name: 'home' }),
-      hero: 'Réglages',
-      lines: [
-        { label: night, onClick: () => setView({ name: 'pick', key: 'night' }) },
-        { label: map, onClick: () => setView({ name: 'pick', key: 'map' }) },
-        { label: sound, onClick: () => setView({ name: 'pick', key: 'sound' }) },
-      ],
-    })
-  }
-
-  function pick(key: PickKey) {
-    const table = {
-      mode: {
-        back: mode === 'Défier' ? 'Défier' : mode,
-        parent: (): View => (mode === 'Défier' ? { name: 'duel' } : { name: 'play' }),
-        current: mode,
-        options: MODES,
-        set: (value: Mode) => chooseMode(value),
-      },
-      cat: {
-        back: mode,
-        parent: (): View => ({ name: 'play' }),
-        current: cat,
-        options: CATS,
-        set: (value: Cat) => {
-          setCat(value)
-          setView({ name: 'play' })
-        },
-      },
-      answer: {
-        back: mode,
-        parent: (): View => ({ name: 'play' }),
-        current: answer,
-        options: ANSWERS,
-        set: (value: Answer) => {
-          setAnswer(value)
-          setView({ name: 'play' })
-        },
-      },
-      level: {
-        back: mode,
-        parent: (): View => ({ name: 'play' }),
-        current: level,
-        options: LEVELS,
-        set: (value: Level) => {
-          setLevel(value)
-          setView({ name: 'play' })
-        },
-      },
-      venue: {
-        back: 'Défier',
-        parent: (): View => ({ name: 'duel' }),
-        current: venue,
-        options: VENUES,
-        set: (value: Venue) => {
-          setVenue(value)
-          setView({ name: 'duel' })
-        },
-      },
-      format: {
-        back: 'Défier',
-        parent: (): View => ({ name: 'duel' }),
-        current: format,
-        options: FORMATS,
-        set: (value: Format) => {
-          setFormat(value)
-          setView({ name: 'duel' })
-        },
-      },
-      door: {
-        back: 'Lexique',
-        parent: (): View => ({ name: 'lex' }),
-        current: door,
-        options: DOORS,
-        set: (value: Door) => {
-          setDoor(value)
-          setView({ name: 'lex' })
-        },
-      },
-      country: {
-        back: 'Lexique',
-        parent: (): View => ({ name: 'lex' }),
-        current: country,
-        options: COUNTRIES,
-        set: (value: Country) => {
-          setCountry(value)
-          setView({ name: 'lex' })
-        },
-      },
-      night: {
-        back: 'Réglages',
-        parent: (): View => ({ name: 'settings' }),
-        current: night,
-        options: NIGHTS,
-        set: (value: (typeof NIGHTS)[number]) => {
-          setNight(value)
-          setView({ name: 'settings' })
-        },
-      },
-      map: {
-        back: 'Réglages',
-        parent: (): View => ({ name: 'settings' }),
-        current: map,
-        options: MAPS,
-        set: (value: (typeof MAPS)[number]) => {
-          setMap(value)
-          setView({ name: 'settings' })
-        },
-      },
-      sound: {
-        back: 'Réglages',
-        parent: (): View => ({ name: 'settings' }),
-        current: sound,
-        options: SOUNDS,
-        set: (value: (typeof SOUNDS)[number]) => {
-          setSound(value)
-          setView({ name: 'settings' })
-        },
-      },
-    }[key]
-
-    const others = table.options.filter((option) => option !== table.current)
-    return sheet({
-      back: table.back,
-      onBack: () => setView(table.parent()),
-      hero: table.current,
-      lines: others.map((option) => ({
-        label: option,
-        onClick: () => table.set(option as never),
-      })),
-    })
-  }
-
-  function leaf(title: string, meta: string) {
-    return sheet({
-      back: 'Profil',
-      onBack: () => setView({ name: 'profil' }),
-      hero: title,
-      foot: <p className="live-foot">{meta}</p>,
-    })
-  }
-
-  let body: React.ReactNode
-  if (view.name === 'home') body = home()
-  else if (view.name === 'play') body = play()
-  else if (view.name === 'duel') body = duel()
-  else if (view.name === 'lex') body = lex()
-  else if (view.name === 'profil') body = profil()
-  else if (view.name === 'settings') body = settings()
-  else if (view.name === 'pick') body = pick(view.key)
-  else body = leaf(view.title, view.meta)
 
   return (
     <div className="live-desk">
       <header className="sheet-colophon">
         <p className="sheet-kicker">B · Affiche</p>
-        <h1>Tape une ligne.</h1>
-        <p>La feuille ne montre que le choix en cours. La ligne ouverte, les autres mots arrivent.</p>
+        <h1>Tu restes sur la feuille.</h1>
+        <p>Jouer lance la partie. Le carrousel change de mode. Un filtre s’ouvre à droite, en gris.</p>
       </header>
       <div className="live-phone">{body}</div>
     </div>
