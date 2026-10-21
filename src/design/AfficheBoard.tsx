@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import './AfficheBoard.css'
 
 const MODES = ['Jouer', 'Apprendre', 'Défier'] as const
-const CATS = ['Pays', 'Capitales', 'Territoires'] as const
-const ANSWERS = ['Par drapeau', 'Par nom', 'Carte'] as const
+const CATS = ['Capitales', 'Pays', 'Territoires'] as const
+const WORLD_ANSWERS = ['Par drapeau', 'Par nom', 'Carte'] as const
+const TERR_ANSWERS = ['Par code', 'Par blason', 'Par chef-lieu', 'Carte'] as const
 const LEVELS = ['Facile', 'Difficile', 'Hardcore'] as const
 const VENUES = ['Même écran', 'En ligne'] as const
 const FORMATS = ['Battle royale', 'Chacun son tour', 'Split'] as const
@@ -15,7 +16,6 @@ const SOUNDS = ['Son', 'Silence'] as const
 
 type Mode = (typeof MODES)[number]
 type Cat = (typeof CATS)[number]
-type Answer = (typeof ANSWERS)[number]
 type Level = (typeof LEVELS)[number]
 type Venue = (typeof VENUES)[number]
 type Format = (typeof FORMATS)[number]
@@ -37,16 +37,129 @@ function heroClass(word: string) {
   return 'live-hero'
 }
 
-function roundLine(cat: Cat, answer: Answer) {
-  if (cat === 'Pays' && answer === 'Par drapeau') return 'Quel pays\u00a0?'
-  if (cat === 'Pays' && answer === 'Par nom') return 'Italie'
-  if (cat === 'Pays') return 'Où est-ce ?'
-  if (cat === 'Capitales' && answer === 'Par nom') return 'Capitale de l’Italie'
-  if (cat === 'Capitales' && answer === 'Carte') return 'La capitale'
-  if (cat === 'Capitales') return 'Quelle capitale\u00a0?'
-  if (answer === 'Par nom') return 'Le Rhône'
-  if (answer === 'Carte') return 'Où est-ce ?'
-  return 'Quel département\u00a0?'
+type MapData = { viewBox: string; paths: Record<string, string> }
+
+let mapsPromise: Promise<{ world: MapData; fr: MapData }> | null = null
+
+function loadMaps() {
+  if (!mapsPromise) {
+    mapsPromise = Promise.all([
+      fetch('/maps/world-countries.json').then((r) => r.json()),
+      fetch('/maps/territoires/fr.json').then((r) => r.json()),
+    ]).then(([world, fr]) => ({ world: world as MapData, fr: fr as MapData }))
+  }
+  return mapsPromise
+}
+
+function pathBounds(d: string) {
+  const nums = d.match(/-?\d+\.?\d*/g)?.map(Number) ?? []
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    const x = nums[i]!
+    const y = nums[i + 1]!
+    minX = Math.min(minX, x)
+    maxX = Math.max(maxX, x)
+    minY = Math.min(minY, y)
+    maxY = Math.max(maxY, y)
+  }
+  const padX = (maxX - minX) * 0.08
+  const padY = (maxY - minY) * 0.08
+  return {
+    minX: minX - padX,
+    minY: minY - padY,
+    width: maxX - minX + padX * 2,
+    height: maxY - minY + padY * 2,
+    x0: minX,
+    y0: minY,
+    w: maxX - minX,
+    h: maxY - minY,
+  }
+}
+
+function answersFor(cat: Cat) {
+  return cat === 'Territoires' ? TERR_ANSWERS : WORLD_ANSWERS
+}
+
+function defaultAnswer(cat: Cat) {
+  if (cat === 'Territoires') return 'Par code'
+  if (cat === 'Pays') return 'Par drapeau'
+  return 'Par nom'
+}
+
+function RoundFace({ cat, answer }: { cat: Cat; answer: string }) {
+  const [maps, setMaps] = useState<{ world: MapData; fr: MapData } | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    loadMaps().then((data) => {
+      if (alive) setMaps(data)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (answer === 'Par nom' && cat !== 'Territoires') {
+    return <p className="live-hero live-round">Italie</p>
+  }
+  if (answer === 'Par drapeau') {
+    return <img className="live-flag" src="/flags/it.svg" alt="Drapeau de l’Italie" />
+  }
+  if (answer === 'Par code') {
+    return <p className="live-hero live-round">69</p>
+  }
+  if (answer === 'Par chef-lieu') {
+    return <p className="live-hero live-round">Lyon</p>
+  }
+  if (answer === 'Par blason') {
+    return <img className="live-blason" src="/blasons/69.png" alt="Blason du Rhône" />
+  }
+  if (!maps) return null
+
+  if (cat === 'Territoires') {
+    return (
+      <svg className="live-map" viewBox={maps.fr.viewBox} role="img" aria-label="Carte des départements">
+        {Object.entries(maps.fr.paths).map(([code, d]) => (
+          <path key={code} d={d} className={code === '69' ? 'is-hot' : 'is-region'} />
+        ))}
+      </svg>
+    )
+  }
+
+  const d = maps.world.paths.IT
+  if (!d) return null
+  const box = pathBounds(d)
+  const cities = [
+    [0.36, 0.2, false],
+    [0.5, 0.18, false],
+    [0.44, 0.36, false],
+    [0.5, 0.48, true],
+    [0.62, 0.56, false],
+  ] as const
+  return (
+    <svg
+      className="live-map"
+      viewBox={`${box.minX} ${box.minY} ${box.width} ${box.height}`}
+      role="img"
+      aria-label={cat === 'Capitales' ? 'Carte et villes' : 'Carte de l’Italie'}
+    >
+      <path d={d} className={cat === 'Capitales' ? 'is-land' : 'is-country'} />
+      {cat === 'Capitales'
+        ? cities.map(([fx, fy, hot]) => (
+            <circle
+              key={`${fx}-${fy}`}
+              cx={box.minX + box.width * fx}
+              cy={box.minY + box.height * fy}
+              r={(hot ? 0.028 : 0.016) * box.width}
+              className={hot ? 'is-city' : 'is-dot'}
+            />
+          ))
+        : null}
+    </svg>
+  )
 }
 
 function FilterRow<T extends string>({
@@ -63,8 +176,12 @@ function FilterRow<T extends string>({
   onChange: (next: T) => void
 }) {
   const others = options.filter((option) => option !== value)
+  const scroller = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    scroller.current?.scrollTo({ left: 0 })
+  }, [value, open])
   return (
-    <div className="live-row">
+    <div className="live-row" ref={scroller}>
       <button type="button" className="is-on" onClick={onOpen}>
         {value}
       </button>
@@ -86,7 +203,7 @@ export function AfficheBoard() {
   const [leaf, setLeaf] = useState<{ title: string; meta: string } | null>(null)
   const [mode, setMode] = useState<Mode>('Jouer')
   const [cat, setCat] = useState<Cat>('Capitales')
-  const [answer, setAnswer] = useState<Answer>('Par drapeau')
+  const [answer, setAnswer] = useState('Par nom')
   const [level, setLevel] = useState<Level>('Facile')
   const [venue, setVenue] = useState<Venue>('Même écran')
   const [format, setFormat] = useState<Format>('Battle royale')
@@ -105,8 +222,6 @@ export function AfficheBoard() {
     setOpen(null)
     setView('play')
   }
-
-  const round = roundLine(cat, answer)
 
   let body: ReactNode
   if (view === 'home') {
@@ -192,7 +307,7 @@ export function AfficheBoard() {
               <span>Sam</span>
             </p>
           ) : null}
-          <p className={`${heroClass(round)} live-round`}>{round}</p>
+          <RoundFace cat={cat} answer={answer} />
         </div>
         <div className="live-filters">
           {mode === 'Défier' ? (
@@ -229,12 +344,15 @@ export function AfficheBoard() {
                 onOpen={() => toggle('cat')}
                 onChange={(next) => {
                   setCat(next)
+                  setAnswer((current) =>
+                    (answersFor(next) as readonly string[]).includes(current) ? current : defaultAnswer(next),
+                  )
                   setOpen('cat')
                 }}
               />
               <FilterRow
                 value={answer}
-                options={ANSWERS}
+                options={answersFor(cat)}
                 open={open === 'answer'}
                 onOpen={() => toggle('answer')}
                 onChange={(next) => {
@@ -381,7 +499,10 @@ export function AfficheBoard() {
       <header className="sheet-colophon">
         <p className="sheet-kicker">B · Affiche</p>
         <h1>Tu restes sur la feuille.</h1>
-        <p>Jouer lance la partie. Le carrousel change de mode. Un filtre s’ouvre à droite, en gris.</p>
+        <p>
+          Jouer lance la partie. Pays et capitales : drapeau, nom, carte. Territoires : code, blason,
+          chef-lieu, carte.
+        </p>
       </header>
       <div className="live-phone">{body}</div>
     </div>
