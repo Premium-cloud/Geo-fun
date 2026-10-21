@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AfficheBoard } from './AfficheBoard'
 import { Proposals } from './Proposals'
 import './DesignStudy.css'
 
@@ -262,11 +263,14 @@ function PlancheTwo() {
 }
 
 export function DesignStudy() {
-  const [board, setBoard] = useState<'propositions' | 1 | 2>('propositions')
+  const [board, setBoard] = useState<'live' | 'propositions' | 1 | 2>('live')
 
   return (
     <div>
       <nav className="board-switch" aria-label="Planches">
+        <button type="button" className={board === 'live' ? 'is-on' : ''} onClick={() => setBoard('live')}>
+          Cliquable
+        </button>
         <button
           type="button"
           className={board === 'propositions' ? 'is-on' : ''}
@@ -281,7 +285,15 @@ export function DesignStudy() {
           Planche 02
         </button>
       </nav>
-      {board === 1 ? <PlancheOne /> : board === 2 ? <PlancheTwo /> : <Proposals />}
+      {board === 'live' ? (
+        <AfficheBoard />
+      ) : board === 1 ? (
+        <PlancheOne />
+      ) : board === 2 ? (
+        <PlancheTwo />
+      ) : (
+        <Proposals />
+      )}
     </div>
   )
 }
