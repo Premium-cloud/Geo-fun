@@ -49,6 +49,7 @@ import {
   territoryModesFor,
   type TerritoryMode,
 } from './territoryModes'
+import { SetupFace } from './SetupFace'
 import { WorldMapQuiz } from './WorldMapQuiz'
 import { FilterLine } from '../ui/FilterLine'
 import './GameView.css'
@@ -1501,6 +1502,9 @@ export function GameView({
   if (showLobbyCta) {
     return (
       <div className="game-view is-affiche is-setup">
+        <div className="game-setup-face">
+          <SetupFace category={category} mode={mode} packId={territoryPackId} />
+        </div>
         <div className="game-setup">
           {filters}
           <button type="button" className="game-setup-go" onClick={() => resetRun({ start: true })}>

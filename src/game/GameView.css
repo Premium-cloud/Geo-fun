@@ -25,13 +25,103 @@
 }
 
 .game-view.is-setup {
-  justify-content: flex-end;
+  justify-content: flex-start;
+}
+
+.game-setup-face {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 0;
+  padding: 1.35rem 1.15rem 0.6rem;
+}
+
+.game-setup-word {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 680;
+  letter-spacing: -0.06em;
+  line-height: 0.88;
+  color: var(--ink);
+  font-size: clamp(5.2rem, 24vw, 7.2rem);
+}
+
+.game-setup-word.is-mid {
+  font-size: clamp(4rem, 16vw, 5.4rem);
+}
+
+.game-setup-word.is-long {
+  font-size: clamp(2.4rem, 10vw, 3.4rem);
+}
+
+.game-setup-flag {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  object-position: center;
+  border: 2px solid #2a2622;
+  border-radius: 0.15rem;
+  background: #d9d2c5;
+  display: block;
+}
+
+.game-setup-blason {
+  width: auto;
+  height: min(42vh, 15rem);
+  max-width: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  display: block;
+}
+
+.game-setup-map {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  display: block;
+}
+
+.game-setup-map .is-country {
+  fill: var(--ink);
+}
+
+.game-setup-map .is-region {
+  fill: #e7eef1;
+  stroke: #fbfbfb;
+  stroke-width: 1.2;
+}
+
+.game-setup-map .is-hot {
+  fill: var(--accent-hot);
+  stroke: #fbfbfb;
+  stroke-width: 1.2;
+}
+
+.game-setup-mix {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  gap: 0.85rem;
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
+}
+
+.game-setup-mix .game-setup-flag {
+  width: min(16rem, 86%);
+}
+
+.game-setup-mix .game-setup-word,
+.game-setup-mix .game-setup-word.is-mid {
+  font-size: clamp(2.8rem, 12vw, 4rem);
 }
 
 .game-setup {
   display: flex;
   flex-direction: column;
-  margin-top: auto;
 }
 
 .game-setup .game-filters.is-affiche {
