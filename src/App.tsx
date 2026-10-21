@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CardMockupsPreview } from './cards/CardMockupsPreview'
+import { DesignStudy } from './design/DesignStudy'
 import { CartesMondeView } from './cards/CartesMondeView'
 import { CartesTerritoiresView } from './cards/CartesTerritoiresView'
 import { DuelView } from './duel/DuelView'
@@ -97,9 +98,12 @@ export default function App() {
     if (tab !== 'jeu') setGameLaunch(null)
   }, [tab])
 
-  const previewCartes =
-    typeof window !== 'undefined' &&
-    new URL(window.location.href).searchParams.get('preview') === 'cartes'
+  const preview =
+    typeof window !== 'undefined'
+      ? new URL(window.location.href).searchParams.get('preview')
+      : null
+  const previewCartes = preview === 'cartes'
+  const previewDesign = preview === 'design'
   const lexique = isLexique(tab)
   const showHistoryBtn = true
   const isHome = tab === 'home'
@@ -149,6 +153,10 @@ export default function App() {
                 : tab === 'profil'
                   ? 'Profil'
                   : 'Apprendre'
+
+  if (previewDesign) {
+    return <DesignStudy />
+  }
 
   if (previewCartes) {
     return (

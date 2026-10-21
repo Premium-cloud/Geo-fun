@@ -1,0 +1,367 @@
+.prop-wall {
+  padding: 2.2rem 1.25rem 5rem;
+  background: #d5e0e6;
+  color: var(--ink);
+}
+
+.prop-block {
+  max-width: 52rem;
+  margin: 0 auto 3.5rem;
+}
+
+.prop-block > header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.prop-block > header p {
+  margin: 0.25rem 0 0.9rem;
+  color: var(--muted);
+}
+
+.prop-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.prop-pair figure {
+  margin: 0;
+  width: min(22rem, 100%);
+}
+
+.prop-pair figcaption {
+  margin: 0 0 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.prop {
+  min-height: 34rem;
+  padding: 1.35rem 1.25rem 1.1rem;
+  border-radius: 1.4rem;
+  background: #f7fafb;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 36px rgba(20, 36, 44, 0.08);
+}
+
+.prop h2 {
+  margin: 0.8rem 0 0;
+  font-family: var(--font-display);
+  font-weight: 620;
+  letter-spacing: -0.05em;
+  line-height: 0.92;
+  font-size: 2.3rem;
+}
+
+.prop h2 span {
+  display: block;
+  font-weight: 450;
+  color: var(--muted);
+}
+
+.prop-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.prop-brand i {
+  width: 0.7rem;
+  height: 0.7rem;
+  background: currentColor;
+}
+
+.prop-who {
+  margin: 1.1rem 0 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.prop nav {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.prop nav span {
+  padding: 0.55rem 0;
+}
+
+.prop-ask {
+  margin: 0.8rem 0 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.prop-ask strong {
+  color: var(--accent);
+  font-family: var(--font-display);
+}
+
+.prop-ask em {
+  font-style: normal;
+}
+
+.prop ul {
+  list-style: none;
+  margin: 1.2rem 0 0;
+  padding: 0;
+}
+
+.prop li {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr auto;
+  gap: 0.45rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.prop li b {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.prop li em {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.prop-edit,
+.prop-back {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* A · Journal */
+.prop-a {
+  background: #f6f1e7;
+  color: #1a1a1a;
+}
+
+.prop-a .prop-brand {
+  justify-content: space-between;
+  padding-bottom: 0.45rem;
+  border-bottom: 3px solid #1a1a1a;
+  border-top: 1px solid #1a1a1a;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.prop-a .prop-brand i {
+  display: none;
+}
+
+.prop-a nav span {
+  border-bottom: 1px solid rgba(26, 26, 26, 0.18);
+}
+
+.prop-a nav .is-play {
+  color: var(--accent-hot);
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+
+.prop-a nav .is-play i {
+  display: none;
+}
+
+/* B · Affiche */
+.prop-b {
+  background: #fbfbfb;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.prop-b .prop-brand {
+  position: absolute;
+  margin: 1.2rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.prop-b {
+  position: relative;
+}
+
+.prop-b .prop-play {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 5.4rem;
+  font-weight: 700;
+  letter-spacing: -0.07em;
+  line-height: 0.8;
+  color: var(--accent-hot);
+}
+
+.prop-b .prop-notes {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.prop-b .prop-who {
+  margin-top: 2rem;
+}
+
+.prop-b .prop-ask {
+  position: absolute;
+  bottom: 1.1rem;
+}
+
+.prop-b.is-profil {
+  align-items: stretch;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.prop-b.is-profil h2 {
+  font-size: 2.8rem;
+}
+
+.prop-b.is-profil li span {
+  font-size: 1.35rem;
+}
+
+/* C · Nuit */
+.prop-c {
+  background: #14242c;
+  color: #f3f7f8;
+}
+
+.prop-c h2 span,
+.prop-c .prop-ask,
+.prop-c .prop-back,
+.prop-c .prop-edit,
+.prop-c li b,
+.prop-c li em {
+  color: #8aa0aa;
+}
+
+.prop-c .prop-brand {
+  color: #f3f7f8;
+}
+
+.prop-c nav .is-play {
+  margin: 0.35rem -1.25rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--accent-hot);
+  color: #fff;
+}
+
+.prop-c nav .is-play i,
+.prop-c .is-lex {
+  color: #8aa0aa;
+}
+
+.prop-c nav .is-play i {
+  display: none;
+}
+
+.prop-c li {
+  border-top: 1px solid #2c3d47;
+}
+
+.prop-c .prop-ask strong {
+  color: #fff;
+}
+
+/* D · Musée */
+.prop-d {
+  background: #f4f7f8;
+  padding: 2rem 1.5rem;
+}
+
+.prop-d .prop-brand {
+  font-weight: 500;
+  font-size: 0.82rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.prop-d .prop-brand i {
+  display: none;
+}
+
+.prop-d h2 {
+  font-weight: 450;
+  font-size: 2.5rem;
+  margin-top: 2rem;
+}
+
+.prop-d nav {
+  font-weight: 450;
+  font-size: 1.45rem;
+}
+
+.prop-d nav .is-play {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.prop-d nav .is-play i {
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--accent-hot);
+}
+
+.prop-d nav span:not(.is-play) i {
+  display: none;
+}
+
+/* E · Marge */
+.prop-e {
+  background: #e7eef1;
+  box-shadow:
+    inset 0 0 0 0.7rem #d5e0e6,
+    inset 0 0 0 0.8rem #14242c;
+  border-radius: 0.4rem;
+}
+
+.prop-e .prop-brand {
+  color: var(--accent);
+}
+
+.prop-e nav .is-play {
+  margin-top: 0.3rem;
+  padding: 0.7rem 0.15rem;
+  background: var(--ink);
+  color: #fff;
+}
+
+.prop-e nav .is-play i {
+  display: none;
+}
+
+.prop-e li {
+  border-bottom: 1px solid rgba(20, 36, 44, 0.2);
+}
