@@ -1,0 +1,57 @@
+.filter-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-inline-end: 1rem;
+}
+
+.filter-line.has-more {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.6rem), transparent);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.6rem), transparent);
+}
+
+.filter-line.has-before {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 1.6rem, #000 100%);
+  mask-image: linear-gradient(90deg, transparent, #000 1.6rem, #000 100%);
+}
+
+.filter-line.has-before.has-more {
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 1.6rem,
+    #000 calc(100% - 1.6rem),
+    transparent
+  );
+  mask-image: linear-gradient(90deg, transparent, #000 1.6rem, #000 calc(100% - 1.6rem), transparent);
+}
+
+.filter-line::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-line button {
+  flex: none;
+  border: 0;
+  background: none;
+  padding: 0.22rem 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.filter-line .is-on {
+  color: var(--ink);
+  font-size: 1.35rem;
+  font-weight: 680;
+}
+
+.filter-line .is-off {
+  color: var(--muted);
+  font-size: 1.2rem;
+  font-weight: 600;
+}

@@ -32,7 +32,7 @@ function isMobile(): boolean {
   return /Android|Mobile/i.test(navigator.userAgent)
 }
 
-export function InstallHint() {
+export function InstallHint({ variant = 'card' }: { variant?: 'card' | 'line' }) {
   const [hidden, setHidden] = useState(() => {
     try {
       return localStorage.getItem(DISMISS_KEY) === '1' || isStandalone()
@@ -102,6 +102,14 @@ export function InstallHint() {
     : deferred
       ? 'Installe GeoFun pour l’avoir comme une app, puis ouvre-la une fois en ligne pour le hors-ligne.'
       : 'Menu du navigateur → Installer l’application (ou Ajouter à l’écran d’accueil).'
+
+  if (variant === 'line') {
+    return (
+      <button type="button" className="install-line" onClick={() => void (deferred ? install() : dismiss())}>
+        Installer ? <strong>Oui</strong>
+      </button>
+    )
+  }
 
   return (
     <aside className="install-hint" aria-label="Installer l’app">

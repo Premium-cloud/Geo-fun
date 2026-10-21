@@ -16,6 +16,72 @@
   z-index: 20;
 }
 
+.topbar.is-affiche {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
+  background: #fbfbfb;
+  color: var(--ink);
+  border-bottom: 0;
+}
+
+.affiche-modes,
+.affiche-tools {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.affiche-modes {
+  flex: 1 0 auto;
+}
+
+.affiche-tools {
+  flex: 1 0 auto;
+  margin-left: auto;
+}
+
+.affiche-modes button,
+.affiche-tools button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  cursor: pointer;
+}
+
+.affiche-modes button {
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.affiche-modes .is-on {
+  color: var(--accent-hot);
+}
+
+.affiche-modes .is-off,
+.affiche-tools button,
+.affiche-screen {
+  color: var(--muted);
+}
+
+.affiche-screen {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.affiche-tools {
+  flex: none;
+  font-size: 0.92rem;
+}
+
 .topbar.is-quiz {
   background: var(--header);
   border-bottom-color: transparent;

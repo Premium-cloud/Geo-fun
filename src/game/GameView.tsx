@@ -50,6 +50,7 @@ import {
   type TerritoryMode,
 } from './territoryModes'
 import { WorldMapQuiz } from './WorldMapQuiz'
+import { FilterLine } from '../ui/FilterLine'
 import './GameView.css'
 
 type Category = 'departements' | 'pays' | 'capitale' | 'territoires' | 'mixte'
@@ -763,9 +764,9 @@ export function GameView({
    * Jeu : true = écran « Commencer ». Une fois lancé, reste false
    * jusqu’à fin de partie / retour lobby (onglet Jouer).
    */
-  const [lobby, setLobby] = useState(() => variant === 'jeu')
-  /** Jeu : false jusqu’au clic « Commencer » / Rejouer. */
-  const [runActive, setRunActive] = useState(() => variant !== 'jeu')
+  const [lobby, setLobby] = useState(false)
+  /** La partie démarre tout de suite. Le lobby ne s’ouvre plus devant Jouer. */
+  const [runActive, setRunActive] = useState(true)
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
@@ -781,9 +782,7 @@ export function GameView({
   const [runLog, setRunLog] = useState<RunEntry[]>([])
   const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
   const [missHint, setMissHint] = useState(false)
-  const [moreOptions, setMoreOptions] = useState(false)
-  /** En partie : filtres repliés derrière un résumé. */
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [openFilter, setOpenFilter] = useState<string | null>(null)
   const [preferCodes, setPreferCodes] = useState<string[]>([])
   const [weaknessFocus, setWeaknessFocus] = useState(false)
   const [lastGained, setLastGained] = useState(0)
@@ -918,17 +917,9 @@ export function GameView({
     setRunActive(start)
     if (start) {
       setLobby(false)
-      setFiltersOpen(false)
     }
     sessionStartRef.current = start ? Date.now() : null
     setSeed((s) => s + 1)
-  }
-
-  function goLobby() {
-    setLobby(true)
-    setWeaknessFocus(false)
-    setPreferCodes([])
-    resetRun({ start: false })
   }
 
   /** Changement de filtre : en cours → relance ; lobby / fin → reste à Commencer. */
@@ -990,8 +981,8 @@ export function GameView({
       setMode('flagToName')
       setPreferCodes([])
       setWeaknessFocus(false)
-      setLobby(variant === 'jeu')
-      resetRun({ start: false })
+      setLobby(false)
+      resetRun({ start: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
@@ -1004,8 +995,6 @@ export function GameView({
     if (gameOver || !runActive) {
       setWeaknessFocus(false)
       resetRun({ start: true })
-    } else {
-      goLobby()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobbyBump])
@@ -1265,182 +1254,82 @@ export function GameView({
   }
 
   const showLobbyCta = isPlay && !runActive && !gameOver
-  const filtersExpanded =
-    !isPlay || showLobbyCta || gameOver || filtersOpen || !runActive
-  const modeLabel =
-    availableModes.find((m) => m.id === mode)?.label ??
-    (isMixte ? 'MIX' : '')
-  const packLabel = isTerritoires ? TERRITORY_PACKS[territoryPackId].country : null
-  const diffLabel =
-    difficultyOptions.find((d) => d.id === difficulty)?.label ?? difficulty
-  const filtersSummary = [
-    CATEGORY_LABEL[category],
-    packLabel,
-    !isMixte ? modeLabel : null,
-    diffLabel,
-  ]
-    .filter(Boolean)
-    .join(' · ')
 
-  const filtersBody = (
-    <>
-      <div className="game-filters-cats" role="tablist" aria-label="Catégorie">
-        {categoryOptions.map((c) => (
-          <button
-            key={c}
-            type="button"
-            role="tab"
-            aria-selected={category === c}
-            className={`game-filter-cat ${category === c ? 'is-active' : ''}`}
-            onClick={() => selectCategory(c)}
-          >
-            {CATEGORY_LABEL[c]}
-          </button>
-        ))}
-      </div>
-
-      {!isMixte ? (
-        <div className="game-filter-block">
-          <span className="game-filter-label">Mode</span>
-          <div className="game-filter-chips" role="group" aria-label="Mode">
-            {availableModes.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                className={`game-filter-chip ${mode === m.id ? 'is-active' : ''}`}
-                onClick={() => selectMode(m.id)}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {isTerritoires ? (
-        <div className="game-filter-block">
-          <span className="game-filter-label">Pays</span>
-          <div className="game-filter-chips" role="group" aria-label="Pack territoires">
-            {TERRITORY_PACK_ORDER.map((id) => (
-              <button
-                key={id}
-                type="button"
-                className={`game-filter-chip ${territoryPackId === id ? 'is-active' : ''}`}
-                onClick={() => selectTerritoryPack(id)}
-              >
-                {TERRITORY_PACKS[id].country}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="game-filters-row">
-        <div className="game-filter-field is-level">
-          <span className="game-filter-label">Niveau</span>
-          <div className="game-filter-seg" role="group" aria-label="Difficulté">
-            {difficultyOptions.map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                className={`game-filter-seg-btn ${difficulty === d.id ? 'is-active' : ''}`}
-                onClick={() => selectDifficulty(d.id)}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <button
-          type="button"
-          className="game-filter-more"
-          aria-expanded={moreOptions}
-          onClick={() => setMoreOptions((o) => !o)}
-        >
-          {moreOptions ? 'Moins' : 'Options'}
-        </button>
-      </div>
-
-      {moreOptions ? (
-        <div className="game-filters-extra">
-          <div className="game-filter-block">
-            <span className="game-filter-label">Format</span>
-            <div className="game-filter-chips" role="group" aria-label="Format">
-              {formatOptions.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  className={`game-filter-chip ${sessionFormat === f ? 'is-active' : ''}`}
-                  onClick={() => selectFormat(f)}
-                >
-                  {FORMAT_LABEL[f]}
-                </button>
-              ))}
-            </div>
-          </div>
-          {!isMapMode ? (
-            <div className="game-filter-block">
-              <span className="game-filter-label">Réponse</span>
-              <div className="game-filter-seg" role="group" aria-label="Réponse">
-                {(
-                  [
-                    ['qcm', 'QCM'],
-                    ['saisie', 'Écrite'],
-                  ] as const
-                ).map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className={`game-filter-seg-btn ${
-                      (effectiveAnswerMode === 'saisie' ? 'saisie' : 'qcm') === id
-                        ? 'is-active'
-                        : ''
-                    }`}
-                    onClick={() => selectAnswerMode(id)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {best.bestStreak > 0 ? (
-            <p className="game-record">Record ×{best.bestStreak}</p>
-          ) : null}
-        </div>
-      ) : null}
-    </>
-  )
+  function toggleFilter(id: string) {
+    setOpenFilter((current) => (current === id ? null : id))
+  }
 
   const filters = (
-    <div className={`game-filters ${filtersExpanded ? 'is-expanded' : 'is-compact'}`}>
-      {!filtersExpanded ? (
-        <button
-          type="button"
-          className="game-filters-summary"
-          onClick={() => setFiltersOpen(true)}
-          aria-expanded={false}
-        >
-          <span className="game-filters-summary-text">{filtersSummary}</span>
-          <span className="game-filters-summary-action">Régler</span>
-        </button>
-      ) : (
-        <>
-          {isPlay && runActive && !gameOver && !showLobbyCta ? (
-            <div className="game-filters-sheet-head">
-              <span className="game-filters-sheet-title">Réglages</span>
-              <button
-                type="button"
-                className="game-filters-sheet-close"
-                onClick={() => setFiltersOpen(false)}
-              >
-                Fermer
-              </button>
-            </div>
-          ) : null}
-          {filtersBody}
-        </>
-      )}
+    <div className="game-filters is-affiche">
+      <FilterLine
+        value={category}
+        options={categoryOptions.map((id) => ({ id, label: CATEGORY_LABEL[id] }))}
+        open={openFilter === 'cat'}
+        onOpen={() => toggleFilter('cat')}
+        onPick={(id) => {
+          selectCategory(id)
+          setOpenFilter('cat')
+        }}
+      />
+      {!isMixte ? (
+        <FilterLine
+          value={mode}
+          options={availableModes.map((item) => ({ id: item.id, label: item.label }))}
+          open={openFilter === 'mode'}
+          onOpen={() => toggleFilter('mode')}
+          onPick={(id) => {
+            selectMode(id)
+            setOpenFilter('mode')
+          }}
+        />
+      ) : null}
+      {isTerritoires ? (
+        <FilterLine
+          value={territoryPackId}
+          options={TERRITORY_PACK_ORDER.map((id) => ({ id, label: TERRITORY_PACKS[id].country }))}
+          open={openFilter === 'pack'}
+          onOpen={() => toggleFilter('pack')}
+          onPick={(id) => {
+            selectTerritoryPack(id)
+            setOpenFilter('pack')
+          }}
+        />
+      ) : null}
+      <FilterLine
+        value={difficulty}
+        options={difficultyOptions.map((item) => ({ id: item.id, label: item.label }))}
+        open={openFilter === 'level'}
+        onOpen={() => toggleFilter('level')}
+        onPick={(id) => {
+          selectDifficulty(id)
+          setOpenFilter('level')
+        }}
+      />
+      <FilterLine
+        value={sessionFormat}
+        options={formatOptions.map((id) => ({ id, label: FORMAT_LABEL[id] }))}
+        open={openFilter === 'format'}
+        onOpen={() => toggleFilter('format')}
+        onPick={(id) => {
+          selectFormat(id)
+          setOpenFilter('format')
+        }}
+      />
+      {!isMapMode ? (
+        <FilterLine
+          value={effectiveAnswerMode === 'saisie' ? 'saisie' : 'qcm'}
+          options={[
+            { id: 'qcm' as const, label: 'QCM' },
+            { id: 'saisie' as const, label: 'Écrite' },
+          ]}
+          open={openFilter === 'answer'}
+          onOpen={() => toggleFilter('answer')}
+          onPick={(id) => {
+            selectAnswerMode(id)
+            setOpenFilter('answer')
+          }}
+        />
+      ) : null}
     </div>
   )
 
@@ -1481,12 +1370,10 @@ export function GameView({
       setPreferCodes(codes.length ? codes : preferCodes)
       setWeaknessFocus(true)
       setLastGained(0)
-      setFiltersOpen(false)
       window.setTimeout(() => resetRun({ start: true }), 0)
     }
     return (
-      <div className="game-view">
-        {filters}
+      <div className="game-view is-affiche">
         <div className="game-board game-over">
           <p className="game-prompt">Partie terminée</p>
           <p className="game-over-format">
@@ -1600,14 +1487,13 @@ export function GameView({
             </button>
           </div>
         </div>
+        {filters}
       </div>
     )
   }
 
   return (
-    <div className={`game-view ${roundIsMap ? 'is-map-mode' : ''}`}>
-      {filters}
-
+    <div className={`game-view is-affiche ${roundIsMap ? 'is-map-mode' : ''}`}>
       <div
         className={`game-board ${roundIsMap ? 'is-map-board' : ''} ${showLobbyCta ? 'is-idle' : ''}`}
         key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${sessionFormat}-${seed}-${runActive ? 'on' : 'off'}`}
@@ -1807,7 +1693,7 @@ export function GameView({
           </>
         )}
       </div>
-
+      {filters}
     </div>
   )
 }

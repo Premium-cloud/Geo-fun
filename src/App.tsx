@@ -51,30 +51,6 @@ function BrandMark({ className }: { className?: string }) {
   )
 }
 
-function BookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
-      <path
-        fill="currentColor"
-        d="M6 4.75A1.75 1.75 0 0 1 7.75 3h9.5c.69 0 1.25.56 1.25 1.25V20a.75.75 0 0 1-1.1.66L12 17.4l-5.4 3.26A.75.75 0 0 1 5.5 20V5.75C5.5 5.2 5.7 4.75 6 4.75Zm1.5.5v12.7l4.15-2.5a.75.75 0 0 1 .7 0l4.15 2.5V5.25h-9z"
-      />
-    </svg>
-  )
-}
-
-function TrophyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
-      <path
-        fill="currentColor"
-        d="M7 3h10v2h2.5a1 1 0 0 1 1 1v1a4.5 4.5 0 0 1-4.1 4.48A5.01 5.01 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1a5.01 5.01 0 0 1-3.4-3.42A4.5 4.5 0 0 1 3.5 7V6a1 1 0 0 1 1-1H7V3Zm0 4H5.5a2.5 2.5 0 0 0 2.45 2.5A3.01 3.01 0 0 1 7 7Zm9.5 0H17a3.01 3.01 0 0 1-.95 2.5A2.5 2.5 0 0 0 18.5 7H16.5Z"
-      />
-    </svg>
-  )
-}
-
-const HUB_TABS: Tab[] = ['progres', 'packs', 'album', 'profil']
-
 export default function App() {
   const [tab, setTab] = useState<Tab>(() => {
     if (typeof window !== 'undefined') {
@@ -107,7 +83,6 @@ export default function App() {
   const lexique = isLexique(tab)
   const showHistoryBtn = true
   const isHome = tab === 'home'
-  const hideMainTabs = isHome || lexique || HUB_TABS.includes(tab)
 
   useEffect(() => {
     applyNightClass(options.night)
@@ -182,131 +157,84 @@ export default function App() {
     )
   }
 
+  const playTab = tab === 'jeu' || tab === 'entrainement' || tab === 'duel'
+  const playModes = [
+    ['jeu', 'Jouer'],
+    ['entrainement', 'Apprendre'],
+    ['duel', 'Défier'],
+  ] as const
+
   return (
-    <div className={`app ${lexique ? 'is-lexique-app' : ''}`}>
-      <header className="topbar no-print is-quiz">
-        <button
-          type="button"
-          className="brand-quiz brand-quiz-btn"
-          onClick={() => setTab('home')}
-          aria-label="Accueil GeoFun"
-        >
-          <BrandMark className="brand-mark-lg" />
-          <div className="brand-quiz-copy">
-            <p className="brand-mode">GeoFun</p>
-            <p className={`brand-mode-sub ${lexique ? 'is-lexique-title' : ''}`}>
-              {modeLabel}
-            </p>
-            {lexique ? (
-              <span
-                className="btn-print-inline"
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  const imgs = Array.from(
-                    document.querySelectorAll<HTMLImageElement>('.print-deck img'),
-                  )
-                  void Promise.all(
-                    imgs.map(
-                      (img) =>
-                        img.complete ||
-                        new Promise<void>((resolve) => {
-                          img.addEventListener('load', () => resolve(), { once: true })
-                          img.addEventListener('error', () => resolve(), { once: true })
-                        }),
-                    ),
-                  ).then(() => window.print())
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    ;(e.target as HTMLElement).click()
-                  }
+    <div className={`app ${lexique ? 'is-lexique-app' : ''} ${isHome ? 'is-poster' : ''}`}>
+      {isHome ? null : (
+      <header className="topbar no-print is-affiche">
+        {playTab ? (
+          <div className="affiche-modes" role="tablist" aria-label="Mode">
+            {playModes.map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                className={tab === id ? 'is-on' : 'is-off'}
+                aria-selected={tab === id}
+                onClick={() => {
+                  if (id === 'jeu') setGameLaunch(null)
+                  if (id === 'jeu' && tab === 'jeu') setJeuBump((n) => n + 1)
+                  else setTab(id)
                 }}
               >
-                Imprimer
-              </span>
-            ) : null}
+                {label}
+              </button>
+            ))}
           </div>
-        </button>
-
-        {!hideMainTabs ? (
-          <nav className="tabs" aria-label="Sections">
-            <div className="tabs-group" role="presentation">
-              {(
-                [
-                  ['home', 'Accueil'],
-                  ['entrainement', 'Apprendre'],
-                  ['jeu', 'Jouer'],
-                  ['duel', 'Défier'],
-                ] as const
-              ).map(([t, label]) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`tab ${tab === t ? 'is-active' : ''}`}
-                  onClick={() => {
-                    if (t === 'jeu') {
-                      setGameLaunch(null)
-                      if (tab === 'jeu') setJeuBump((n) => n + 1)
-                    }
-                    setTab(t)
-                  }}
-                  aria-current={tab === t ? 'page' : undefined}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </nav>
         ) : (
-          <div className="tabs" aria-hidden />
+          <p className="affiche-screen">{modeLabel}</p>
         )}
 
-        <div className="topbar-right">
-          {showHistoryBtn ? (
+        <div className="affiche-tools">
+          {lexique ? (
             <button
               type="button"
-              className="btn-history"
-              onClick={() => setHistoryOpen(true)}
+              onClick={() => {
+                const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('.print-deck img'))
+                void Promise.all(
+                  imgs.map(
+                    (img) =>
+                      img.complete ||
+                      new Promise<void>((resolve) => {
+                        img.addEventListener('load', () => resolve(), { once: true })
+                        img.addEventListener('error', () => resolve(), { once: true })
+                      }),
+                  ),
+                ).then(() => window.print())
+              }}
             >
+              Imprimer
+            </button>
+          ) : null}
+          {showHistoryBtn ? (
+            <button type="button" onClick={() => setHistoryOpen(true)}>
               Historique
             </button>
           ) : null}
-          <button
-            type="button"
-            className="btn-options"
-            onClick={() => setOptionsOpen(true)}
-            aria-label="Options"
-            title="Options"
-          >
-            ⚙
+          <button type="button" onClick={() => setOptionsOpen(true)}>
+            Réglages
           </button>
-          <button
-            type="button"
-            className={`btn-lexique ${tab === 'progres' ? 'is-active' : ''}`}
-            onClick={() => setTab('progres')}
-            aria-label="Trophées"
-            title="Trophées"
-          >
-            <TrophyIcon />
-          </button>
-          <button
-            type="button"
-            className={`btn-lexique ${lexique ? 'is-active' : ''}`}
-            onClick={() => setTab(lexique ? 'home' : 'territoires')}
-            aria-label={lexique ? 'Retour accueil' : 'Lexique'}
-            title={lexique ? 'Accueil' : 'Lexique'}
-          >
-            <BookIcon />
+          <button type="button" onClick={() => setTab('home')}>
+            Accueil
           </button>
         </div>
       </header>
+      )}
 
       <main>
         {tab === 'home' ? (
-          <HomeView onGo={goHomeDest} progress={progress} />
+          <HomeView
+            onGo={goHomeDest}
+            onSettings={() => setOptionsOpen(true)}
+            onHistory={() => setHistoryOpen(true)}
+            progress={progress}
+          />
         ) : null}
 
         {tab === 'profil' ? (

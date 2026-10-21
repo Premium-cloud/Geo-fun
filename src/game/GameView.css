@@ -4,6 +4,26 @@
   margin: 0;
 }
 
+.game-view.is-affiche {
+  min-height: calc(100dvh - 3.4rem);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+  background: #fbfbfb;
+}
+
+.game-view.is-affiche .game-board {
+  flex: 1;
+}
+
+.game-filters.is-affiche {
+  margin-top: auto;
+  padding: 0.35rem 1.15rem 1.15rem;
+  background: #fbfbfb;
+  border: 0;
+  gap: 0.1rem;
+}
+
 /* —— Filtres téléphone-first : onglets + chips + segments —— */
 .game-filters {
   padding: 0.75rem 1rem 0.85rem;
