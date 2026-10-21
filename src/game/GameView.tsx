@@ -761,12 +761,11 @@ export function GameView({
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
   const [sessionFormat, setSessionFormat] = useState<SessionFormatId>('libre')
   /**
-   * Jeu : true = écran « Commencer ». Une fois lancé, reste false
-   * jusqu’à fin de partie / retour lobby (onglet Jouer).
+   * Jeu : true tant que les filtres sont affichés et que la partie n’est pas lancée.
    */
-  const [lobby, setLobby] = useState(false)
-  /** La partie démarre tout de suite. Le lobby ne s’ouvre plus devant Jouer. */
-  const [runActive, setRunActive] = useState(true)
+  const [lobby, setLobby] = useState(isPlay)
+  /** Jeu : on choisit les filtres, puis on lance. Entraînement part tout de suite. */
+  const [runActive, setRunActive] = useState(!isPlay)
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
@@ -975,26 +974,33 @@ export function GameView({
     if (variant === 'entrainement' && sessionFormat === 'rapidite') {
       setSessionFormat('libre')
     }
-    // Nouveau mode → repart sur Pays / défauts (sauf launch home)
+    // Nouveau mode → repart sur Pays / défauts (sauf launch home).
+    // Jouer s’arrête sur les filtres. Entraînement lance la question.
     if (!launch) {
       setCategory('pays')
       setMode('flagToName')
       setPreferCodes([])
       setWeaknessFocus(false)
-      setLobby(false)
-      resetRun({ start: true })
+      if (variant === 'jeu') {
+        setLobby(true)
+        resetRun({ start: false })
+      } else {
+        setLobby(false)
+        resetRun({ start: true })
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
   // Recliquer Jouer (topbar) :
-  // - fin de partie / lobby → lance (comme Rejouer)
-  // - partie en cours → retour config (pas de relance auto)
+  // - fin de partie ou écran filtres → on revient aux filtres, sans lancer
+  // - partie en cours → on ne coupe pas la question
   useEffect(() => {
     if (!lobbyBump || variant !== 'jeu') return
     if (gameOver || !runActive) {
       setWeaknessFocus(false)
-      resetRun({ start: true })
+      setLobby(true)
+      resetRun({ start: false })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobbyBump])
@@ -1492,33 +1498,25 @@ export function GameView({
     )
   }
 
+  if (showLobbyCta) {
+    return (
+      <div className="game-view is-affiche is-setup">
+        <div className="game-setup">
+          {filters}
+          <button type="button" className="game-setup-go" onClick={() => resetRun({ start: true })}>
+            Lancer
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`game-view is-affiche ${roundIsMap ? 'is-map-mode' : ''}`}>
       <div
-        className={`game-board ${roundIsMap ? 'is-map-board' : ''} ${showLobbyCta ? 'is-idle' : ''}`}
+        className={`game-board ${roundIsMap ? 'is-map-board' : ''}`}
         key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${sessionFormat}-${seed}-${runActive ? 'on' : 'off'}`}
       >
-        {showLobbyCta ? (
-          <div className="game-idle">
-            <p className="game-idle-title">
-              {CATEGORY_LABEL[category]}
-              {!isMixte ? ` · ${availableModes.find((m) => m.id === mode)?.label ?? ''}` : ''}
-            </p>
-            <p className="game-idle-hint">
-              {FORMAT_LABEL[sessionFormat]}
-              {' · '}
-              {difficultyOptions.find((d) => d.id === difficulty)?.label ?? difficulty}
-            </p>
-            <button
-              type="button"
-              className="game-next game-lancer"
-              onClick={() => resetRun({ start: true })}
-            >
-              Jouer
-            </button>
-          </div>
-        ) : (
-          <>
         <div className="game-board-hud" aria-live="polite">
           {isBounded ? (
             <span className="game-progress" aria-label={`Question ${Math.min(asked + 1, SESSION_LEN)} sur ${SESSION_LEN}`}>
@@ -1690,8 +1688,6 @@ export function GameView({
             </button>
           </div>
         ) : null}
-          </>
-        )}
       </div>
       {filters}
     </div>
