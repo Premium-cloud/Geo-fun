@@ -179,6 +179,15 @@
   color: var(--accent-hot);
 }
 
+.prop-b .prop-play.is-duel {
+  font-size: 5.15rem;
+}
+
+.prop-b .prop-play.is-lex {
+  font-size: 4.35rem;
+  letter-spacing: -0.06em;
+}
+
 .prop-foot {
   font-size: 1.15rem;
 }
@@ -330,6 +339,38 @@
   color: var(--accent-hot);
 }
 
+.prop-f nav .is-off {
+  color: #8b97a0;
+}
+
+.prop-f nav .is-group {
+  margin-top: 1.15rem;
+}
+
+.prop-f.is-menu {
+  justify-content: space-between;
+}
+
+.prop-f.is-menu nav {
+  margin-top: 1.15rem;
+  gap: 0.02rem;
+}
+
+.prop-f.is-menu nav span {
+  font-size: 2.12rem;
+  line-height: 1.06;
+}
+
+.prop-f.is-menu .prop-foot {
+  margin-top: 1.35rem;
+}
+
+.prop-f.is-tight nav span {
+  font-size: 2.15rem;
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+}
+
 .prop-f .prop-foot {
   font-size: 1.05rem;
 }
@@ -371,6 +412,51 @@
   font-weight: 700;
 }
 
-.prop-a.is-profil {
+.prop-a.is-profil,
+.prop-a.is-menu {
   background: #f6f1e7;
+}
+
+.prop-a.is-menu nav {
+  margin-top: 0.45rem;
+}
+
+.prop-a.is-menu .prop-ask,
+.prop-a.is-profil .prop-edit {
+  margin-top: auto;
+  padding-top: 0.85rem;
+}
+
+.prop-a.is-menu h2 {
+  margin-top: 0.85rem;
+  font-size: 2.35rem;
+}
+
+.prop-a.is-menu h2.is-play {
+  color: var(--accent-hot);
+}
+
+.prop-a.is-menu nav .is-on {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.prop-a.is-menu nav .is-off {
+  color: #8a8278;
+  font-weight: 550;
+}
+
+.prop-a.is-menu nav .is-gap {
+  height: 0.55rem;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.prop-a li {
+  border-bottom: 1px solid rgba(26, 26, 26, 0.18);
+  font-size: 1.15rem;
+}
+
+.prop-a li em {
+  color: #5c564e;
 }
