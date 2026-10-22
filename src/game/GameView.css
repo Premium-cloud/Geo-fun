@@ -24,6 +24,18 @@
   gap: 0.1rem;
 }
 
+.game-view.is-affiche:has(.filter-line.is-quiet) {
+  min-height: calc(100dvh - 4.5rem);
+}
+
+.game-view.is-affiche:has(.filter-line.is-quiet) .game-board {
+  margin-top: 0.15rem;
+}
+
+.game-filters.is-affiche:has(.filter-line.is-quiet) {
+  padding-bottom: 0.4rem;
+}
+
 .game-view.is-setup {
   position: relative;
   overflow: hidden;

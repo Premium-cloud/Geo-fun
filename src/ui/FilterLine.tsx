@@ -7,12 +7,18 @@ export function FilterLine<T extends string>({
   open,
   onOpen,
   onPick,
+  quiet = false,
+  active = false,
 }: {
   value: T
   options: readonly { id: T; label: string }[]
   open: boolean
   onOpen: () => void
   onPick: (id: T) => void
+  /** Ligne secondaire, plus petite, en bas de pile. */
+  quiet?: boolean
+  /** La section discrète est en cours. */
+  active?: boolean
 }) {
   const scroller = useRef<HTMLDivElement>(null)
   const current = options.find((option) => option.id === value) ?? options[0]
@@ -40,7 +46,7 @@ export function FilterLine<T extends string>({
   if (!current) return null
 
   return (
-    <div className="filter-line" ref={scroller}>
+    <div className={`filter-line${quiet ? ' is-quiet' : ''}${active ? ' is-active' : ''}`} ref={scroller}>
       <button type="button" className="is-on" onClick={onOpen}>
         {current.label}
       </button>

@@ -55,3 +55,23 @@
   font-size: 1.2rem;
   font-weight: 600;
 }
+
+.filter-line.is-quiet {
+  margin-top: 0.35rem;
+}
+
+.filter-line.is-quiet button {
+  padding: 0.02rem 0;
+}
+
+.filter-line.is-quiet .is-on,
+.filter-line.is-quiet .is-off {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.filter-line.is-quiet.is-active .is-on {
+  color: var(--ink);
+}

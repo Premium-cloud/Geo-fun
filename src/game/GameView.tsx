@@ -1314,41 +1314,11 @@ export function GameView({
 
   const errorOptions = [
     { id: 'section', label: 'Les erreurs' },
-    ...(misses.length
-      ? misses.map((miss) => ({ id: miss.itemId, label: miss.label }))
-      : [{ id: 'aucune', label: 'Aucune' }]),
+    ...misses.map((miss) => ({ id: miss.itemId, label: miss.label })),
   ]
 
   const filters = (
     <div className="game-filters is-affiche">
-      {!isPlay ? (
-        <FilterLine
-          value="section"
-          options={errorOptions}
-          open={openFilter === 'errors'}
-          onOpen={() => {
-            if (misses.length && !errorFocus) {
-              setErrorFocus(true)
-              setErrorCursor(0)
-              resetRun({ start: true })
-            }
-            toggleFilter('errors')
-          }}
-          onPick={(id) => {
-            setOpenFilter(null)
-            if (id === 'aucune') return
-            const index = misses.findIndex((miss) => miss.itemId === id)
-            if (index < 0) return
-            if (!errorFocus) {
-              setErrorFocus(true)
-              resetRun({ start: true })
-            }
-            setErrorCursor(index)
-            setPicked(null)
-            setTyped('')
-          }}
-        />
-      ) : null}
       <FilterLine
         value={category}
         options={categoryOptions.map((id) => ({ id, label: CATEGORY_LABEL[id] }))}
@@ -1415,6 +1385,35 @@ export function GameView({
           onPick={(id) => {
             selectAnswerMode(id)
             setOpenFilter(null)
+          }}
+        />
+      ) : null}
+      {!isPlay && misses.length > 0 ? (
+        <FilterLine
+          quiet
+          active={errorFocus}
+          value="section"
+          options={errorOptions}
+          open={openFilter === 'errors'}
+          onOpen={() => {
+            if (!errorFocus) {
+              setErrorFocus(true)
+              setErrorCursor(0)
+              resetRun({ start: true })
+            }
+            toggleFilter('errors')
+          }}
+          onPick={(id) => {
+            setOpenFilter(null)
+            const index = misses.findIndex((miss) => miss.itemId === id)
+            if (index < 0) return
+            if (!errorFocus) {
+              setErrorFocus(true)
+              resetRun({ start: true })
+            }
+            setErrorCursor(index)
+            setPicked(null)
+            setTyped('')
           }}
         />
       ) : null}
