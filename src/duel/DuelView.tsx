@@ -81,7 +81,7 @@ function shuffleChoices(list: string[]): string[] {
   return a
 }
 
-export function DuelView() {
+export function DuelView({ onLeave }: { onLeave: () => void }) {
   const wide = useWideEnough()
   const [phase, setPhase] = useState<Phase>('setup')
   const [config, setConfig] = useState<DuelConfig>(DEFAULT_DUEL_CONFIG)
@@ -714,7 +714,7 @@ export function DuelView() {
             <button type="button" className="duel-btn-primary" onClick={() => setPhase('setup')}>
               Nouveau duel
             </button>
-            <button type="button" className="duel-chip" onClick={() => setPhase('setup')}>
+            <button type="button" className="duel-chip" onClick={onLeave}>
               Quitter
             </button>
           </div>
@@ -730,7 +730,7 @@ export function DuelView() {
         config={config}
         category={config.category}
         onOver={finish}
-        onQuit={() => setPhase('setup')}
+        onQuit={onLeave}
       />
     )
   }
@@ -744,7 +744,7 @@ export function DuelView() {
         onScore={(p, pts) => addScore(p, pts)}
         onCombo={bumpCombo}
         onOver={finish}
-        onQuit={() => setPhase('setup')}
+        onQuit={onLeave}
       />
     )
   }
@@ -803,7 +803,7 @@ export function DuelView() {
             if (nextIdx >= deck.length) finish()
             else setIdx(nextIdx)
           }}
-          onQuit={() => setPhase('setup')}
+          onQuit={onLeave}
         />
       </div>
     )
@@ -831,7 +831,7 @@ export function DuelView() {
         if (idx + 1 >= deck.length) finish()
         else setIdx((i) => i + 1)
       }}
-      onQuit={() => setPhase('setup')}
+      onQuit={onLeave}
     />
   )
 }

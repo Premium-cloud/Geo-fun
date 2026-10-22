@@ -773,15 +773,18 @@ export function GameView({
   launch = null,
   lobbyBump = 0,
   onOpenPacks,
+  onLeave,
 }: {
   variant: PlayVariant
   mapDomTom: boolean
   onOpenHistory?: () => void
   onProgressChange?: (p: ProgressState) => void
   launch?: GameLaunch
-  /** Incrémenté quand on reclique Jouer dans la topbar. */
+  /** Incrémenté quand on reclique le mode en cours dans la topbar. */
   lobbyBump?: number
   onOpenPacks?: () => void
+  /** Retour au menu Apprendre / Jouer / Défier. */
+  onLeave?: () => void
 }) {
   const isPlay = variant === 'jeu'
   const [category, setCategory] = useState<Category>('pays')
@@ -790,12 +793,10 @@ export function GameView({
   const [difficulty, setDifficulty] = useState<Difficulty>('facile')
   const [answerMode, setAnswerMode] = useState<AnswerMode>('qcm')
   const [sessionFormat, setSessionFormat] = useState<SessionFormatId>('libre')
-  /**
-   * Jeu : true tant que les filtres sont affichés et que la partie n’est pas lancée.
-   */
-  const [lobby, setLobby] = useState(isPlay)
-  /** Jeu : on choisit les filtres, puis on lance. Entraînement part tout de suite. */
-  const [runActive, setRunActive] = useState(!isPlay)
+  /** true tant que les filtres sont affichés et que la partie n’est pas lancée. */
+  const [lobby, setLobby] = useState(true)
+  /** On choisit les filtres, puis on lance. Rejouer repart sans repasser par là. */
+  const [runActive, setRunActive] = useState(false)
   const [score, setScore] = useState(0)
   const [asked, setAsked] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
@@ -973,21 +974,15 @@ export function GameView({
     setSecondsLeft(
       (mode === 'carte' ? MAP_TIMER_SECONDS : TIMER_SECONDS)[d],
     )
-    const start = isPlay ? Boolean(opts?.start) : true
+    const start = Boolean(opts?.start)
     setRunActive(start)
-    if (start) {
-      setLobby(false)
-    }
+    setLobby(!start)
     sessionStartRef.current = start ? Date.now() : null
     setSeed((s) => s + 1)
   }
 
-  /** Changement de filtre : en cours → relance ; lobby / fin → reste à Commencer. */
+  /** Changement de filtre : en cours → relance ; choix ou fin → on reste avant Lancer. */
   function resetAfterConfig() {
-    if (!isPlay) {
-      resetRun({ start: true })
-      return
-    }
     if (lobby || gameOver || !runActive) {
       setLobby(true)
       resetRun({ start: false })
@@ -1037,28 +1032,22 @@ export function GameView({
     if (variant === 'entrainement' && sessionFormat === 'rapidite') {
       setSessionFormat('libre')
     }
-    // Nouveau mode → repart sur Pays / défauts (sauf launch home).
-    // Jouer s’arrête sur les filtres. Entraînement lance la question.
+    // Ouverture du mode : on choisit, on ne lance pas.
     if (!launch) {
       setCategory('pays')
       setMode('flagToName')
       setErrorFocus(false)
-      if (variant === 'jeu') {
-        setLobby(true)
-        resetRun({ start: false })
-      } else {
-        setLobby(false)
-        resetRun({ start: true })
-      }
+      setLobby(true)
+      resetRun({ start: false })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
-  // Recliquer Jouer (topbar) :
+  // Recliquer le mode en cours (topbar) :
   // - fin de partie ou écran filtres → on revient aux filtres, sans lancer
   // - partie en cours → on ne coupe pas la question
   useEffect(() => {
-    if (!lobbyBump || variant !== 'jeu') return
+    if (!lobbyBump) return
     if (gameOver || !runActive) {
       setLobby(true)
       resetRun({ start: false })
@@ -1141,7 +1130,7 @@ export function GameView({
       const tag = (e.target as HTMLElement | null)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
 
-      if (isPlay && !runActive) {
+      if (!runActive) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           resetRun({ start: true })
@@ -1306,7 +1295,7 @@ export function GameView({
     resolveAnswer(typed || '—', ok)
   }
 
-  const showLobbyCta = isPlay && !runActive && !gameOver
+  const showLobbyCta = !runActive && !gameOver
 
   function toggleFilter(id: string) {
     setOpenFilter((current) => (current === id ? null : id))
@@ -1399,7 +1388,7 @@ export function GameView({
             if (!errorFocus) {
               setErrorFocus(true)
               setErrorCursor(0)
-              resetRun({ start: true })
+              if (runActive || gameOver) resetRun({ start: true })
             }
             toggleFilter('errors')
           }}
@@ -1407,10 +1396,8 @@ export function GameView({
             setOpenFilter(null)
             const index = misses.findIndex((miss) => miss.itemId === id)
             if (index < 0) return
-            if (!errorFocus) {
-              setErrorFocus(true)
-              resetRun({ start: true })
-            }
+            if (!errorFocus) setErrorFocus(true)
+            if (runActive || gameOver) resetRun({ start: true })
             setErrorCursor(index)
             setPicked(null)
             setTyped('')
@@ -1519,6 +1506,11 @@ export function GameView({
             >
               {isBounded ? `Rejouer (${SESSION_LEN} Q)` : 'Rejouer'}
             </button>
+            {onLeave ? (
+              <button type="button" className="game-next game-next-quiet" onClick={onLeave}>
+                Quitter
+              </button>
+            ) : null}
             {packReady && onOpenPacks ? (
               <button
                 type="button"

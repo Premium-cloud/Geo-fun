@@ -67,8 +67,8 @@ export default function App() {
     () => !loadProgress().onboardingDone,
   )
   const [gameLaunch, setGameLaunch] = useState<GameLaunch>(null)
-  /** Recliquer Jouer (même onglet) → relance ou lobby selon l’état. */
-  const [jeuBump, setJeuBump] = useState(0)
+  /** Recliquer le mode en cours → retour aux filtres, sans couper une question. */
+  const [modeBump, setModeBump] = useState(0)
 
   useEffect(() => {
     if (tab !== 'jeu') setGameLaunch(null)
@@ -176,8 +176,9 @@ export default function App() {
                 aria-selected={tab === id}
                 onClick={() => {
                   if (id === 'jeu') setGameLaunch(null)
-                  if (id === 'jeu' && tab === 'jeu') setJeuBump((n) => n + 1)
-                  else setTab(id)
+                  if (id === tab && (id === 'jeu' || id === 'entrainement')) {
+                    setModeBump((n) => n + 1)
+                  } else setTab(id)
                 }}
               >
                 {label}
@@ -309,11 +310,12 @@ export default function App() {
             onOpenHistory={() => setHistoryOpen(true)}
             onProgressChange={setProgress}
             launch={tab === 'jeu' ? gameLaunch : null}
-            lobbyBump={tab === 'jeu' ? jeuBump : 0}
+            lobbyBump={modeBump}
             onOpenPacks={() => setTab('packs')}
+            onLeave={() => setTab('home')}
           />
         ) : null}
-        {tab === 'duel' ? <DuelView /> : null}
+        {tab === 'duel' ? <DuelView onLeave={() => setTab('home')} /> : null}
       </main>
 
       <OptionsModal

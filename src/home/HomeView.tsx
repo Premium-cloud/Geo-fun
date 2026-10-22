@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { loadProgress, type ProgressState } from '../lib/progression'
 import { InstallHint } from './InstallHint'
 import './HomeView.css'
@@ -26,7 +25,7 @@ export function HomeView({
   onHistory: () => void
   progress: ProgressState
 }) {
-  const [poster, setPoster] = useState<PosterMode>('Jouer')
+  const poster: PosterMode = 'Jouer'
 
   function enter(next: PosterMode) {
     if (next === 'Apprendre') onGo('apprendre')
@@ -55,7 +54,7 @@ export function HomeView({
         </button>
         <div className="home-poster-carousel" aria-label="Autres modes">
           {POSTER_MODES.filter((item) => item !== poster).map((item) => (
-            <button key={item} type="button" onClick={() => setPoster(item)}>
+            <button key={item} type="button" onClick={() => enter(item)}>
               {item}
             </button>
           ))}
