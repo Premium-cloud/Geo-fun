@@ -5,6 +5,7 @@ Collection de cartes à collectionner et mode jeu :
 - **Territoires** — départements FR, cantons CH, communautés ES, États US, Länder DE, préfectures JP, provinces CA, États BR (lexique + quiz)
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
 - **Apprendre → Les erreurs** — en bas, discret, seulement s’il y a des ratés sur les 10 dernières parties
+- **Ouverture** — menu Apprendre / Jouer / Défier, puis les filtres. Rejouer relance. Quitter revient au menu.
 - **Entraînement** — quiz sans chrono
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
 - **MIX** — uniquement drapeau→pays, nom→capitale, chiffre→département
