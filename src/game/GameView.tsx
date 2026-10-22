@@ -15,11 +15,8 @@ import {
   recordQuizFinish,
   type ProgressState,
 } from '../lib/progression'
-import {
-  recordAnswerOutcome,
-  weakCountryCodes,
-  weaknessCount,
-} from '../lib/weaknesses'
+import { recordAnswerOutcome } from '../lib/weaknesses'
+import { recentMisses, recordParty, type MissItem } from '../lib/recentParties'
 import {
   getModeStats,
   loadOptions,
@@ -88,6 +85,8 @@ type Round = {
   itemId: string
   mapKind?: 'france' | 'world' | 'territory'
   territoryPackId?: TerritoryPackId
+  /** Pour rejouer le raté tel qu’il a été posé. */
+  replay?: { category: Category; mode: string; packId?: TerritoryPackId }
 }
 
 const DEPT_MODES: { id: DeptMode; label: string }[] = [
@@ -198,11 +197,14 @@ function makeDeptRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
   includeDomTom: boolean,
+  focusId?: string,
 ): Round | null {
   if (mode === 'carte') {
     const pool = includeDomTom ? DEPT_CARDS : METRO_DEPTS
-    if (pool.length < 4) return null
-    const card = pickWeightedItem(
+    const focused = focusId ? pool.find((d) => d.code === focusId) : undefined
+    if (focusId && !focused) return null
+    if (!focused && pool.length < 4) return null
+    const card = focused ?? pickWeightedItem(
       includeDomTom ? `dept:carte:dom` : `dept:carte`,
       pool,
       (d) => d.code,
@@ -222,8 +224,10 @@ function makeDeptRound(
     }
   }
 
-  if (DEPT_CARDS.length < 4) return null
-  const card = pickWeightedItem(
+  const focused = focusId ? DEPT_CARDS.find((d) => d.code === focusId) : undefined
+  if (focusId && !focused) return null
+  if (!focused && DEPT_CARDS.length < 4) return null
+  const card = focused ?? pickWeightedItem(
     `dept:${mode}`,
     DEPT_CARDS,
     (d) => d.code,
@@ -310,19 +314,24 @@ function makePaysRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
   preferCodes: string[] = [],
+  focusId?: string,
 ): Round | null {
   if (mode === 'carte') {
-    if (MAP_COUNTRIES.length < 4) return null
+    const focused = focusId ? MAP_COUNTRIES.find((c) => c.code === focusId) : undefined
+    if (focusId && !focused) return null
+    if (!focused && MAP_COUNTRIES.length < 4) return null
     const preferMap = preferCodes.length
       ? MAP_COUNTRIES.filter((c) => preferCodes.includes(c.code))
       : []
     const mapPool = preferMap.length >= 4 ? preferMap : MAP_COUNTRIES
-    const card = pickWeightedItem(
-      preferMap.length >= 4 ? `pays:carte:weak` : `pays:carte`,
-      mapPool,
-      (c) => c.code,
-      preferUnseen,
-    )
+    const card =
+      focused ??
+      pickWeightedItem(
+        preferMap.length >= 4 ? `pays:carte:weak` : `pays:carte`,
+        mapPool,
+        (c) => c.code,
+        preferUnseen,
+      )
     return {
       prompt: 'Où se trouve ce pays ?',
       show: 'mapPrompt',
@@ -337,17 +346,21 @@ function makePaysRound(
     }
   }
 
-  if (COUNTRIES.length < 4) return null
+  const focused = focusId ? COUNTRIES.find((c) => c.code === focusId) : undefined
+  if (focusId && !focused) return null
+  if (!focused && COUNTRIES.length < 4) return null
   const preferPool = preferCodes.length
     ? COUNTRIES.filter((c) => preferCodes.includes(c.code))
     : []
   const pool = preferPool.length >= 4 ? preferPool : COUNTRIES
-  const card = pickWeightedItem(
-    preferPool.length >= 4 ? `pays:${mode}:weak` : `pays:${mode}`,
-    pool,
-    (c) => c.code,
-    preferUnseen,
-  )
+  const card =
+    focused ??
+    pickWeightedItem(
+      preferPool.length >= 4 ? `pays:${mode}:weak` : `pays:${mode}`,
+      pool,
+      (c) => c.code,
+      preferUnseen,
+    )
   const distractors = pickCountryDistractors(card, COUNTRIES, difficulty)
   const saisie = answerMode === 'saisie'
 
@@ -438,18 +451,23 @@ function makeCapitaleRound(
   preferUnseen: boolean,
   answerMode: AnswerMode,
   preferCodes: string[] = [],
+  focusId?: string,
 ): Round | null {
-  if (COUNTRIES.length < 4) return null
+  const focused = focusId ? COUNTRIES.find((c) => c.code === focusId) : undefined
+  if (focusId && !focused) return null
+  if (!focused && COUNTRIES.length < 4) return null
   const preferPool = preferCodes.length
     ? COUNTRIES.filter((c) => preferCodes.includes(c.code))
     : []
   const pool = preferPool.length >= 4 ? preferPool : COUNTRIES
-  const card = pickWeightedItem(
-    preferPool.length >= 4 ? `capitale:${mode}:weak` : `capitale:${mode}`,
-    pool,
-    (c) => c.code,
-    preferUnseen,
-  )
+  const card =
+    focused ??
+    pickWeightedItem(
+      preferPool.length >= 4 ? `capitale:${mode}:weak` : `capitale:${mode}`,
+      pool,
+      (c) => c.code,
+      preferUnseen,
+    )
   const distractors = pickCountryDistractors(card, COUNTRIES, difficulty)
   const saisie = answerMode === 'saisie'
   const answer = card.capital
@@ -492,50 +510,60 @@ function makeRound(
   includeDomTom: boolean,
   territoryPackId: TerritoryPackId = 'fr',
   preferCodes: string[] = [],
+  focusId?: string,
 ): Round | null {
+  let round: Round | null = null
   if (category === 'mixte') {
-    return makeMixedRound(
+    round = makeMixedRound(
       difficulty,
       preferUnseen,
       answerMode,
       includeDomTom,
       preferCodes,
     )
-  }
-  if (category === 'departements') {
-    return makeDeptRound(
+  } else if (category === 'departements') {
+    round = makeDeptRound(
       mode as DeptMode,
       difficulty,
       preferUnseen,
       answerMode,
       includeDomTom,
+      focusId,
     )
-  }
-  if (category === 'pays') {
-    return makePaysRound(
+  } else if (category === 'pays') {
+    round = makePaysRound(
       mode as PaysMode,
       difficulty,
       preferUnseen,
       answerMode,
       preferCodes,
+      focusId,
     )
-  }
-  if (category === 'territoires') {
-    return makeTerritoryRound(
+  } else if (category === 'territoires') {
+    round = makeTerritoryRound(
       territoryPackId,
       mode as TerritoryMode,
       difficulty,
       answerMode,
       preferUnseen,
+      [],
+      focusId,
+    )
+  } else {
+    round = makeCapitaleRound(
+      mode as CapitaleMode,
+      difficulty,
+      preferUnseen,
+      answerMode,
+      preferCodes,
+      focusId,
     )
   }
-  return makeCapitaleRound(
-    mode as CapitaleMode,
-    difficulty,
-    preferUnseen,
-    answerMode,
-    preferCodes,
-  )
+  if (!round || category === 'mixte' || round.replay) return round
+  return {
+    ...round,
+    replay: { category, mode, packId: round.territoryPackId ?? territoryPackId },
+  }
 }
 
 /** MIX = uniquement drapeau→pays, nom→capitale, chiffre→département. */
@@ -665,8 +693,8 @@ function FlagChoice({
 }
 
 export type PlayVariant = 'entrainement' | 'jeu'
-/** Lancement depuis l’accueil (rejeu faiblesses). */
-export type GameLaunch = 'weaknesses' | null
+/** Réservé : plus de lancement spécial depuis l’accueil. */
+export type GameLaunch = null
 
 const AUTO_NEXT_MS = 900
 const AUTO_NEXT_FLAG_MS = 1800
@@ -678,6 +706,7 @@ type RunEntry = {
   given: string
   expected: string
   ok: boolean
+  miss?: MissItem
 }
 
 type RecapFilter = 'all' | 'ok' | 'ko'
@@ -783,8 +812,11 @@ export function GameView({
   const [recapFilter, setRecapFilter] = useState<RecapFilter>('all')
   const [missHint, setMissHint] = useState(false)
   const [openFilter, setOpenFilter] = useState<string | null>(null)
-  const [preferCodes, setPreferCodes] = useState<string[]>([])
-  const [weaknessFocus, setWeaknessFocus] = useState(false)
+  const [errorFocus, setErrorFocus] = useState(false)
+  const [errorCursor, setErrorCursor] = useState(0)
+  const [partyTick, setPartyTick] = useState(0)
+  const runLogRef = useRef<RunEntry[]>([])
+  const partySent = useRef(false)
   const [lastGained, setLastGained] = useState(0)
   const [creditsNow, setCreditsNow] = useState(() => loadProgress().points)
   const timedOut = useRef(false)
@@ -832,32 +864,50 @@ export function GameView({
     ? [...BASE_CATEGORIES, 'mixte']
     : BASE_CATEGORIES
 
-  const round = useMemo(
-    () =>
-      category
-        ? makeRound(
-            category,
-            mode,
-            difficulty,
-            // Entraînement + Jeu : sac sans remise (évite les doublons trop tôt)
-            true,
-            effectiveAnswerMode,
-            mapDomTom,
-            territoryPackId,
-            preferCodes,
-          )
-        : null,
-    [
-      category,
-      mode,
-      difficulty,
-      seed,
-      effectiveAnswerMode,
-      mapDomTom,
-      territoryPackId,
-      preferCodes,
-    ],
-  )
+  const misses = useMemo(() => recentMisses(), [partyTick])
+
+  const round = useMemo(() => {
+    if (errorFocus && misses.length) {
+      const miss = misses[Math.abs(errorCursor) % misses.length]!
+      const focusId =
+        miss.category === 'territoires' ? (miss.itemId.split(':').pop() ?? miss.itemId) : miss.itemId
+      const focused = makeRound(
+        (miss.category as Category) || category,
+        (miss.mode as Mode) || mode,
+        difficulty,
+        true,
+        effectiveAnswerMode === 'map' ? 'qcm' : effectiveAnswerMode,
+        mapDomTom,
+        (miss.packId as TerritoryPackId) || territoryPackId,
+        [],
+        focusId,
+      )
+      if (focused) return focused
+    }
+    return category
+      ? makeRound(
+          category,
+          mode,
+          difficulty,
+          true,
+          effectiveAnswerMode,
+          mapDomTom,
+          territoryPackId,
+          [],
+        )
+      : null
+  }, [
+    errorFocus,
+    errorCursor,
+    misses,
+    category,
+    mode,
+    difficulty,
+    seed,
+    effectiveAnswerMode,
+    mapDomTom,
+    territoryPackId,
+  ])
 
   const roundIsMap = round?.choiceKind === 'map'
 
@@ -885,8 +935,16 @@ export function GameView({
     onProgressChange?.(state)
   }
 
+  function commitParty() {
+    if (partySent.current || runLogRef.current.length === 0) return
+    partySent.current = true
+    recordParty(runLogRef.current.flatMap((entry) => (entry.ok || !entry.miss ? [] : [entry.miss])))
+    setPartyTick((n) => n + 1)
+  }
+
   function flushTrainingSession() {
     if (isPlay || asked <= 0) return
+    commitParty()
     recordRun({ key, score, asked, streakPeak })
     awardProgress(score, asked)
     setStatsTick((t) => t + 1)
@@ -903,7 +961,9 @@ export function GameView({
     setGameOver(false)
     setPicked(null)
     setTyped('')
+    runLogRef.current = []
     setRunLog([])
+    partySent.current = false
     setRecapFilter('all')
     setMissHint(false)
     setElapsedSec(0)
@@ -951,6 +1011,7 @@ export function GameView({
     setTyped('')
     timedOut.current = false
     setSecondsLeft(timerMax)
+    if (errorFocus) setErrorCursor((cursor) => cursor + 1)
     setSeed((s) => s + 1)
   }
 
@@ -960,6 +1021,7 @@ export function GameView({
     peak: number,
     timeMs?: number,
   ) {
+    commitParty()
     recordRun({
       key,
       score: finalScore,
@@ -980,8 +1042,7 @@ export function GameView({
     if (!launch) {
       setCategory('pays')
       setMode('flagToName')
-      setPreferCodes([])
-      setWeaknessFocus(false)
+      setErrorFocus(false)
       if (variant === 'jeu') {
         setLobby(true)
         resetRun({ start: false })
@@ -999,37 +1060,11 @@ export function GameView({
   useEffect(() => {
     if (!lobbyBump || variant !== 'jeu') return
     if (gameOver || !runActive) {
-      setWeaknessFocus(false)
       setLobby(true)
       resetRun({ start: false })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobbyBump])
-
-  // Accueil → Mes erreurs
-  useEffect(() => {
-    if (launch !== 'weaknesses' || variant !== 'jeu') return
-    let cancelled = false
-    const nextDiff: Difficulty = 'facile'
-    const codes = weakCountryCodes(16)
-    setCategory('pays')
-    setMode('flagToName')
-    setSessionFormat('session10')
-    setDifficulty(nextDiff)
-    setAnswerMode('qcm')
-    setPreferCodes(codes)
-    setWeaknessFocus(true)
-    setLastGained(0)
-    setLobby(false)
-    const t = window.setTimeout(() => {
-      if (!cancelled) resetRun({ start: true, difficulty: nextDiff })
-    }, 0)
-    return () => {
-      cancelled = true
-      window.clearTimeout(t)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [launch, variant])
 
   // Auto-suite : Jeu toujours ; Entraînement seulement à la fin d’une session 10Q
   useEffect(() => {
@@ -1140,6 +1175,7 @@ export function GameView({
   }
 
   function selectCategory(cat: Category) {
+    setErrorFocus(false)
     setCategory(cat)
     if (cat === 'mixte') {
       if (difficulty === 'facile') setDifficulty('difficile')
@@ -1155,6 +1191,7 @@ export function GameView({
   }
 
   function selectTerritoryPack(packId: TerritoryPackId) {
+    setErrorFocus(false)
     setTerritoryPackId(packId)
     const nextMode = defaultTerritoryMode(packId)
     setMode(nextMode)
@@ -1164,6 +1201,7 @@ export function GameView({
   }
 
   function selectMode(m: Mode) {
+    setErrorFocus(false)
     setMode(m)
     if (m === 'carte') setAnswerMode('map')
     else if (answerMode === 'map') setAnswerMode('qcm')
@@ -1199,16 +1237,24 @@ export function GameView({
       bucket: isMixte ? 'mixte' : category,
       ok: isCorrect,
     })
-    setRunLog((prev) => [
-      ...prev,
-      {
-        prompt: round.prompt,
-        question: questionLabel(round),
-        given: labelForChoice(choice, round),
-        expected: round.answerLabel,
-        ok: isCorrect,
-      },
-    ])
+    const entry: RunEntry = {
+      prompt: round.prompt,
+      question: questionLabel(round),
+      given: labelForChoice(choice, round),
+      expected: round.answerLabel,
+      ok: isCorrect,
+      miss: round.replay
+        ? {
+            itemId: round.itemId,
+            label: round.answerLabel,
+            category: round.replay.category,
+            mode: round.replay.mode,
+            packId: round.replay.packId,
+          }
+        : undefined,
+    }
+    runLogRef.current = [...runLogRef.current, entry]
+    setRunLog(runLogRef.current)
     const timeMs =
       sessionStartRef.current != null ? Date.now() - sessionStartRef.current : 0
     if (isCorrect) {
@@ -1266,8 +1312,43 @@ export function GameView({
     setOpenFilter((current) => (current === id ? null : id))
   }
 
+  const errorOptions = [
+    { id: 'section', label: 'Les erreurs' },
+    ...(misses.length
+      ? misses.map((miss) => ({ id: miss.itemId, label: miss.label }))
+      : [{ id: 'aucune', label: 'Aucune' }]),
+  ]
+
   const filters = (
     <div className="game-filters is-affiche">
+      {!isPlay ? (
+        <FilterLine
+          value="section"
+          options={errorOptions}
+          open={openFilter === 'errors'}
+          onOpen={() => {
+            if (misses.length && !errorFocus) {
+              setErrorFocus(true)
+              setErrorCursor(0)
+              resetRun({ start: true })
+            }
+            toggleFilter('errors')
+          }}
+          onPick={(id) => {
+            setOpenFilter(null)
+            if (id === 'aucune') return
+            const index = misses.findIndex((miss) => miss.itemId === id)
+            if (index < 0) return
+            if (!errorFocus) {
+              setErrorFocus(true)
+              resetRun({ start: true })
+            }
+            setErrorCursor(index)
+            setPicked(null)
+            setTyped('')
+          }}
+        />
+      ) : null}
       <FilterLine
         value={category}
         options={categoryOptions.map((id) => ({ id, label: CATEGORY_LABEL[id] }))}
@@ -1365,27 +1446,11 @@ export function GameView({
     const timeMs = runSnapshot.current.timeMs || elapsedSec * 1000
     const timeLabel = formatDuration(Math.round(timeMs / 1000))
     const packReady = creditsNow >= PACK_COST
-    const weakLeft = weaknessCount()
-    const showWeakCta =
-      isPlay && !weaknessFocus && (koCount >= 1 || weakLeft >= 3)
-    const weakPriority = koCount >= 2 || weakLeft >= 3
-    const startWeakSession = () => {
-      const codes = weakCountryCodes(16)
-      setCategory('pays')
-      setMode('flagToName')
-      setSessionFormat('session10')
-      setPreferCodes(codes.length ? codes : preferCodes)
-      setWeaknessFocus(true)
-      setLastGained(0)
-      window.setTimeout(() => resetRun({ start: true }), 0)
-    }
     return (
       <div className="game-view is-affiche">
         <div className="game-board game-over">
           <p className="game-prompt">Partie terminée</p>
-          <p className="game-over-format">
-            {weaknessFocus ? 'Mes erreurs' : FORMAT_LABEL[sessionFormat]}
-          </p>
+          <p className="game-over-format">{FORMAT_LABEL[sessionFormat]}</p>
           <p className="game-over-score">
             Score <strong>{score}</strong> / {asked}
             <span className="game-pct"> · {pct} %</span>
@@ -1414,27 +1479,6 @@ export function GameView({
               <> · Record <strong>×{best.bestStreak}</strong></>
             ) : null}
           </p>
-
-          {showWeakCta ? (
-            <div className={`game-weak-banner ${weakPriority ? 'is-priority' : ''}`}>
-              <p className="game-weak-banner-title">
-                {weakLeft > 0
-                  ? `${Math.min(weakLeft, 12)} pays à revoir`
-                  : `${koCount} erreur${koCount > 1 ? 's' : ''} à rejouer`}
-              </p>
-              <p className="game-weak-banner-hint">
-                Session ciblée · {SESSION_LEN} questions · drapeaux
-              </p>
-              <button
-                type="button"
-                className="game-next"
-                onClick={startWeakSession}
-              >
-                Mes erreurs
-                {weakLeft > 0 ? ` (${Math.min(weakLeft, 12)})` : ''}
-              </button>
-            </div>
-          ) : null}
 
           <div className="game-recap-filters" role="group" aria-label="Filtrer le récap">
             {(
@@ -1471,7 +1515,7 @@ export function GameView({
           <div className="game-over-actions">
             <button
               type="button"
-              className={`game-next ${weakPriority ? 'game-next-quiet' : ''}`}
+              className="game-next"
               onClick={() => resetRun({ start: true })}
             >
               {isBounded ? `Rejouer (${SESSION_LEN} Q)` : 'Rejouer'}
@@ -1519,7 +1563,7 @@ export function GameView({
     <div className={`game-view is-affiche ${roundIsMap ? 'is-map-mode' : ''}`}>
       <div
         className={`game-board ${roundIsMap ? 'is-map-board' : ''}`}
-        key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${sessionFormat}-${seed}-${runActive ? 'on' : 'off'}`}
+        key={`${variant}-${category}-${mode}-${difficulty}-${answerMode}-${sessionFormat}-${seed}-${errorCursor}-${runActive ? 'on' : 'off'}`}
       >
         <div className="game-board-hud" aria-live="polite">
           {isBounded ? (

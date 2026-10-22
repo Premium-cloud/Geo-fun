@@ -4,7 +4,7 @@ Collection de cartes à collectionner et mode jeu :
 - **France** — 108 départements / territoires (blason, chef-lieu, région, pictos de spécialité)
 - **Territoires** — départements FR, cantons CH, communautés ES, États US, Länder DE, préfectures JP, provinces CA, États BR (lexique + quiz)
 - **Monde** — 198 pays (drapeau, capitale, continent, population, langue)
-- **Mes erreurs** — rejeu des pays ratés
+- **Apprendre → Les erreurs** — les questions ratées des 10 dernières parties
 - **Entraînement** — quiz sans chrono
 - **Jeu** — vies, timer, tirage des cartes peu vues, Facile / Difficile / Hardcore
 - **MIX** — uniquement drapeau→pays, nom→capitale, chiffre→département

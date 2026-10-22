@@ -94,10 +94,7 @@ export default function App() {
   }
 
   function goHomeDest(dest: HomeDest) {
-    if (dest === 'faiblesses') {
-      setGameLaunch('weaknesses')
-      setTab('jeu')
-    } else if (dest === 'apprendre') {
+    if (dest === 'apprendre') {
       setGameLaunch(null)
       setTab('entrainement')
     } else if (dest === 'jouer') {

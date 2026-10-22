@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { loadProgress, type ProgressState } from '../lib/progression'
-import { weaknessCount } from '../lib/weaknesses'
 import { InstallHint } from './InstallHint'
 import './HomeView.css'
 
@@ -8,7 +7,6 @@ const POSTER_MODES = ['Jouer', 'Apprendre', 'Défier'] as const
 type PosterMode = (typeof POSTER_MODES)[number]
 
 export type HomeDest =
-  | 'faiblesses'
   | 'apprendre'
   | 'jouer'
   | 'defier'
@@ -28,7 +26,6 @@ export function HomeView({
   onHistory: () => void
   progress: ProgressState
 }) {
-  const weakN = weaknessCount()
   const [poster, setPoster] = useState<PosterMode>('Jouer')
 
   function enter(next: PosterMode) {
@@ -62,11 +59,6 @@ export function HomeView({
               {item}
             </button>
           ))}
-          {weakN >= 3 ? (
-            <button type="button" onClick={() => onGo('faiblesses')}>
-              Mes erreurs
-            </button>
-          ) : null}
         </div>
       </div>
 

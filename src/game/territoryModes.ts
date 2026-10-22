@@ -102,13 +102,16 @@ export function makeTerritoryRound(
   answerMode: AnswerMode,
   preferUnseen = true,
   excludeIds: readonly string[] = [],
+  focusCode?: string,
 ): TerritoryRound | null {
   const pack = TERRITORY_PACKS[packId]
   const allowed = TERRITORY_MODES_BY_PACK[packId]
   if (!allowed.includes(mode)) return null
-  if (pack.units.length < 4) return null
+  const focused = focusCode ? pack.units.find((u) => u.code === focusCode) : undefined
+  if (focusCode && !focused) return null
+  if (!focused && pack.units.length < 4) return null
 
-  const unit = pickWeightedItem(
+  const unit = focused ?? pickWeightedItem(
     `territory:${packId}:${mode}`,
     pack.units as TerritoryUnit[],
     (u) => u.code,

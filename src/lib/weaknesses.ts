@@ -1,4 +1,4 @@
-/** Boucle faiblesses — erreurs locales pour « Rejouer mes erreurs ». */
+/** Scores locaux, question par question. L’écran Apprendre lit les parties, pas ce score. */
 
 export type WeakEntry = {
   id: string
