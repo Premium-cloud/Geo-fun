@@ -1502,7 +1502,7 @@ export function GameView({
   if (showLobbyCta) {
     return (
       <div className="game-view is-affiche is-setup">
-        <div className="game-setup-face">
+        <div className="game-setup-face" aria-hidden="true">
           <SetupFace category={category} mode={mode} packId={territoryPackId} />
         </div>
         <div className="game-setup">

@@ -111,13 +111,7 @@ export function SetupFace({
   }, [wantsPack, packId])
 
   if (category === 'mixte') {
-    return (
-      <div className="game-setup-mix">
-        <img className="game-setup-flag" src="/flags/it.svg" alt="Drapeau de l’Italie" />
-        <p className={wordClass('Italie')}>Italie</p>
-        <p className={wordClass('69')}>69</p>
-      </div>
-    )
+    return <p className={wordClass('MIX')}>MIX</p>
   }
 
   if (category === 'capitale') {
