@@ -56,12 +56,12 @@
   color: var(--ink);
   opacity: 0.11;
   white-space: nowrap;
-  font-size: 58vw;
+  font-size: 34vw;
   user-select: none;
 }
 
 .game-setup-word.is-mid {
-  font-size: 44vw;
+  font-size: 34vw;
 }
 
 .game-setup-word.is-long {
