@@ -1275,7 +1275,7 @@ export function GameView({
         onOpen={() => toggleFilter('cat')}
         onPick={(id) => {
           selectCategory(id)
-          setOpenFilter('cat')
+          setOpenFilter(null)
         }}
       />
       {!isMixte ? (
@@ -1286,7 +1286,7 @@ export function GameView({
           onOpen={() => toggleFilter('mode')}
           onPick={(id) => {
             selectMode(id)
-            setOpenFilter('mode')
+            setOpenFilter(null)
           }}
         />
       ) : null}
@@ -1298,7 +1298,7 @@ export function GameView({
           onOpen={() => toggleFilter('pack')}
           onPick={(id) => {
             selectTerritoryPack(id)
-            setOpenFilter('pack')
+            setOpenFilter(null)
           }}
         />
       ) : null}
@@ -1309,7 +1309,7 @@ export function GameView({
         onOpen={() => toggleFilter('level')}
         onPick={(id) => {
           selectDifficulty(id)
-          setOpenFilter('level')
+          setOpenFilter(null)
         }}
       />
       <FilterLine
@@ -1319,7 +1319,7 @@ export function GameView({
         onOpen={() => toggleFilter('format')}
         onPick={(id) => {
           selectFormat(id)
-          setOpenFilter('format')
+          setOpenFilter(null)
         }}
       />
       {!isMapMode ? (
@@ -1333,7 +1333,7 @@ export function GameView({
           onOpen={() => toggleFilter('answer')}
           onPick={(id) => {
             selectAnswerMode(id)
-            setOpenFilter('answer')
+            setOpenFilter(null)
           }}
         />
       ) : null}
