@@ -33,11 +33,6 @@ function PlancheOne() {
               <i />
               GeoFun
             </p>
-            <h2>
-              Le monde
-              <span>en cartes</span>
-            </h2>
-
             <a className="sheet-who" href="#profil">
               <b>?</b>
               <span>
@@ -144,10 +139,6 @@ function HomeSheet({
         GeoFun
         {theme === 'fr' ? <em>France</em> : null}
       </p>
-      <h2>
-        Le monde
-        <span>en cartes</span>
-      </h2>
       <p className="p2-who">
         <b>?</b>
         Ton profil

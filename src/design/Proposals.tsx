@@ -109,10 +109,6 @@ function MuseeHome() {
   return (
     <div className="prop prop-d">
       <p className="prop-brand">GeoFun</p>
-      <h2>
-        Le monde
-        <span>en cartes</span>
-      </h2>
       <p className="prop-who">Ton profil</p>
       <nav>
         <span>Apprendre</span>
@@ -228,10 +224,6 @@ function JournalHome() {
   return (
     <div className="prop prop-a">
       <p className="prop-brand">GeoFun</p>
-      <h2>
-        Le monde
-        <span>en cartes</span>
-      </h2>
       <p className="prop-who">Ton profil</p>
       <nav>
         <span>Apprendre</span>

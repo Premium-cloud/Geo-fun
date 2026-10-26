@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'GeoFun',
         short_name: 'GeoFun',
-        description: 'Cartes, quiz et packs géographie — France, territoires, monde.',
+        description: 'GeoFun',
         theme_color: '#163040',
         background_color: '#f4f1ea',
         display: 'standalone',
