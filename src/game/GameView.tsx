@@ -1043,15 +1043,12 @@ export function GameView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
-  // Recliquer le mode en cours (topbar) :
-  // - fin de partie ou écran filtres → on revient aux filtres, sans lancer
-  // - partie en cours → on ne coupe pas la question
+  // Recliquer Jouer ou Apprendre ramène au choix, même au milieu d'une question.
   useEffect(() => {
     if (!lobbyBump) return
-    if (gameOver || !runActive) {
-      setLobby(true)
-      resetRun({ start: false })
-    }
+    setErrorFocus(false)
+    setLobby(true)
+    resetRun({ start: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobbyBump])
 
