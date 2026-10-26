@@ -2,6 +2,13 @@
   min-height: 100vh;
 }
 
+@media (min-width: 800px) {
+  .app {
+    min-height: 100dvh;
+    background: #fbfbfb;
+  }
+}
+
 .topbar {
   display: grid;
   grid-template-columns: minmax(10.5rem, auto) 1fr minmax(6rem, auto);

@@ -75,6 +75,38 @@
   font-size: 1.05rem;
 }
 
+/* Ordi : la feuille prend la fenêtre. Le téléphone garde la colonne 28rem. */
+@media (min-width: 800px) {
+  .home-poster {
+    max-width: none;
+    width: 100%;
+    padding: 2.2rem 4vw 2rem;
+  }
+
+  .home-poster .home-poster-hero {
+    font-size: clamp(7rem, 14vw, 13rem);
+  }
+
+  .home-poster .home-poster-hero.is-mid {
+    font-size: clamp(5.5rem, 11vw, 10rem);
+  }
+
+  .home-poster .home-poster-hero.is-long {
+    font-size: clamp(4rem, 8vw, 7.5rem);
+  }
+
+  .home-poster-carousel {
+    margin-top: 1.6rem;
+    font-size: clamp(1.7rem, 2.6vw, 2.4rem);
+    gap: 0.45rem 2rem;
+  }
+
+  .home-poster-top,
+  .home-poster-foot {
+    font-size: 1.25rem;
+  }
+}
+
 .home-view {
   max-width: 36rem;
   margin: 0 auto;

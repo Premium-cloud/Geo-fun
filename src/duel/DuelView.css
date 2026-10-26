@@ -8,6 +8,13 @@
   margin: 0 auto;
 }
 
+@media (min-width: 800px) {
+  .duel-view {
+    max-width: none;
+    padding-inline: 2.5rem;
+  }
+}
+
 .duel-head {
   display: flex;
   flex-wrap: wrap;

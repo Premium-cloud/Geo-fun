@@ -1230,3 +1230,29 @@ html.is-night .game-filters-summary {
     border-bottom: 0;
   }
 }
+
+/* Ordi : la carte et les filtres prennent la fenêtre. */
+@media (min-width: 800px) {
+  .game-view.is-affiche {
+    min-height: calc(100dvh - 3rem);
+  }
+
+  .game-board {
+    max-width: none;
+    margin-inline: 2rem;
+  }
+
+  .game-filters.is-affiche {
+    padding-inline: 2rem;
+  }
+
+  .game-setup-go {
+    margin-left: 2rem;
+  }
+
+  .game-big-text,
+  .game-feedback p,
+  .game-recap-list {
+    max-width: 46rem;
+  }
+}
