@@ -21,6 +21,7 @@ import {
   send,
   type NetMsg,
 } from './peerSync'
+import { clampedRemaining, decideAdvance } from './roundAdvance'
 import {
   DEFAULT_DUEL_CONFIG,
   DUEL_CATEGORY_LABEL,
@@ -34,6 +35,34 @@ import {
 import './DuelView.css'
 
 type Phase = 'setup' | 'lobby' | 'play' | 'over'
+
+type LiveMsg = Extract<NetMsg, { type: 'answer' } | { type: 'clamp' }>
+
+type RaceSnap = {
+  roundId: string
+  timeLeft: number
+  inbox: LiveMsg[]
+  onRemoteResult: ((msg: {
+    scores: [number, number]
+    combos: [number, number]
+    nextIdx: number
+  }) => void) | null
+  onAnswer: ((msg: Extract<NetMsg, { type: 'answer' }>) => void) | null
+  onClamp: ((msg: Extract<NetMsg, { type: 'clamp' }>) => void) | null
+  forceEnd: (() => void) | null
+}
+
+function emptySnap(): RaceSnap {
+  return {
+    roundId: '',
+    timeLeft: 0,
+    inbox: [],
+    onRemoteResult: null,
+    onAnswer: null,
+    onClamp: null,
+    forceEnd: null,
+  }
+}
 
 function displayName(raw: string, fallback: string) {
   const t = raw.trim()
@@ -97,6 +126,10 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
   const [peerReady, setPeerReady] = useState(false)
   const [name0, setName0] = useState(() => loadProgress().pseudo)
   const [name1, setName1] = useState('Joueur 2')
+  /** Lien ?duel= : on attend que l’invité confirme son prénom avant de se connecter. */
+  const [pendingInvite, setPendingInvite] = useState<string | null>(() => readDuelInviteParam())
+  const [guestNamed, setGuestNamed] = useState(false)
+  const guestNamedRef = useRef(false)
   const peerRef = useRef<import('peerjs').default | null>(null)
   const connRef = useRef<DataConnection | null>(null)
   const deckRef = useRef<DuelRound[]>([])
@@ -106,19 +139,19 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
   const phaseRef = useRef<Phase>('setup')
   const isHostRef = useRef(true)
   const namesRef = useRef<[string, string]>(['Joueur 1', 'Joueur 2'])
+  const name0Ref = useRef(name0)
+  const myNameRef = useRef('')
+  const hostSeenRef = useRef(false)
   /** RacePlay expose l’état courant pour sync / anti-freeze. */
-  const raceSnapRef = useRef<{
-    roundId: string
-    timeLeft: number
-    onRemoteResult: ((msg: {
-      scores: [number, number]
-      combos: [number, number]
-      nextIdx: number
-    }) => void) | null
-  }>({ roundId: '', timeLeft: 0, onRemoteResult: null })
-  const lastResultKeyRef = useRef('')
+  const raceSnapRef = useRef<RaceSnap>(emptySnap())
+  const pendingAdvanceRef = useRef<number | null>(null)
+  const seenResultRef = useRef<Set<string>>(new Set())
+  const finishedRef = useRef(false)
+  const scheduleAdvanceRef = useRef<(nextIdx: number, delay?: number) => void>(() => {})
+  const helloRetryRef = useRef(0)
   const lastPongRef = useRef(Date.now())
   const [linkLost, setLinkLost] = useState(false)
+  name0Ref.current = name0
 
   deckRef.current = deck
   idxRef.current = idx
@@ -135,8 +168,8 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
     setDuelDisplayNames(name0, name1)
   }, [name0, name1])
 
-  function persistMyName() {
-    const me = name0.trim().slice(0, 20)
+  function persistMyName(raw?: string) {
+    const me = (raw ?? name0).trim().slice(0, 20)
     if (!me) return
     const cur = loadProgress()
     if (cur.pseudo.trim() === me) return
@@ -172,7 +205,9 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
       setStatus('Deck invalide')
       return false
     }
-    lastResultKeyRef.current = ''
+    pendingAdvanceRef.current = null
+    seenResultRef.current = new Set()
+    finishedRef.current = false
     setLinkLost(false)
     setConfig(nextConfig)
     setDeck(nextDeck)
@@ -185,16 +220,9 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
     return true
   }
 
-  // Auto-join si ?duel=
-  useEffect(() => {
-    const id = readDuelInviteParam()
-    if (!id) return
-    void joinOnline(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   useEffect(() => {
     return () => {
+      window.clearInterval(helloRetryRef.current)
       peerRef.current?.destroy()
     }
   }, [])
@@ -229,13 +257,47 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
 
   const round = Array.isArray(deck) ? (deck[idx] ?? null) : null
 
-  // Si play sans deck (état incohérent) → retour lobby, pas de setState pendant render
+  // Play sans deck, ou index passé la fin → on ne reste pas sur « Chargement… »
   useEffect(() => {
     if (phase !== 'play') return
-    if (Array.isArray(deck) && deck.length > 0) return
-    setStatus('Erreur de partie')
-    setPhase((p) => (p === 'play' ? 'lobby' : p))
-  }, [phase, deck])
+    if (!Array.isArray(deck) || deck.length < 1) {
+      setStatus('Erreur de partie')
+      setPhase((p) => (p === 'play' ? 'lobby' : p))
+      return
+    }
+    if (idx >= deck.length) finish()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, deck, idx])
+
+  // Manche qui ne bouge plus : l’hôte force la suite, l’invité redemande l’état.
+  useEffect(() => {
+    if (config.venue !== 'online' || phase !== 'play') return
+    let lastIdx = idxRef.current
+    let since = Date.now()
+    let lastSync = 0
+    const tick = window.setInterval(() => {
+      const now = Date.now()
+      if (idxRef.current !== lastIdx) {
+        lastIdx = idxRef.current
+        since = now
+        return
+      }
+      if (now - since < (config.timerSec + 4) * 1000) return
+      if (isHostRef.current) {
+        pendingAdvanceRef.current = null
+        const force = raceSnapRef.current.forceEnd
+        if (force) force()
+        else scheduleAdvanceRef.current(idxRef.current + 1, 0)
+        since = now
+        return
+      }
+      if (now - lastSync > 3000) {
+        lastSync = now
+        send(connRef.current, { type: 'sync-req' })
+      }
+    }, 1000)
+    return () => window.clearInterval(tick)
+  }, [config.venue, config.timerSec, phase])
 
   function patchConfig(partial: Partial<DuelConfig>) {
     setConfig((c) => {
@@ -246,22 +308,49 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
     })
   }
 
+  function scheduleAdvance(nextIdx: number, delay = 900) {
+    const decision = decideAdvance(idxRef.current, nextIdx, pendingAdvanceRef.current)
+    pendingAdvanceRef.current = decision.pending
+    if (!decision.arm) return
+    window.setTimeout(() => {
+      if (pendingAdvanceRef.current === nextIdx) pendingAdvanceRef.current = null
+      if (nextIdx <= idxRef.current) return
+      if (phaseRef.current !== 'play') return
+      if (nextIdx >= deckRef.current.length) finish()
+      else setIdx(nextIdx)
+    }, delay)
+  }
+  scheduleAdvanceRef.current = scheduleAdvance
+
   function applyRoundResult(msg: {
     scores: [number, number]
     combos: [number, number]
     nextIdx: number
-    idx?: number
+    roundId?: string
   }) {
-    const key = `${msg.idx ?? '?'}→${msg.nextIdx}:${msg.scores.join('-')}`
-    if (lastResultKeyRef.current === key) return
-    lastResultKeyRef.current = key
-    setScores(msg.scores)
-    setCombos(msg.combos)
-    raceSnapRef.current.onRemoteResult?.(msg)
-    window.setTimeout(() => {
-      if (msg.nextIdx >= deckRef.current.length) finish()
-      else setIdx(msg.nextIdx)
-    }, 900)
+    const seenKey = msg.roundId || `idx:${msg.nextIdx}`
+    if (!seenResultRef.current.has(seenKey)) {
+      seenResultRef.current.add(seenKey)
+      setScores(msg.scores)
+      setCombos(msg.combos)
+      raceSnapRef.current.onRemoteResult?.(msg)
+    }
+    // Même message reçu deux fois : on avance quand même si l’index n’a pas bougé.
+    scheduleAdvance(msg.nextIdx)
+  }
+
+  function routeLive(msg: LiveMsg) {
+    const snap = raceSnapRef.current
+    if (msg.type === 'answer' && snap.onAnswer && snap.roundId === msg.roundId) {
+      snap.onAnswer(msg)
+      return
+    }
+    if (msg.type === 'clamp' && snap.onClamp && snap.roundId === msg.roundId) {
+      snap.onClamp(msg)
+      return
+    }
+    snap.inbox.push(msg)
+    if (snap.inbox.length > 30) snap.inbox.shift()
   }
 
   function replySync() {
@@ -278,9 +367,17 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
     })
   }
 
+  function sendHostHello(conn: DataConnection) {
+    const hostName = displayName(name0Ref.current, 'Joueur 1')
+    namesRef.current = [hostName, namesRef.current[1]]
+    send(conn, { type: 'hello', role: 'host', name: hostName })
+  }
+
   async function hostOnline() {
     persistMyName()
     setDuelDisplayNames(name0, name1)
+    guestNamedRef.current = false
+    setGuestNamed(false)
     setStatus('Création du salon…')
     setIsHost(true)
     setLinkLost(false)
@@ -292,28 +389,40 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
       setPhase('lobby')
       setStatus('En attente…')
       peer.on('connection', (conn) => {
-        conn.on('open', () => {
-          wireConn(conn)
+        // Écouter avant `open` : le hello de l’invité peut arriver tout de suite.
+        wireConn(conn)
+        const arm = () => {
           setPeerReady(true)
-          const hostName = displayName(name0, 'Joueur 1')
-          send(conn, { type: 'hello', role: 'host', name: hostName })
-          setStatus('Connecté — en attente du pseudo…')
-          // Pas de deck ici : un seul deck atomique au « Lancer »
-        })
+          sendHostHello(conn)
+          if (!guestNamedRef.current) setStatus('Connecté — en attente du prénom…')
+        }
+        if (conn.open) arm()
+        else conn.on('open', arm)
       })
     } catch (e) {
       setStatus(e instanceof Error ? e.message : 'Erreur réseau')
     }
   }
 
-  async function joinOnline(hostId: string) {
-    persistMyName()
-    setDuelDisplayNames(name0, name1)
+  async function joinOnline(hostId: string, chosen?: string) {
+    const mine = (chosen ?? name0).trim().slice(0, 20)
+    if (!mine) {
+      setStatus('Choisis ton prénom')
+      return
+    }
+    setName0(mine)
+    myNameRef.current = mine
+    namesRef.current = [mine, 'Joueur 2']
+    setDuelDisplayNames(mine, 'Joueur 2')
+    persistMyName(mine)
+    setPendingInvite(null)
+    hostSeenRef.current = false
     setStatus('Connexion…')
     setIsHost(false)
     setLinkLost(false)
     setConfig((c) => ({ ...c, venue: 'online' }))
     setPhase('lobby')
+    window.clearInterval(helloRetryRef.current)
     try {
       const { peer, conn } = await connectToHost(hostId.trim())
       peerRef.current = peer
@@ -321,12 +430,18 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
       setPeerReady(true)
       setStatus('Connecté')
       clearDuelInviteParam()
-      send(conn, {
-        type: 'hello',
-        role: 'guest',
-        name: displayName(name0, 'Joueur 2'),
-      })
+      const hello = () =>
+        send(connRef.current, { type: 'hello', role: 'guest', name: mine })
+      hello()
+      helloRetryRef.current = window.setInterval(() => {
+        if (hostSeenRef.current || !connRef.current?.open || phaseRef.current === 'setup') {
+          window.clearInterval(helloRetryRef.current)
+          return
+        }
+        hello()
+      }, 800)
     } catch (e) {
+      window.clearInterval(helloRetryRef.current)
       setStatus(e instanceof Error ? e.message : 'Connexion impossible')
     }
   }
@@ -349,24 +464,30 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
       if (msg.role === 'guest' && isHostRef.current) {
         // Hôte = p0, invité = p1
         setName1(remote)
+        guestNamedRef.current = true
+        setGuestNamed(true)
         setDuelDisplayNames(namesRef.current[0], remote)
+        namesRef.current = [namesRef.current[0], remote]
         setStatus(`${remote} est là`)
-        send(connRef.current, {
-          type: 'hello',
-          role: 'host',
-          name: namesRef.current[0],
-        })
+        if (connRef.current) sendHostHello(connRef.current)
         return
       }
       if (msg.role === 'host' && !isHostRef.current) {
-        // Invité : garder son pseudo en p1, hôte en p0
-        const self = namesRef.current[0]
+        // Invité : garder son prénom en p1, hôte en p0
+        hostSeenRef.current = true
+        window.clearInterval(helloRetryRef.current)
+        const self = myNameRef.current || namesRef.current[0]
         setName0(remote)
         setName1(self)
+        namesRef.current = [remote, self]
         setDuelDisplayNames(remote, self)
         setStatus(`Salon de ${remote}`)
         return
       }
+      return
+    }
+    if (msg.type === 'answer' || msg.type === 'clamp') {
+      routeLive(msg)
       return
     }
     if (msg.type === 'config') {
@@ -399,9 +520,17 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
         finish()
         return
       }
-      // Hôte déjà passé à la manche suivante → on rattrape
-      if (msg.idx !== idxRef.current) {
-        setIdx(msg.idx)
+      // Jamais de retour en arrière : un sync en retard ne rejoue pas une manche.
+      if (msg.idx > idxRef.current) {
+        pendingAdvanceRef.current = null
+        if (msg.idx >= deckRef.current.length) finish()
+        else setIdx(msg.idx)
+      } else if (msg.idx === idxRef.current) {
+        raceSnapRef.current.onClamp?.({
+          type: 'clamp',
+          roundId: msg.roundId,
+          timeLeft: msg.timeLeft,
+        })
       }
     }
   }
@@ -438,6 +567,9 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
   }
 
   function finish(title = 'Fin du duel') {
+    if (finishedRef.current) return
+    finishedRef.current = true
+    window.clearInterval(helloRetryRef.current)
     const [a, b] = scoresRef.current
     const names = namesRef.current
     const low = title.toLowerCase()
@@ -475,6 +607,55 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
       next[player] = ok ? next[player] + 1 : 0
       return next
     })
+  }
+
+  if (phase === 'setup' && pendingInvite) {
+    return (
+      <div className="duel-view">
+        <header className="duel-head">
+          <h2>Duel</h2>
+        </header>
+        <section className="duel-setup">
+          <div className="duel-field">
+            <span className="duel-label">Ton prénom</span>
+            <label className="duel-name-field">
+              <span>Toi</span>
+              <input
+                value={name0}
+                maxLength={20}
+                placeholder="Ex. Sam"
+                autoComplete="nickname"
+                autoFocus
+                onChange={(e) => setName0(e.target.value)}
+              />
+            </label>
+            <p className="duel-hint">C'est le nom que l'autre joueur verra pendant le duel.</p>
+          </div>
+          <div className="duel-actions">
+            <button
+              type="button"
+              className="duel-btn-primary"
+              disabled={!name0.trim()}
+              onClick={() => void joinOnline(pendingInvite, name0)}
+            >
+              Rejoindre
+            </button>
+            <button
+              type="button"
+              className="duel-chip"
+              onClick={() => {
+                clearDuelInviteParam()
+                setPendingInvite(null)
+                onLeave()
+              }}
+            >
+              Quitter
+            </button>
+          </div>
+          {status ? <p className="duel-status">{status}</p> : null}
+        </section>
+      </div>
+    )
   }
 
   if (phase === 'setup') {
@@ -616,7 +797,15 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
                 <button type="button" className="duel-btn-primary" onClick={() => void hostOnline()}>
                   Créer un salon
                 </button>
-                <JoinForm onJoin={(id) => void joinOnline(id)} />
+                <JoinForm
+                  onJoin={(id) => {
+                    if (!name0.trim()) {
+                      setStatus('Choisis ton prénom')
+                      return
+                    }
+                    void joinOnline(id, name0)
+                  }}
+                />
               </>
             )}
           </div>
@@ -670,7 +859,7 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
             <button
               type="button"
               className="duel-btn-primary"
-              disabled={!peerReady || linkLost}
+              disabled={!peerReady || linkLost || !guestNamed}
               onClick={startOnlineHost}
             >
               Démarrer
@@ -795,14 +984,8 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
             setScores(next.scores)
             setCombos(next.combos)
           }}
-          onNext={() => {
-            if (idx + 1 >= deck.length) finish()
-            else setIdx((i) => i + 1)
-          }}
-          onGoToIdx={(nextIdx) => {
-            if (nextIdx >= deck.length) finish()
-            else setIdx(nextIdx)
-          }}
+          onNext={() => scheduleAdvance(idxRef.current + 1)}
+          onGoToIdx={(nextIdx) => scheduleAdvance(nextIdx)}
           onQuit={onLeave}
         />
       </div>
@@ -827,10 +1010,7 @@ export function DuelView({ onLeave }: { onLeave: () => void }) {
       conn={null}
       onScore={(p, pts) => addScore(p, pts)}
       onCombo={bumpCombo}
-      onNext={() => {
-        if (idx + 1 >= deck.length) finish()
-        else setIdx((i) => i + 1)
-      }}
+      onNext={() => scheduleAdvance(idxRef.current + 1)}
       onQuit={onLeave}
     />
   )
@@ -1035,15 +1215,7 @@ function RacePlay({
   /** Téléphone : deux moitiés, J2 en haut retourné à 180°. */
   mirror?: boolean
   conn: DataConnection | null
-  raceSnapRef?: MutableRefObject<{
-    roundId: string
-    timeLeft: number
-    onRemoteResult: ((msg: {
-      scores: [number, number]
-      combos: [number, number]
-      nextIdx: number
-    }) => void) | null
-  }>
+  raceSnapRef?: MutableRefObject<RaceSnap>
   /** Invité : le parent avance déjà via round-result (listener stable). */
   parentHandlesAdvance?: boolean
   onScore: (p: 0 | 1, pts: number) => void
@@ -1068,20 +1240,27 @@ function RacePlay({
   const scoresRef = useRef(scores)
   const combosRef = useRef(combos)
   const endsAtRef = useRef(0)
+  const roundIdxRef = useRef(idx)
+  roundIdxRef.current = idx
+  if (endsAtRef.current === 0) {
+    endsAtRef.current = Date.now() + config.timerSec * 1000
+  }
   lockedRef.current = locked
   correctRef.current = correctAt
   scoresRef.current = scores
   combosRef.current = combos
 
+  /** Écrit l’échéance tout de suite : le tick lit endsAtRef, pas le state. */
+  function applyClamp(seconds: number) {
+    const remain = Math.max(0, (endsAtRef.current - Date.now()) / 1000)
+    const next = clampedRemaining(remain, seconds)
+    endsAtRef.current = Date.now() + next * 1000
+    setTimeLeft(Math.ceil(next))
+  }
+
   function clampTimer() {
-    setTimeLeft((t) => {
-      const next = t > 5 ? 5 : t
-      if (next !== t) endsAtRef.current = Date.now() + next * 1000
-      return next
-    })
-    if (online && isHost) {
-      send(conn, { type: 'clamp', roundId: round.id, timeLeft: 5 })
-    }
+    applyClamp(5)
+    if (online) send(conn, { type: 'clamp', roundId: round.id, timeLeft: 5 })
   }
 
   function markAnswer(player: 0 | 1, value: string, at: number) {
@@ -1111,56 +1290,28 @@ function RacePlay({
     ended.current = true
     scored.current = true
     onApplyState?.({ scores: msg.scores, combos: msg.combos })
-    // Avance gérée par le parent si parentHandlesAdvance
-    if (!parentHandlesAdvance) {
-      window.setTimeout(() => {
-        onGoToIdx?.(msg.nextIdx)
-      }, 900)
-    }
+    // Le parent pose le délai. Ici on ne fait que verrouiller l’écran.
+    if (!parentHandlesAdvance) onGoToIdx?.(msg.nextIdx)
   }
 
-  useEffect(() => {
-    if (!raceSnapRef) return
-    raceSnapRef.current.roundId = round.id
-    raceSnapRef.current.timeLeft = timeLeft
-    raceSnapRef.current.onRemoteResult = applyRemoteEnd
-    return () => {
-      if (raceSnapRef.current.onRemoteResult === applyRemoteEnd) {
-        raceSnapRef.current.onRemoteResult = null
-      }
+  if (raceSnapRef) {
+    const snap = raceSnapRef.current
+    snap.roundId = round.id
+    snap.onAnswer = (m) => {
+      if (m.roundId !== round.id) return
+      markAnswer(m.player, m.value, m.at)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [raceSnapRef, round.id, timeLeft])
-
-  useEffect(() => {
-    if (!conn) return
-    const handler = (raw: unknown) => {
-      const msg = raw as NetMsg
-      if (msg.type === 'answer' && msg.roundId === round.id) {
-        markAnswer(msg.player, msg.value, msg.at)
-      }
-      if (msg.type === 'clamp' && msg.roundId === round.id && !isHost) {
-        setTimeLeft((t) => {
-          const next = t > msg.timeLeft ? msg.timeLeft : t
-          endsAtRef.current = Date.now() + next * 1000
-          return next
-        })
-      }
-      // Guest : round-result aussi ici (UI), parent gère l’avance
-      if (
-        msg.type === 'round-result' &&
-        !isHost &&
-        (msg.roundId === round.id || msg.idx === idx)
-      ) {
-        applyRemoteEnd(msg)
-      }
+    snap.onClamp = (m) => {
+      if (m.roundId !== round.id) return
+      applyClamp(m.timeLeft)
     }
-    conn.on('data', handler)
-    return () => {
-      conn.off('data', handler)
+    snap.onRemoteResult = applyRemoteEnd
+    snap.forceEnd = () => {
+      if (!isHost) return
+      if (ended.current) onGoToIdx?.(idx + 1)
+      else endRound()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conn, round.id, isHost, idx])
+  }
 
   useEffect(() => {
     ended.current = false
@@ -1173,6 +1324,26 @@ function RacePlay({
     correctRef.current = [null, null]
     setInputs(['', ''])
   }, [round.id, config.timerSec])
+
+  useEffect(() => {
+    const snap = raceSnapRef?.current
+    if (!snap) return
+    const pending = snap.inbox.splice(0, snap.inbox.length)
+    for (const m of pending) {
+      if (m.roundId !== round.id) continue
+      if (m.type === 'answer') markAnswer(m.player, m.value, m.at)
+      else applyClamp(m.timeLeft)
+    }
+    const roundId = round.id
+    return () => {
+      if (snap.roundId !== roundId) return
+      snap.onAnswer = null
+      snap.onClamp = null
+      snap.onRemoteResult = null
+      snap.forceEnd = null
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round.id])
 
   // Timer basé sur Date.now (moins fragile si onglet en arrière-plan)
   useEffect(() => {
@@ -1190,14 +1361,13 @@ function RacePlay({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round.id, isHost])
 
-  // Invité : si timer à 0 sans fin de manche → demande sync (anti-freeze)
+  // Invité : chrono à 0 sans manche suivante → on redemande l’état à l’hôte.
   useEffect(() => {
-    if (!online || isHost || ended.current) return
+    if (!online || isHost) return
     if (timeLeft > 0) return
     const t = window.setTimeout(() => {
-      if (ended.current) return
       send(conn, { type: 'sync-req' })
-    }, 3500)
+    }, 2000)
     return () => window.clearTimeout(t)
   }, [online, isHost, timeLeft, conn, round.id])
 
@@ -1222,7 +1392,7 @@ function RacePlay({
       b = shuffleChoices(round.choices)
     }
     return [a, b]
-  }, [split, config.answerMode, round.id, round.choices])
+  }, [split, config.answerMode, round.choices])
 
   // Split PC (pas miroir) : J1 = 1–2–3–4, J2 = A–Z–E–R (QCM)
   useEffect(() => {
@@ -1280,22 +1450,24 @@ function RacePlay({
       onCombo(1, times[1] != null)
     }
 
-    const nextIdx = idx + 1
+    const nextIdx = roundIdxRef.current + 1
     if (online && isHost) {
-      send(conn, {
-        type: 'round-result',
-        roundId: round.id,
-        idx,
-        scores: nextScores,
-        combos: nextCombos,
-        nextIdx,
-      })
+      try {
+        send(conn, {
+          type: 'round-result',
+          roundId: round.id,
+          idx: roundIdxRef.current,
+          scores: nextScores,
+          combos: nextCombos,
+          nextIdx,
+        })
+      } catch {
+        // On avance même si l’envoi échoue : l’invité rattrape via sync.
+      }
     }
 
-    window.setTimeout(() => {
-      if (online && onGoToIdx) onGoToIdx(nextIdx)
-      else onNext()
-    }, 900)
+    if (online && onGoToIdx) onGoToIdx(nextIdx)
+    else onNext()
   }
 
   const showKeys = Boolean(split && !mirror && config.answerMode === 'qcm')
